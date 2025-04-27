@@ -50,6 +50,7 @@ The primary objectives are to develop a secure, user-friendly mobile platform, m
 
 ### **Authentication & Security**
 - **OAuth** 🔐 : Secure and scalable authentication, allowing for social media logins and token-based session management.
+- **JWT Tokens** 🔑 : JSON Web Tokens will be used to manage sessions securely, allowing stateless authentication across multiple platforms and improving scalability.
 
 <img src="https://oauth.net/images/oauth-logo-square.png" alt="OAuth Logo" height="100"/> 
 
@@ -59,5 +60,5 @@ The primary objectives are to develop a secure, user-friendly mobile platform, m
 ### Benefits of This Approach
 
 1. **Ease of Use**: The platform will provide a user-friendly, easy-to-navigate experience, ensuring both dog owners and walkers can quickly manage their accounts and requests.
-2. **Security**: With OAuth the platform ensures user privacy and data protection.
+2. **Security**: With OAuth and JWT-based session handling, the platform ensures user privacy and data protection.
 3. **Scalability**: By utilizing **Flutter** and **Supabase**, the platform can easily scale to accommodate more users as the service grows.
