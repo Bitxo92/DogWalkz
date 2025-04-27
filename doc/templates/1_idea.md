@@ -3,9 +3,13 @@
 ## Overview
 
 DogWalkz connects dog owners with professional walkers, offering an intuitive and reliable service for booking, tracking, and managing dog walks. The platform ensures safety, convenience, and ease of use, making it ideal for pet owners who need help caring for their dogs. The project will not only focus on the planning and design stages but will also deliver a fully functional cross-platform mobile application.
+
 The main goal of DogWalkz is to provide a trustworthy, easy-to-use solution for dog owners who need assistance walking their pets. It is aimed at two primary user groups: busy dog owners who may struggle to find time for daily walks and professional or freelance walkers looking to connect with new clients. This service fits perfectly within urban and suburban contexts where pet ownership is high and the demand for pet care services continues to grow.
+
 DogWalkz addresses several key needs, including providing a secure way to book dog walkers, enabling real-time walk tracking for owners, and facilitating easy, protected payments. In addition to solving a clear problem, the app opens strong business opportunities through a commission-based model, optional premium subscriptions for additional benefits, and potential partnerships with pet product companies. These commercial avenues make the platform scalable and sustainable.
+
 Although applications like Rover and Wag! exist, many users find them either complex or limited to larger metropolitan areas. DogWalkz aims to improve on this by delivering a more intuitive experience, ensuring payment transparency, supporting multiple languages, and fostering a reliable community through user reviews and a trusted reputation system.
+
 The primary objectives are to develop a secure, user-friendly mobile platform, manage user profiles for both owners and walkers, offer real-time GPS tracking during walks, and provide a protected wallet system for handling payments. Essential requirements include secure authentication (OAuth), robust backend management (Supabase), intuitive mobile frontend development (Flutter), real-time location services, and multilanguage support to reach a wider international audience.
 
 ## Main Features
@@ -35,20 +39,19 @@ The primary objectives are to develop a secure, user-friendly mobile platform, m
 ### **Frontend Development**
 - **Flutter** </> : A powerful framework for building cross-platform mobile apps for both iOS and Android. Ensures fast and responsive user interfaces, providing a smooth experience for all users.
 
-![Flutter Logo](https://storage.googleapis.com/cms-storage-bucket/4fd0db61df0567c0f352.png)
-  
+<img src="https://storage.googleapis.com/cms-storage-bucket/4fd0db61df0567c0f352.png" alt="Flutter Logo" height="100"/>
 
 
 ### **Backend Development**
 - **Supabase** ⛃ : An open-source backend-as-a-service (BaaS) providing database storage, authentication, and real-time capabilities. It simplifies backend management, scaling, and security without the need to build from scratch.
 
-![Supabase Logo](https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--dark.png)
+<img src="https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--dark.png" alt="Supabase Logo" height="100"/>
 
 
 ### **Authentication & Security**
 - **OAuth** 🔐 : Secure and scalable authentication, allowing for social media logins and token-based session management.
 
-![OAuth Logo](https://oauth.net/images/oauth-logo-square.png)  
+<img src="https://oauth.net/images/oauth-logo-square.png" alt="OAuth Logo" height="100"/> 
 
 
 ---
