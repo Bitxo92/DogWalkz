@@ -1,7 +1,5 @@
 # Proyecto fin de ciclo
-
-> *TODO*: Este documento será la "*página de aterrizaje*" de tu proyecto. Será lo primero que vean los que se interesen por él. Cuida su redacción con todo tu mimo. Elimina posteriormente todas las líneas "*TODO*" cuando creas finalizada su redacción.
-> Puedes acompañar a la redacción de este fichero con imágenes o gifs, pero no abuses de ellos.
+Welcome to DogWalkz 🐾 — a platform designed for effortless dog walking!
 
 ## Descripción
 
