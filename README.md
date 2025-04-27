@@ -148,8 +148,9 @@ You can contact me at:
 
 ## Licencia
 
-> *TODO*: Es requisito INDISPENSABLE el licenciar explícitamente el proyecto software. Se recomienda licenciar con *GNU Free Documentation License Version 1.3*. Crear un fichero `LICENSE` en la raíz del repo, con tu fichero de licencia. Recuerda que si empleas una licencia de software libre estás autorizando la derivación de tu obra bajo la misma licencia que elijas, pudiendo dar continuidad, p. e. otro alumno, para continuar tu proyecto en otro curso.
-> Si tu proyecto es documental, recomendamos los términos de *GNU Free Documentation License Version 1.3*, crea igualmente el fichero `LICENSE`. Será especialmente valorado en este caso, la claridad de la especificación para que el proyecto pueda ser ejecutado partiendo de lo proyectado.
+This software is **proprietary**. All rights are reserved by the author. You may not use, modify, distribute, or copy the software without explicit permission from the author.
+
+For further details, please refer to the [LICENSE](LICENSE) file.
 
 
 ## Índice
@@ -165,9 +166,6 @@ You can contact me at:
     * 5.2 [Producción](doc/templates/7_producion.md)
 
 
-## Guía de contribución
-
-> *TODO*: Tratándose de un proyecto de software libre, es muy importante que expongas cómo se puede contribuir con tu proyecto. Algunos ejemplos de esto son realizar nuevas funcionalidades, corrección y/u optimización del código, realización de test automatizados, nuevas interfaces de integración, desarrollo de plugins, etc. etc. Sé lo más conciso que puedas.
 
 ## Links
 
