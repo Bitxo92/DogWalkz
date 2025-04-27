@@ -1,64 +1,61 @@
-# DogWalkz 🐾  : App for Effortless Dog Walking! 
+# DogWalkz 🐾: ¡Aplicación para programar paseos de perros sin esfuerzo!
 
-## Overview
+## Resumen
 
-DogWalkz connects dog owners with professional walkers, offering an intuitive and reliable service for booking, tracking, and managing dog walks. The platform ensures safety, convenience, and ease of use, making it ideal for pet owners who need help caring for their dogs. The project will not only focus on the planning and design stages but will also deliver a fully functional cross-platform mobile application.
+DogWalkz conecta a los propietarios de perros con paseadores, ofreciendo un servicio confiable y intuitivo para reservar, rastrear y gestionar los paseos de perros. La plataforma garantiza seguridad, comodidad y facilidad de uso, lo que la convierte en ideal para los dueños de mascotas que necesitan ayuda para cuidar a sus perros. El proyecto no solo se enfocará en las etapas de planificación y diseño, sino que también entregará una aplicación móvil completamente funcional y multiplataforma.
 
-The main goal of DogWalkz is to provide a trustworthy, easy-to-use solution for dog owners who need assistance walking their pets. It is aimed at two primary user groups: busy dog owners who may struggle to find time for daily walks and professional or freelance walkers looking to connect with new clients. This service fits perfectly within urban and suburban contexts where pet ownership is high and the demand for pet care services continues to grow.
+El objetivo principal de DogWalkz es proporcionar una solución confiable y fácil de usar para los propietarios de perros que necesitan asistencia para pasear a sus mascotas. Está dirigida a dos grupos principales de usuarios: dueños de perros ocupados que pueden tener dificultades para encontrar tiempo para los paseos diarios y paseadores profesionales que buscan conectarse con nuevos clientes. Este servicio encaja perfectamente en contextos urbanos y suburbanos, donde la tenencia de mascotas es alta y la demanda de servicios de cuidado de mascotas continúa creciendo.
 
-DogWalkz addresses several key needs, including providing a secure way to book dog walkers, enabling real-time walk tracking for owners, and facilitating easy, protected payments. In addition to solving a clear problem, the app opens strong business opportunities through a commission-based model, optional premium subscriptions for additional benefits, and potential partnerships with pet product companies. These commercial avenues make the platform scalable and sustainable.
+DogWalkz aborda varias necesidades clave, incluyendo la provisión de una forma segura de reservar paseadores de perros, habilitar el rastreo en tiempo real de los paseos para los propietarios y facilitar pagos seguros. Además de resolver un problema clave, la aplicación abre grandes oportunidades de negocio a través de un modelo basado en comisiones, suscripciones premium opcionales para beneficios adicionales y posibles asociaciones con empresas de productos para mascotas. Estas vías comerciales hacen que la plataforma sea escalable y sostenible.
 
-Although applications like Rover and Wag! exist, many users find them either complex or limited to larger metropolitan areas. DogWalkz aims to improve on this by delivering a more intuitive experience, ensuring payment transparency, supporting multiple languages, and fostering a reliable community through user reviews and a trusted reputation system.
+Aunque existen aplicaciones como Rover y Wag!, muchos usuarios las encuentran complejas o limitadas a áreas metropolitanas más grandes. DogWalkz tiene como objetivo mejorar esto ofreciendo una experiencia más intuitiva, asegurando la transparencia de los pagos, apoyando varios idiomas y fomentando una comunidad confiable a través de reseñas de usuarios y un sistema de reputación confiable.
 
-The primary objectives are to develop a secure, user-friendly mobile platform, manage user profiles for both owners and walkers, offer real-time GPS tracking during walks, and provide a protected wallet system for handling payments. Essential requirements include secure authentication (OAuth), robust backend management (Supabase), intuitive mobile frontend development (Flutter), real-time location services, and multilanguage support to reach a wider international audience.
+Los objetivos principales son desarrollar una plataforma móvil segura y fácil de usar, gestionar perfiles de usuarios tanto para propietarios como para paseadores, ofrecer rastreo en tiempo real mediante GPS durante los paseos y proporcionar un sistema de monedero protegido para manejar pagos. Los requisitos esenciales incluyen autenticación segura (OAuth), gestión robusta del backend (Supabase), desarrollo intuitivo del frontend móvil (Flutter), servicios de localización en tiempo real y soporte multilingüe para llegar a una audiencia internacional más amplia.
 
-## Main Features
+## Características principales
 
-### 📝 **User Registration & Login**
-- **Simple Onboarding**: Users (owners & walkers) can easily register using email, phone, or social media accounts.
-- **Secure Authentication**: Login via email/password or linked social media, with password recovery options.
+### 📝 **Registro e inicio de sesión de usuario**
+- **Registro sencillo**: Los usuarios (propietarios y paseadores) pueden registrarse fácilmente usando correo electrónico, teléfono o cuentas de redes sociales.
+- **Autenticación segura**: Ingreso mediante correo electrónico/contraseña o redes sociales vinculadas, con opciones de recuperación de contraseña.
 
-### 👤 **User Profiles**
-- **Dog Owner Profiles**: Store personal information and details of registered dogs (name, breed, size, sociability).
-- **Walker Profiles**: Includes personal details, experience, and dog size qualifications (small/medium/large) to ensure compatibility with dog types.
+### 👤 **Perfiles de usuario**
+- **Perfiles de propietarios de perros**: Almacenan información personal de los usuarios
+- **Perfiles de paseadores**: Incluyen detalles personales, experiencia y calificaciones según el tamaño del perro (pequeño/medio/grande) para asegurar compatibilidad con los tipos de perros.
 
-### 💰 **Virtual Wallet & Payments**
-- **Flexible Payment Methods**: Clients can load funds using credit/debit cards, PayPal, and bank transfers.
-- **Payment Holding**: Payments are securely held until the walk is completed, with walkers able to transfer funds to their bank accounts.
+### 💰 **Monedero virtual y pagos**
+- **Métodos de pago flexibles**: Los clientes pueden cargar fondos mediante tarjetas de crédito/débito, PayPal y transferencias bancarias.
+- **Retención de pagos**: Los pagos se mantienen de forma segura hasta que el paseo se complete, con los paseadores pudiendo transferir los fondos a sus cuentas bancarias.
 
-### 📍 **Real-time Walk Tracking**
-- **Location Tracking**: Clients can track the walker’s real-time location during walks for peace of mind and transparency.
-- **Walk Completion**: After each walk, clients receive a notification to rate the service, and payments are processed securely.
+### 📍 **Rastreo en tiempo real de los paseos**
+- **Rastreo de ubicación**: Los clientes pueden rastrear la ubicación en tiempo real del paseador durante el paseo para tranquilidad y transparencia.
+- **Finalización del paseo**: Después de cada paseo, los clientes reciben una notificación para calificar el servicio y los pagos se procesan de manera segura.
 
-### ⭐ **Ratings & Reviews**
-- **Reputation System**: Clients and walkers can rate each other, contributing to a trustworthy community.
-- **Feedback & Ratings**: Reviews help maintain high-quality service and offer valuable feedback for improvement.
+### ⭐ **Calificaciones y reseñas**
+- **Sistema de reputación**: Los clientes y paseadores pueden calificarse mutuamente, lo que contribuye a una comunidad confiable.
+- **Retroalimentación y calificaciones**: Las reseñas ayudan a mantener un servicio de alta calidad y brindan retroalimentación valiosa para mejorar.
 
-## Technologies
+## Tecnologías
 
-### **Frontend Development**
-- **Flutter** </> : A powerful framework for building cross-platform mobile apps for both iOS and Android. Ensures fast and responsive user interfaces, providing a smooth experience for all users.
+### **Desarrollo Frontend**
+- **Flutter** </> : Un marco poderoso para construir aplicaciones móviles multiplataforma tanto para iOS como para Android. Garantiza interfaces de usuario rápidas y receptivas, proporcionando una experiencia fluida para todos los usuarios.
 
 <img src="https://storage.googleapis.com/cms-storage-bucket/4fd0db61df0567c0f352.png" alt="Flutter Logo" height="100"/>
 
-
-### **Backend Development**
-- **Supabase** ⛃ : An open-source backend-as-a-service (BaaS) providing database storage, authentication, and real-time capabilities. It simplifies backend management, scaling, and security without the need to build from scratch.
+### **Desarrollo Backend**
+- **Supabase** ⛃ : Un servicio de backend de código abierto (BaaS) que proporciona almacenamiento de bases de datos, autenticación y capacidades en tiempo real. Simplifica la gestión del backend, el escalado y la seguridad sin la necesidad de construir desde cero.
 
 <img src="https://raw.githubusercontent.com/supabase/supabase/master/packages/common/assets/images/supabase-logo-wordmark--dark.png" alt="Supabase Logo" height="100"/>
 
+### **Autenticación y seguridad**
+- **OAuth** 🔐 : Autenticación segura y escalable, que permite inicios de sesión en redes sociales y gestión de sesiones basada en tokens.
+- **JWT Tokens** 🔑 : Los JSON Web Tokens se usarán para gestionar sesiones de forma segura, permitiendo autenticación sin estado en múltiples plataformas y mejorando la escalabilidad.
 
-### **Authentication & Security**
-- **OAuth** 🔐 : Secure and scalable authentication, allowing for social media logins and token-based session management.
-- **JWT Tokens** 🔑 : JSON Web Tokens will be used to manage sessions securely, allowing stateless authentication across multiple platforms and improving scalability.
-
-<img src="https://oauth.net/images/oauth-logo-square.png" alt="OAuth Logo" height="100"/> 
-
+<img src="https://oauth.net/images/oauth-logo-square.png" alt="OAuth Logo" height="100"/>
 
 ---
 
-### Benefits of This Approach
+### Beneficios de este enfoque
 
-1. **Ease of Use**: The platform will provide a user-friendly, easy-to-navigate experience, ensuring both dog owners and walkers can quickly manage their accounts and requests.
-2. **Security**: With OAuth and JWT-based session handling, the platform ensures user privacy and data protection.
-3. **Scalability**: By utilizing **Flutter** and **Supabase**, the platform can easily scale to accommodate more users as the service grows.
+1. **Facilidad de uso**: La plataforma proporcionará una experiencia fácil de usar y fácil de navegar, asegurando que tanto los propietarios de perros como los paseadores puedan gestionar rápidamente sus cuentas y solicitudes.
+2. **Seguridad**: Con OAuth y gestión de sesiones basada en JWT, la plataforma asegura la privacidad del usuario y la protección de los datos.
+3. **Escalabilidad**: Al utilizar **Flutter** y **Supabase**, la plataforma puede escalar fácilmente para acomodar a más usuarios a medida que el servicio crece.
