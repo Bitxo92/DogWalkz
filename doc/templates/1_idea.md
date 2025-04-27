@@ -2,7 +2,7 @@
 
 ## Resumen
 
-DogWalkz conecta a los propietarios de perros con paseadores, ofreciendo un servicio confiable y intuitivo para reservar, rastrear y gestionar los paseos de perros. La plataforma garantiza seguridad, comodidad y facilidad de uso, lo que la convierte en ideal para los dueños de mascotas que necesitan ayuda para cuidar a sus perros. El proyecto no solo se enfocará en las etapas de planificación y diseño, sino que también entregará una aplicación móvil completamente funcional y multiplataforma.
+DogWalkz conecta a los propietarios de perros con paseadores, ofreciendo un servicio confiable e intuitivo para reservar, rastrear y gestionar los paseos de perros. La plataforma garantiza seguridad, comodidad y facilidad de uso, lo que la convierte en ideal para los dueños de mascotas que necesitan ayuda para cuidar a sus perros. El proyecto no solo se enfocará en las etapas de planificación y diseño, sino que también entregará una aplicación móvil completamente funcional y multiplataforma.
 
 El objetivo principal de DogWalkz es proporcionar una solución confiable y fácil de usar para los propietarios de perros que necesitan asistencia para pasear a sus mascotas. Está dirigida a dos grupos principales de usuarios: dueños de perros ocupados que pueden tener dificultades para encontrar tiempo para los paseos diarios y paseadores profesionales que buscan conectarse con nuevos clientes. Este servicio encaja perfectamente en contextos urbanos y suburbanos, donde la tenencia de mascotas es alta y la demanda de servicios de cuidado de mascotas continúa creciendo.
 
