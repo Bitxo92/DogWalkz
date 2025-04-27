@@ -128,7 +128,7 @@ DogWalkz is designed to be intuitive and simple for both dog owners and professi
 ## Sobre el autor
 
 My name is **Alejandro Patiño**, a passionate junior developer specializing in **multiplatform mobile development**.  
-My main strength is creating fast, scalable, and intuitive apps using **Flutter Framework**, which enables me to develop for both native Android and iOS apps from a single codebase.
+My main strength is creating fast, scalable, and intuitive apps using **Flutter Framework**, which enables me to develop native apps for both Android and iOS from a single codebase.
 
 Currently, I am working as an intern at [QBitDynamics](https://qbitdynamics.com/), where I continue expanding my knowledge in real-world mobile projects.  
 I have a strong focus on creating clean well documented code, prioritizing the development of intuitive, user-centric UI/UX designs to ensure a seamless and engaging experience.
