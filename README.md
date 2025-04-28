@@ -1,81 +1,83 @@
 # Proyecto fin de ciclo
-Welcome to DogWalkz 🐾 — a platform designed for effortless dog walking!
+¡Bienvenido a DogWalkz 🐾 — una plataforma diseñada para programar paseos de perros sin esfuerzo!
+
 
 ## Descripción
 
-**DogWalkz** is a mobile application that connects dog owners with professional dog walkers in a secure, simple, and intuitive way. It offers easy registration, real-time walk tracking, a secure payment system, and a review-based community to ensure high service quality. Designed for busy pet owners and professional walkers, DogWalkz streamlines the process of managing dog walks safely and transparently.  
-Built with modern technologies like Flutter, Supabase, and OAuth, the app is cross-platform and multilingual, making it accessible to a global audience.  
-DogWalkz doesn’t just solve a real need, it also opens opportunities for a scalable business through commissions and premium services.
+**DogWalkz** es una aplicación móvil que conecta a dueños de perros con paseadores profesionales de manera segura, sencilla e intuitiva. Ofrece un registro fácil, seguimiento de paseos en tiempo real, un sistema de pagos seguro y una comunidad basada en reseñas para garantizar un servicio de alta calidad. Diseñada para dueños de mascotas ocupados y paseadores profesionales, DogWalkz simplifica el proceso de gestionar paseos de perros de forma segura y transparente.  
+Construida con tecnologías modernas como Flutter, Supabase y OAuth, la app es multiplataforma y multilingüe, lo que la hace accesible para una audiencia global.  
+DogWalkz no solo resuelve una necesidad real, sino que también abre oportunidades para un negocio escalable a través de comisiones y servicios premium.
+
 
 ## Instalación / Puesta en marcha
 
-### 1. Install Flutter SDK
+### 1. Instalar SDK de Flutter
 
-First, you need to install Flutter on your machine.
+Primero, debemos instalar Flutter en nuestra máquina.
 
 - **Windows**:
-  1. Download the latest stable Flutter SDK from the [official website](https://flutter.dev/docs/get-started/install).
-  2. Extract the zip file and place it in a desired location (e.g., `C:\src\flutter`).
-  3. Add Flutter to your system environment variables:
-     - Search "Environment Variables" in Windows.
-     - Edit the `Path` variable and add the full path to the `flutter/bin` directory.
-  4. Run the following in a terminal to verify:
+1. Descarga la última versión estable del SDK de Flutter desde el [sitio web oficial](https://flutter.dev/docs/get-started/install).
+2. Extrae el archivo zip y colócalo en la ubicación deseada (por ejemplo, `C:\src\flutter`).
+3. Agrega Flutter a las variables de entorno del sistema:
+   - Busca "Variables de Entorno" en Windows.
+   - Edita la variable `Path` y añade la ruta completa al directorio `flutter/bin`.
+4. Ejecuta lo siguiente en una terminal para verificar:
      ```bash
      flutter doctor
      ```
 
 - **macOS**:
-  1. Install Flutter via Homebrew:
+  1. Instalar Flutter via Homebrew:
      ```bash
      brew install --cask flutter
      ```
-     Or download manually from [Flutter downloads](https://flutter.dev/docs/get-started/install/macos).
+    O realiza la descarga manualmente desde [Flutter downloads](https://flutter.dev/docs/get-started/install/macos).
 
-  2. Verify installation:
+  2. Verificar Instalación:
      ```bash
      flutter doctor
      ```
 
 - **Linux**:
-  1. Download the latest Flutter SDK from [Flutter downloads](https://flutter.dev/docs/get-started/install/linux).
-  2. Extract the tar file:
+  1. Descarga la última versión estable del SDK de Flutter desde [Flutter downloads](https://flutter.dev/docs/get-started/install/linux).
+  2. Extrae el fichero tar:
      ```bash
      tar xf flutter_linux_*.tar.xz
      ```
-  3. Add Flutter to your PATH:
+  3. Añade Flutter a la variable `Path`:
      ```bash
      export PATH="$PATH:`pwd`/flutter/bin"
      ```
-  4. Verify installation:
+  4. Verificar la instalación:
      ```bash
      flutter doctor
      ```
 
 ---
 
-### 2. Install Additional Requirements
+### 2. Instalar requisitos adicionales
 
-- Install an editor like **VS Code** or **Android Studio**.
-- For mobile development:
-  - Install Android Studio and set up the Android SDK.
-  - For iOS development (macOS only): Install Xcode.
-- Install the Flutter and Dart plugins in your IDE.
-- Accept Android licenses by running:
+- Instala un editor como **VS Code** o **Android Studio**.
+- Para el desarrollo móvil:
+  - Instala Android Studio y configura el SDK de Android.
+  - Para el desarrollo en iOS (solo en macOS): Instala Xcode.
+- Instala los complementos de Flutter y Dart en tu IDE.
+- Acepta las licencias de Android ejecutando:
   ```bash
   flutter doctor --android-licenses
 
   ```
 ---
-### 3. Clone the DogWalkz Repository
-You can clone the project using **HTTPS** or **SSH**:
+### 3. Clonar el Repositorio Dogwalkz
+Se puede clonar por **HTTPS** o **SSH**:
 
-- **Using HTTPS**:
+- **Via HTTPS**:
 
     ``` bash
     git clone https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino Dogwalkz
     cd Dogwalkz
     ```
-- **Using SSH**:
+- **Via SSH**:
 
     ``` bash
     git clone git@gitlab.com:iesleliadoura/DAM2/alejandro-manuel-patino Dogwalkz
@@ -83,60 +85,63 @@ You can clone the project using **HTTPS** or **SSH**:
     ```
 ---
 
-### 4. Get Dependencies
-Install all the required Flutter packages:
+### 4. Obtener dependencias
+Instala todos los paquetes requeridos de Flutter:
 ``` bash
 flutter pub get
 ```
 ---
-### 5. Run the app
-To run the app on a device or emulator:
+### 5. Ejecutar la aplicación
+Para ejecutar la aplicación en un dispositivo o emulador:
 
 ``` bash
 flutter run
 ```
 ---
-### 6. Verify Setup
-Finally, check that everything is installed correctly:
+### 6. Verificar la configuración
+Finalmente, verifica que todo esté instalado correctamente:
 ``` bash
 flutter doctor
 ```
-Resolve any pending issues if needed.
+Resuelve cualquier problema pendiente si es necesario.
+
 
 
 ## Uso
-DogWalkz is designed to be intuitive and simple for both dog owners and professional dog walkers.
+DogWalkz está diseñado para ser intuitivo y sencillo tanto para dueños de perros como para paseadores profesionales.
 
-- **Dog Owners**:
-  1. Register or log in to the app.
-  2. Create a user profile 
-  3. Add your dog's information (name, breed, size, sociability).
-  4. Book a walk, track your dog’s walk in real-time, and pay securely after completion.
-  5. Rate and review the walker after the walk.
+- **Dueños de perros**:
+  1. Regístrate o inicia sesión en la aplicación.
+  2. Crea tu perfil de usuario.
+  3. Agrega la información de tu perro (nombre, raza, tamaño, sociabilidad).
+  4. Reserva un paseo, sigue el recorrido de tu perro en tiempo real y paga de forma segura al finalizar.
+  5. Califica y deja una reseña del paseador después del paseo.
 
-- **Dog Walkers**:
-  1. Register or log in to the app.
-  2. Set up your walker profile by activating the corresponding option in your user profile and adding the required fields: experience, preferred dog sizes, ID...
-  3. Accept walk requests from dog owners.
-  4. Start and complete the walk while being tracked for transparency.
-  5. Receive payment once the walk is completed and reviewed.
+- **Paseadores de perros**:
+  1. Regístrate o inicia sesión en la aplicación.
+  2. Configura tu perfil de paseador activando la opción correspondiente en tu perfil de usuario y completando los campos requeridos: experiencia, tamaños de perros preferidos, identificación...
+  3. Acepta solicitudes de paseo de los dueños de perros.
+  4. Inicia y completa el paseo mientras eres rastreado para mayor transparencia.
+  5. Recibe el pago una vez que el paseo sea completado y revisado.
 
-*Note*: Make sure you have funds in your virtual wallet and your profile properly completed before booking or accepting walks.
+*Nota*: Asegúrate de tener fondos en tu billetera virtual y de que tu perfil esté debidamente completado antes de reservar o aceptar paseos.
+
 
 ## Sobre el autor
 
-My name is **Alejandro Patiño**, a passionate junior developer specializing in **multiplatform mobile development**.  
-My main strength is creating fast, scalable, and intuitive apps using **Flutter Framework**, which enables me to develop native apps for both Android and iOS from a single codebase.
+Mi nombre es **Alejandro Patiño**, soy un desarrollador junior especializado en **desarrollo móvil multiplataforma**.  
+Mi principal fortaleza es crear aplicaciones rápidas, escalables e intuitivas utilizando **Flutter Framework**, lo que me permite desarrollar aplicaciones nativas, tanto para Android como iOS desde una única base de código.
 
-Currently, I am working as an intern at [QBitDynamics](https://qbitdynamics.com/), where I continue expanding my knowledge in real-world mobile projects.  
-I have a strong focus on creating clean well documented code, prioritizing the development of intuitive, user-centric UI/UX designs to ensure a seamless and engaging experience.
+Actualmente, estoy trabajando como alumno en prácticas en [QBitDynamics](https://qbitdynamics.com/), donde sigo ampliando mis conocimientos en proyectos móviles.  
+Tengo un fuerte enfoque en crear código limpio y bien documentado, priorizando el desarrollo de diseños UI/UX intuitivos para garantizar una experiencia fluida y atractiva.
 
-I chose to develop **DogWalkz** because it combines my love for coding with solving real everyday problems. Pet services are growing rapidly, and I believe this app offers a valuable, scalable solution in a market with high demand.
+Elegí desarrollar **DogWalkz** porque combina mi amor por la programación con la solución de problemas reales cotidianos. Los servicios para mascotas están creciendo rápidamente, y creo que esta aplicación ofrece una solución valiosa y escalable en un mercado de alta demanda.
 
-I am currently based in **Ribeira, Spain**, and open to new opportunities and collaborations.  
+Actualmente vivo en **Ribeira, España**, y estoy abierto a nuevas oportunidades y colaboraciones.
+ 
 
 
-You can contact me at:
+Puedes contactarme en:
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/alejandro-m-pati%C3%B1o-garcia-41b000309/)
 [![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:alexpatino1992@gmail.com)
@@ -146,9 +151,10 @@ You can contact me at:
 
 ## Licencia
 
-This software is **proprietary**. All rights are reserved by the author. You may not use, modify, distribute, or copy the software without explicit permission from the author.
+Este software es **propietario**. Todos los derechos están reservados por el autor. No se permite utilizar, modificar, distribuir ni copiar el software sin el permiso explícito del autor.
 
-For further details, please refer to the [LICENSE](LICENSE) file.
+Para más detalles, consulta el archivo [LICENSE](LICENSE).
+
 
 
 ## Índice
