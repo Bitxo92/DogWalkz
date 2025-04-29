@@ -55,4 +55,5 @@ El enfoque de marketing de **DogWalkz** se centrará en las **redes sociales**, 
 
 El modelo de negocio se basará en un sistema de **comisiones** por cada paseo realizado, lo que proporcionará ingresos continuos con cada transacción. Además, se buscarán **patrocinios externos** de marcas de alimentos para perros, veterinarios y otras empresas del sector de las mascotas, lo que permitirá generar ingresos adicionales sin comprometer la accesibilidad de la plataforma. También se plantea en un futuro ofrecer **servicios premium** para usuarios que deseen acceder a beneficios adicionales, como paseadores exclusivos o funciones avanzadas en la aplicación.
 
-> [!Note]Este modelo es flexible y escalable, lo que permitirá que la plataforma crezca con el tiempo, adaptándose a las necesidades de los usuarios y explorando nuevas fuentes de ingresos conforme se amplíe la base de clientes.
+> [!NOTE] 
+> Este modelo es flexible y escalable, lo que permitirá que la plataforma crezca con el tiempo, adaptándose a las necesidades de los usuarios y explorando nuevas fuentes de ingresos conforme se amplíe la base de clientes.
