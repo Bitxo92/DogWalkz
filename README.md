@@ -21,12 +21,12 @@ DogWalkz no solo resuelve una necesidad real, sino que también abre oportunidad
 Primero, debemos instalar Flutter en nuestra máquina.
 
 - **Windows**:
-1. Descarga la última versión estable del SDK de Flutter desde el [sitio web oficial](https://flutter.dev/docs/get-started/install).
-2. Extrae el archivo zip y colócalo en la ubicación deseada (por ejemplo, `C:\src\flutter`).
-3. Agrega Flutter a las variables de entorno del sistema:
-   - Busca "Variables de Entorno" en Windows.
-   - Edita la variable `Path` y añade la ruta completa al directorio `flutter/bin`.
-4. Ejecuta lo siguiente en una terminal para verificar:
+  1. Descarga la última versión estable del SDK de Flutter desde el [sitio web oficial](https://flutter.dev/docs/get-started/install).
+  2. Extrae el archivo zip y colócalo en la ubicación deseada (por ejemplo, `C:\src\flutter`).
+  3. Agrega Flutter a las variables de entorno del sistema:
+      - Busca "Variables de Entorno" en Windows.
+      - Edita la variable `Path` y añade la ruta completa al directorio `flutter/bin`.
+  4. Ejecuta lo siguiente en una terminal para verificar:
      ```bash
      flutter doctor
      ```
