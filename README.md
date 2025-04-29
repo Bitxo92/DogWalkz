@@ -129,7 +129,7 @@ DogWalkz está diseñado para ser intuitivo y sencillo tanto para dueños de per
   4. Inicia y completa el paseo mientras eres rastreado para mayor transparencia.
   5. Recibe el pago una vez que el paseo sea completado y revisado.
 
-*Nota*: Asegúrate de tener fondos en tu billetera virtual y de que tu perfil esté debidamente completado antes de reservar o aceptar paseos.
+> [!NOTE] Asegúrate de tener fondos en tu monedero virtual y de que tu perfil esté debidamente completado antes de reservar o aceptar paseos.
 
 
 ## Sobre el autor
