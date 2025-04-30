@@ -1,0 +1,891 @@
+import 'package:dogwalkz/main.dart';
+import 'package:dogwalkz/services/language_service.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:ionicons/ionicons.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final _verificationDocumentController = TextEditingController();
+  String? _verificationStatus;
+  final _supabase = Supabase.instance.client;
+  final _formKey = GlobalKey<FormState>();
+  final _picker = ImagePicker();
+
+  File? _localImage;
+  Map<String, dynamic> _profileData = {};
+  Map<String, dynamic> _walkerProfileData = {};
+  bool _isLoading = true;
+  bool _isSaving = false;
+  bool _isEnglish = true;
+  bool _notificationsEnabled = true;
+
+  // Controllers
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _streetController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _stateController = TextEditingController();
+  final _postalCodeController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _docIdController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _dobController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _certificationNumberController = TextEditingController();
+
+  /// Initializes the state of the ProfilePage widget.
+  @override
+  void initState() {
+    super.initState();
+    _loadLanguagePreference();
+    _loadProfile();
+  }
+
+  /// Loads the user's profile data from the Supabase database.
+  Future<void> _loadProfile() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final response =
+          await _supabase.from('users').select().eq('id', userId).maybeSingle();
+
+      if (response != null) {
+        setState(() {
+          _profileData = response;
+          _firstNameController.text = response['first_name'] ?? '';
+          _lastNameController.text = response['last_name'] ?? '';
+          _emailController.text = response['email'] ?? '';
+          _phoneController.text = response['phone'] ?? '';
+          _dobController.text = response['date_of_birth']?.toString() ?? '';
+
+          final address = response['address'];
+          if (address is Map) {
+            _streetController.text = address['street'] ?? '';
+            _cityController.text = address['city'] ?? '';
+            _stateController.text = address['state'] ?? '';
+            _postalCodeController.text = address['postal_code'] ?? '';
+            _countryController.text = address['country'] ?? '';
+          }
+
+          _verificationStatus = response['verification_status'];
+          _verificationDocumentController.text =
+              response['verification_document_url'] ?? '';
+
+          _notificationsEnabled =
+              response['push_notifications_enabled'] ?? true;
+
+          if (response['is_walker'] == true) {
+            _loadWalkerProfile(userId);
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading profile: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// Loads the user's language preference from the LanguageService.
+  Future<void> _loadLanguagePreference() async {
+    final savedLanguage = await LanguageService.getLanguage();
+    if (savedLanguage != null) {
+      setState(() {
+        _isEnglish = savedLanguage == 'en';
+      });
+    }
+  }
+
+  /// Loads the walker's profile data from the Supabase database.
+  Future<void> _loadWalkerProfile(String userId) async {
+    try {
+      final response =
+          await _supabase
+              .from('walker_profiles')
+              .select()
+              .eq('user_id', userId)
+              .maybeSingle();
+
+      if (response != null) {
+        setState(() {
+          _walkerProfileData = response;
+          _bioController.text = response['bio'] ?? '';
+
+          _experienceController.text =
+              response['experience_years']?.toString() ?? '';
+          _certificationNumberController.text =
+              response['certification_number'] ?? '';
+          _docIdController.text = response['doc_id'] ?? '';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading walker profile: $e');
+    }
+  }
+
+  /// Allows the user to select an image from their device's gallery, and then
+  /// uploads it to the Supabase storage bucket. The image is resized to a
+  /// maximum width and height of 800px, and the image quality is set to 80%.
+  ///
+  /// If the user doesn't select an image, the function does nothing.
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 80,
+      );
+      if (pickedFile == null) return;
+
+      setState(() => _localImage = File(pickedFile.path));
+      await _uploadImage(_localImage!);
+    } catch (e) {
+      _showError('Image selection failed: ${e.toString()}');
+    }
+  }
+
+  /// Uploads a user's profile image to Supabase storage and updates the user's profile with the image URL.
+  ///
+  /// This method first retrieves the current user's ID from the Supabase authentication service.
+  /// If the user ID is not found, the method returns early. The image file is then read into bytes,
+  /// and a filename is generated using the user's ID and the image file's extension.
+  ///
+  /// The image bytes are uploaded to the 'profile-pictures' bucket in Supabase storage with the option
+  /// to upsert (this means it will overwrite existing files with the same name). After a successful upload, the public URL
+  /// of the uploaded image is obtained and the user's profile in the 'users' table is updated with this
+  /// URL. The local profile data state is also updated with the new image URL.
+  Future<void> _uploadImage(File image) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final fileExt = image.path.split('.').last;
+      final fileName = '${userId}_profile.$fileExt';
+      final fileBytes = await image.readAsBytes();
+
+      await _supabase.storage
+          .from('profile-pictures')
+          .upload(
+            fileName,
+            File(image.path),
+            fileOptions: FileOptions(
+              upsert: true,
+              contentType: 'image/${fileExt == 'jpg' ? 'jpeg' : fileExt}',
+            ),
+          );
+
+      final imageUrl = _supabase.storage
+          .from('profile-pictures')
+          .getPublicUrl(fileName);
+
+      await _supabase
+          .from('users')
+          .update({
+            'profile_picture_url': imageUrl,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', userId);
+
+      setState(() {
+        _profileData['profile_picture_url'] = imageUrl;
+        _localImage = image;
+      });
+    } catch (e) {
+      _showError('Upload failed: ${e.toString()}');
+      debugPrint('Image upload error: $e');
+    }
+  }
+
+  /// Saves the user's profile information to the Supabase database.
+  ///
+  /// This method first validates the form data and ensures that it is correct.
+  /// If the form is valid, it sets the [_isSaving] state to true, retrieves
+  /// the current user's ID, and constructs an address map from the input fields.
+  ///
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final address = {
+        'street': _streetController.text.trim(),
+        'city': _cityController.text.trim(),
+        'state': _stateController.text.trim(),
+        'postal_code': _postalCodeController.text.trim(),
+        'country': _countryController.text.trim(),
+      };
+
+      await _supabase.from('users').upsert({
+        'id': userId,
+        'first_name': _firstNameController.text.trim(),
+        'last_name': _lastNameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'address': address,
+        'date_of_birth': _dobController.text.trim(),
+        'is_walker': _profileData['is_walker'] ?? false,
+        'notifications_enabled': _notificationsEnabled,
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+
+      if (_profileData['is_walker'] == true) {
+        await _supabase.from('walker_profiles').upsert({
+          'user_id': userId,
+          'bio': _bioController.text.trim(),
+          'doc_id': _docIdController.text.trim(),
+          'experience_years': int.tryParse(_experienceController.text),
+          'certification_number': _certificationNumberController.text.trim(),
+          'can_walk_small': _walkerProfileData['can_walk_small'] ?? true,
+          'can_walk_medium': _walkerProfileData['can_walk_medium'] ?? true,
+          'can_walk_large': _walkerProfileData['can_walk_large'] ?? false,
+          'has_dangerous_breed_certification':
+              _walkerProfileData['has_dangerous_breed_certification'] ?? false,
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+      }
+    } catch (e) {
+      _showError('Save failed: ${e.toString()}');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  /// Displays an error message in the debug console.
+  /// was neccessary while debugging the app.
+  void _showError(String message) {
+    debugPrint("Error: $message");
+  }
+
+  /// Displays a profile image or a placeholder icon.
+  Widget _buildProfileImage() {
+    return GestureDetector(
+      onTap: _pickImage,
+      child: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          CircleAvatar(
+            radius: 60,
+            backgroundColor: Colors.brown.shade100,
+            backgroundImage: _getProfileImage(),
+            child:
+                _shouldShowPlaceholder()
+                    ? const Icon(
+                      Ionicons.person_outline,
+                      size: 60,
+                      color: Colors.brown,
+                    )
+                    : null,
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.brown,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Ionicons.camera_outline,
+              size: 20,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Returns the profile image based on the local image or the URL from the database.
+  /// If no image is available, it returns null.
+  ImageProvider? _getProfileImage() {
+    if (_localImage != null) return FileImage(_localImage!);
+    if (_profileData['profile_picture_url'] != null) {
+      return NetworkImage(_profileData['profile_picture_url']);
+    }
+    return null;
+  }
+
+  /// Checks if a placeholder Image should be shown.
+  bool _shouldShowPlaceholder() {
+    return _localImage == null && _profileData['profile_picture_url'] == null;
+  }
+
+  /// Displays a date picker dialog to select the date of birth.
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _dobController.text = picked.toIso8601String().split('T')[0];
+      });
+    }
+  }
+
+  /// Builds the UI for the ProfilePage widget.
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF5E9D9),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5E9D9),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.myProfile),
+        titleTextStyle: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          fontFamily: GoogleFonts.comicNeue().fontFamily,
+        ),
+        centerTitle: true,
+
+        backgroundColor: Colors.brown,
+        leading: IconButton(
+          icon: const Icon(Ionicons.arrow_back_outline),
+          color: Colors.white,
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Center(child: _buildProfileImage()),
+              const SizedBox(height: 24),
+
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          AppLocalizations.of(context)!.personalInfo,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.brown,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _firstNameController,
+                              decoration: InputDecoration(
+                                labelText:
+                                    AppLocalizations.of(context)!.firstName,
+                                prefixIcon: const Icon(Ionicons.person_outline),
+                              ),
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _lastNameController,
+                              decoration: InputDecoration(
+                                labelText:
+                                    AppLocalizations.of(context)!.lastName,
+                              ),
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.email,
+                          prefixIcon: const Icon(Ionicons.mail_outline),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value?.isEmpty ?? true)
+                            return AppLocalizations.of(context)!.required;
+                          if (!value!.contains('@'))
+                            return AppLocalizations.of(context)!.emailInvalid;
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _phoneController,
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.phone,
+                          prefixIcon: Icon(Ionicons.call_outline),
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? AppLocalizations.of(context)!.required
+                                    : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _dobController,
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.dob,
+                          prefixIcon: const Icon(Ionicons.calendar_outline),
+                        ),
+                        readOnly: true,
+                        onTap: () => _selectDate(context),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? AppLocalizations.of(context)!.required
+                                    : null,
+                      ),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          AppLocalizations.of(context)!.address,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.brown,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _streetController,
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.street,
+                          prefixIcon: Icon(Ionicons.home_outline),
+                        ),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? AppLocalizations.of(context)!.required
+                                    : null,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: TextFormField(
+                              controller: _cityController,
+                              decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.city,
+                                prefixIcon: Icon(Ionicons.business_outline),
+                              ),
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: TextFormField(
+                              controller: _stateController,
+                              decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.state,
+                                prefixIcon: Icon(Ionicons.map_outline),
+                              ),
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: TextFormField(
+                              controller: _postalCodeController,
+                              decoration: InputDecoration(
+                                labelText:
+                                    AppLocalizations.of(context)!.postalCode,
+                                prefixIcon: Icon(Ionicons.code_outline),
+                              ),
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            flex: 3,
+                            child: TextFormField(
+                              controller: _countryController,
+                              decoration: InputDecoration(
+                                labelText:
+                                    AppLocalizations.of(context)!.country,
+                                prefixIcon: Icon(Ionicons.earth_outline),
+                              ),
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.registerWalker,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        secondary: const Icon(Ionicons.paw_outline),
+                        value: _profileData['is_walker'] ?? false,
+                        onChanged:
+                            (value) => setState(() {
+                              _profileData['is_walker'] = value;
+                              if (value) {
+                                _loadWalkerProfile(
+                                  _supabase.auth.currentUser!.id,
+                                );
+                              }
+                            }),
+                      ),
+                      if (_profileData['is_walker'] == true) ...[
+                        const Divider(),
+                        TextFormField(
+                          controller: _bioController,
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.bio,
+                            prefixIcon: Icon(Ionicons.document_text_outline),
+                          ),
+                          maxLines: 3,
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? AppLocalizations.of(context)!.required
+                                      : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _experienceController,
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.experience,
+                            prefixIcon: Icon(Ionicons.time_outline),
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value?.isEmpty ?? true)
+                              return AppLocalizations.of(context)!.required;
+                            final years = int.tryParse(value!);
+                            if (years == null || years < 0) return 'Invalid';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _docIdController,
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.nie,
+                            prefixIcon: Icon(Ionicons.card_outline),
+                          ),
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? AppLocalizations.of(context)!.required
+                                      : null,
+                        ),
+                        const SizedBox(height: 16),
+                        SwitchListTile(
+                          title: Text(AppLocalizations.of(context)!.walkSmall),
+                          secondary: const Icon(Ionicons.paw_outline, size: 20),
+                          value: _walkerProfileData['can_walk_small'] ?? true,
+                          onChanged:
+                              (value) => setState(() {
+                                _walkerProfileData['can_walk_small'] = value;
+                              }),
+                        ),
+                        SwitchListTile(
+                          title: Text(AppLocalizations.of(context)!.walkMedium),
+                          secondary: const Icon(Ionicons.paw_outline, size: 20),
+                          value: _walkerProfileData['can_walk_medium'] ?? true,
+                          onChanged:
+                              (value) => setState(() {
+                                _walkerProfileData['can_walk_medium'] = value;
+                              }),
+                        ),
+                        SwitchListTile(
+                          title: Text(AppLocalizations.of(context)!.walkLarge),
+                          secondary: const Icon(Ionicons.paw_outline, size: 20),
+                          value: _walkerProfileData['can_walk_large'] ?? false,
+                          onChanged:
+                              (value) => setState(() {
+                                _walkerProfileData['can_walk_large'] = value;
+                              }),
+                        ),
+                        SwitchListTile(
+                          title: Text(
+                            AppLocalizations.of(context)!.dangerousBreed,
+                          ),
+                          secondary: const Icon(Ionicons.warning_outline),
+                          value:
+                              _walkerProfileData['has_dangerous_breed_certification'] ??
+                              false,
+                          onChanged:
+                              (value) => setState(() {
+                                _walkerProfileData['has_dangerous_breed_certification'] =
+                                    value;
+                              }),
+                        ),
+                        if (_walkerProfileData['has_dangerous_breed_certification'] ==
+                            true) ...[
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _certificationNumberController,
+                            decoration: InputDecoration(
+                              labelText:
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.certificationNumber,
+                              prefixIcon: Icon(Ionicons.ribbon_outline),
+                            ),
+                            validator:
+                                (value) =>
+                                    value?.isEmpty ?? true
+                                        ? 'Required when certification is enabled'
+                                        : null,
+                          ),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          AppLocalizations.of(context)!.settings,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.brown,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ListTile(
+                        title: Text(AppLocalizations.of(context)!.language),
+                        subtitle: Text(
+                          _isEnglish
+                              ? AppLocalizations.of(context)!.english
+                              : AppLocalizations.of(context)!.spanish,
+                        ),
+                        leading: const Icon(Ionicons.language_outline),
+                        trailing: const Icon(Ionicons.chevron_forward_outline),
+                        onTap: () => _showLanguageDialog(context),
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.notifications,
+                        ),
+                        subtitle: Text(
+                          AppLocalizations.of(context)!.enableNotifications,
+                        ),
+                        secondary: const Icon(Ionicons.notifications_outline),
+                        value: _notificationsEnabled,
+                        onChanged: (value) {
+                          setState(() {
+                            _notificationsEnabled = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isSaving ? null : _saveProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.brown,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child:
+                      _isSaving
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                            AppLocalizations.of(context)!.saveProfile,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Displays a dialog to select the language.
+  Future<void> _showLanguageDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.selectLanguage),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<bool>(
+                title: Text(AppLocalizations.of(context)!.english),
+                value: true,
+                groupValue: _isEnglish,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  _changeLanguage(value!);
+                },
+              ),
+              RadioListTile<bool>(
+                title: Text(AppLocalizations.of(context)!.spanish),
+                value: false,
+                groupValue: _isEnglish,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  _changeLanguage(value!);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Changes the app's language based on the user's selection.
+  /// It updates the app's locale and saves the selected language to local storage.
+  void _changeLanguage(bool isEnglish) async {
+    setState(() {
+      _isEnglish = isEnglish;
+    });
+    final locale = isEnglish ? const Locale('en') : const Locale('es');
+    MyApp.of(context)?.setLocale(locale);
+    await LanguageService.saveLanguage(isEnglish ? 'en' : 'es');
+  }
+
+  /// Disposes of the controllers to free up resources.
+  /// This is important to prevent memory leaks and ensure that the app runs efficiently.
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _streetController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _postalCodeController.dispose();
+    _countryController.dispose();
+    _docIdController.dispose();
+    _ageController.dispose();
+    _dobController.dispose();
+    _bioController.dispose();
+    _experienceController.dispose();
+    _certificationNumberController.dispose();
+    _verificationDocumentController.dispose();
+    super.dispose();
+  }
+}

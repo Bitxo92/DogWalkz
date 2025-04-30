@@ -1,0 +1,438 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:dogwalkz/models/dog.dart';
+import 'package:dogwalkz/repositories/dogs_repository.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+class AddEditDogPage extends StatefulWidget {
+  final Dog? dog;
+
+  const AddEditDogPage({super.key, this.dog});
+
+  @override
+  State<AddEditDogPage> createState() => _AddEditDogPageState();
+}
+
+class _AddEditDogPageState extends State<AddEditDogPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _dogsRepository = DogsRepository();
+  final _nameController = TextEditingController();
+  final _breedController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _specialInstructionsController = TextEditingController();
+  String _size = 'medium';
+  bool _isDangerousBreed = false;
+  bool _isSociable = true;
+  File? _selectedImage;
+  bool _isUploading = false;
+
+  /// Initializes the state of the widget.
+  @override
+  void initState() {
+    super.initState();
+    if (widget.dog != null) {
+      _nameController.text = widget.dog!.name;
+      _breedController.text = widget.dog!.breed;
+      if (widget.dog!.age != null) {
+        _ageController.text = widget.dog!.age.toString();
+      }
+      _specialInstructionsController.text =
+          widget.dog!.specialInstructions ?? '';
+      _size = widget.dog!.size;
+      _isDangerousBreed = widget.dog!.isDangerousBreed;
+      _isSociable = widget.dog!.isSociable;
+    }
+  }
+
+  /// Disposes of the controllers to free up resources.
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _breedController.dispose();
+    _ageController.dispose();
+    _specialInstructionsController.dispose();
+    super.dispose();
+  }
+
+  /// Allows the user to select an image from their device's gallery.
+  /// When the user selects an image, it is saved to the [_selectedImage]
+  /// variable, and the widget is rebuilt to display the selected image.
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  /// Builds the UI for the AddEditDogPage.
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5E9D9),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Ionicons.arrow_back_outline),
+          color: Colors.white,
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          widget.dog == null
+              ? AppLocalizations.of(context)!.addDog
+              : AppLocalizations.of(context)!.editDog,
+          style: TextStyle(
+            fontFamily: GoogleFonts.comicNeue().fontFamily,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.brown,
+        actions: [
+          if (widget.dog != null)
+            IconButton(
+              icon: const Icon(Ionicons.trash_outline, color: Colors.red),
+              onPressed: _confirmDelete,
+            ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: _pickImage,
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.brown.shade100,
+                      backgroundImage:
+                          _selectedImage != null
+                              ? FileImage(_selectedImage!)
+                              : widget.dog?.photoUrl != null
+                              ? NetworkImage(widget.dog!.photoUrl!)
+                              : null,
+                      child:
+                          _selectedImage == null && widget.dog?.photoUrl == null
+                              ? const Icon(
+                                Ionicons.camera_outline,
+                                size: 40,
+                                color: Colors.white,
+                              )
+                              : null,
+                    ),
+                    if (_selectedImage == null)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.brown,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Ionicons.camera_outline,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.dogName,
+                  labelStyle: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                    color: Colors.brown,
+                  ),
+                  prefixIcon: Icon(Ionicons.paw_outline, color: Colors.brown),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return AppLocalizations.of(context)!.required;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _breedController,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.dogBreed,
+                  labelStyle: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                    color: Colors.brown,
+                  ),
+                  prefixIcon: Icon(Ionicons.earth_outline, color: Colors.brown),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return AppLocalizations.of(context)!.required;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _ageController,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.dogAge,
+                  labelStyle: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                    color: Colors.brown,
+                  ),
+                  prefixIcon: Icon(
+                    Ionicons.calendar_outline,
+                    color: Colors.brown,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _size,
+                items:
+                    ['small', 'medium', 'large']
+                        .map(
+                          (size) => DropdownMenuItem(
+                            value: size,
+                            child: Text(
+                              _localizedSize(size, context),
+                              style: TextStyle(
+                                fontFamily: GoogleFonts.comicNeue().fontFamily,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                onChanged: (value) => setState(() => _size = value!),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.size,
+                  labelStyle: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                    color: Colors.brown,
+                  ),
+                  prefixIcon: Icon(Ionicons.scale_outline, color: Colors.brown),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                title: Text(
+                  AppLocalizations.of(context)!.dangerous,
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                  ),
+                ),
+                secondary: Icon(
+                  Ionicons.warning_outline,
+                  color: _isDangerousBreed ? Colors.red : Colors.brown,
+                ),
+                value: _isDangerousBreed,
+                onChanged: (value) => setState(() => _isDangerousBreed = value),
+                activeColor: Colors.red,
+              ),
+              SwitchListTile(
+                title: Text(
+                  AppLocalizations.of(context)!.sociable,
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                  ),
+                ),
+                secondary: Icon(
+                  Ionicons.people_outline,
+                  color: _isSociable ? Colors.green : Colors.brown,
+                ),
+                value: _isSociable,
+                onChanged: (value) => setState(() => _isSociable = value),
+                activeColor: Colors.green,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _specialInstructionsController,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.specialInstructions,
+                  labelStyle: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                    color: Colors.brown,
+                  ),
+                  prefixIcon: Icon(
+                    Ionicons.document_text_outline,
+                    color: Colors.brown,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isUploading ? null : _saveDog,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.brown,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child:
+                      _isUploading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                            widget.dog == null
+                                ? AppLocalizations.of(context)!.addDog
+                                : AppLocalizations.of(context)!.updateDog,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: GoogleFonts.comicNeue().fontFamily,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Validates the form and saves the dog information to the database.
+  Future<void> _saveDog() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isUploading = true);
+
+      String? photoUrl;
+      if (_selectedImage != null) {
+        photoUrl = await _dogsRepository.uploadDogPhoto(
+          widget.dog?.id ?? const Uuid().v4(),
+          File(_selectedImage!.path),
+        );
+      } else if (widget.dog != null) {
+        photoUrl = widget.dog!.photoUrl;
+      }
+
+      final dog = Dog(
+        id: widget.dog?.id ?? const Uuid().v4(),
+        ownerId: Supabase.instance.client.auth.currentUser!.id,
+        name: _nameController.text,
+        breed: _breedController.text,
+        age:
+            _ageController.text.isNotEmpty
+                ? int.tryParse(_ageController.text) ?? 0
+                : null,
+        size: _size,
+        isDangerousBreed: _isDangerousBreed,
+        isSociable: _isSociable,
+        specialInstructions:
+            _specialInstructionsController.text.isNotEmpty
+                ? _specialInstructionsController.text
+                : null,
+        photoUrl: photoUrl,
+        createdAt: widget.dog?.createdAt ?? DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      try {
+        if (widget.dog == null) {
+          await _dogsRepository.addDog(dog);
+        } else {
+          await _dogsRepository.updateDog(dog);
+        }
+        Navigator.pop(context);
+      } catch (e) {
+        setState(() => _isUploading = false);
+      }
+    }
+  }
+
+  /// Shows a confirmation dialog before deleting the dog.
+  /// If the user confirms, it deletes the dog from the database.
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(
+              AppLocalizations.of(context)!.deleteDog,
+              style: TextStyle(fontFamily: GoogleFonts.comicNeue().fontFamily),
+            ),
+            content: Text(
+              AppLocalizations.of(context)!.deleteDogMessage,
+              style: TextStyle(fontFamily: GoogleFonts.comicNeue().fontFamily),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  AppLocalizations.of(context)!.cancel,
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  AppLocalizations.of(context)!.delete,
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _dogsRepository.deleteDog(widget.dog!.id);
+        Navigator.pop(context);
+      } catch (e) {
+        debugPrint('Error deleting dog: $e');
+      }
+    }
+  }
+
+  /// This method localizes the size string based on the current locale.
+  /// It returns the localized string for the given size.
+  String _localizedSize(String size, BuildContext context) {
+    switch (size) {
+      case 'small':
+        return AppLocalizations.of(context)!.small;
+      case 'medium':
+        return AppLocalizations.of(context)!.medium;
+      case 'large':
+        return AppLocalizations.of(context)!.large;
+      default:
+        return size;
+    }
+  }
+}
