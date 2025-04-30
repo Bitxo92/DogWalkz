@@ -110,6 +110,13 @@ flutter doctor
 ```
 Resuelve cualquier problema pendiente si es necesario.
 
+> [!TIP]
+> Si surgen algún problema con algúna libreria tras clonar el repositorio,ejecute el siguiente comando en la terminal:
+ > ``` bash
+ > flutter build
+ > ```
+
+
 
 
 ## Uso
