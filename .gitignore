@@ -1,5 +1,0 @@
-# Ignore the .git file inside src/dogwalkz/ so it doesn`t track
-src/dogwalkz/.git
-
-# Ignore the docs directory inside src/dogwalkz/
-src/dogwalkz/docs/
