@@ -1,5 +1,5 @@
 # Proyecto fin de ciclo
-¡Bienvenido a DogWalkz 🐾 — una plataforma diseñada para programar paseos de perros sin esfuerzo!
+**¡Bienvenido a DogWalkz 🐾 — una plataforma diseñada para programar paseos para tus perros de forma fácil y cómoda**
 
 <p align="center">
   <img src="https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/raw/main/doc/img/DogWalkz-Intro.gif" alt="Dog Walkz Intro" style="width: auto; height: 300px;">
