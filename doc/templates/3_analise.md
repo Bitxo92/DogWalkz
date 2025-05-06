@@ -200,6 +200,35 @@ Dado que el proyecto se orienta al desarrollo de software, las interfaces extern
    - Monitoreo de rendimiento y análisis de uso.
 
 ---
+```mermaid
+timeline
+
+    Análisis de Requisitos : Reuniones con dueños de mascotas, además de paseadores profesionales para definir necesidades y expectativas.
+                              : Redacción de requisitos funcionales y no funcionales.
+
+    Diseño de la Aplicación : Diseño de la arquitectura general del sistema.
+                               : Creación de wireframes y prototipos de interfaz de usuario.
+                               : Definir el esquema de la base de datos en Supabase.
+
+    Desarrollo del Backend  : Configuración del entorno en Supabase.
+                               : Implementación de autenticación, estructura y funciones de la base de datos.
+
+    Desarrollo del Frontend : Construcción de la aplicación móvil en Flutter.
+                               : Integración con los servicios backend.
+                               : Implementación de funcionalidades clave según el tipo de usuario.
+
+    Pruebas y Validación    : Pruebas unitarias y de integración.
+                               : Testeo de usabilidad y experiencia de usuario.
+                               : Validación funcional con usuarios reales (beta cerrada).
+
+    Despliegue y Publicación : Configuración de pipelines CI/CD con GitHub Actions.
+                                : Publicación de la app en Google Play y App Store.
+
+    Mantenimiento y Soporte : Corrección de errores.
+                               : Soporte técnico a usuarios.
+                               : Monitoreo de rendimiento y análisis de uso.
+```
+
 
 ## Mejoras futuras
 
