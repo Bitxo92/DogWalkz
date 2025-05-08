@@ -212,6 +212,6 @@ Para más detalles, consulta el archivo [LICENSE](LICENSE).
 
 ### Repositorio del Proyecto
 
-- [ DogWalkz en GitLab](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/src/dogwalkz) — Accede al código fuente, documentación y recursos del proyecto.
+- [ DogWalkz en GitLab](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/tree/main/src/dogwalkz) — Accede al código fuente, documentación y recursos del proyecto.
 
 ---
