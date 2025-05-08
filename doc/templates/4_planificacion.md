@@ -1,11 +1,11 @@
-# FASE DE PLANIFICACIÓN DO PROXECTO
+# FASE DE PLANIFICACIÓN DEL PROYECTO
 
-## Obxectivos do proxecto
+## Objetivos del proyecto
 El objetivo principal de este proyecto es **desarrollar una aplicación móvil multiplataforma** que conecte a propietarios de mascotas con paseadores profesionales, 
 proporcionando una solución fácil y segura para la gestión de paseos.
 
 
-## Guía de planificación do proxecto
+## Guía de planificación del proyecto
 El proyecto se organiza en 7 fases principales, cada una con tareas definidas, recursos y tiempo estimado:
 
 1. [**Análisis de Requisitos**](#fase-1-análisis-de-requisitos)
@@ -16,7 +16,7 @@ El proyecto se organiza en 7 fases principales, cada una con tareas definidas, r
 6. [**Despliegue y Publicación**](#fase-6-despliegue-y-publicación)
 7. [**Mantenimiento y Soporte**](#fase-7-mantenimiento-y-soporte)
 
-## Metodoloxía
+## Metodología
 Para el desarrollo de este proyecto se empleará una **metodología de desarrollo incremental**, que permite construir el sistema de forma progresiva a través de entregas funcionales sucesivas.
 Este enfoque facilita avanzar por etapas, incorporando mejoras y nuevas funcionalidades sobre versiones anteriores que ya han sido validadas.
 
