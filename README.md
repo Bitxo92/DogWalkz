@@ -186,4 +186,32 @@ Para más detalles, consulta el archivo [LICENSE](LICENSE).
 
 ## Links
 
-> *TODO*: Enlaces externos y descripciones de estos enlaces que creas conveniente indicar aquí. Generalmente ya van a estar integrados con tu documentación, pero si requieres realizar un listado de ellos, este es el lugar.
+
+### Flutter
+
+- [ Instalación de Flutter](https://flutter.dev/docs/get-started/install) — Guía oficial para instalar Flutter en Windows, macOS y Linux.
+- [ Documentación de Flutter](https://docs.flutter.dev/) — Manual oficial para aprender Flutter y consultar referencias.
+- [ Pub.dev](https://pub.dev/) — Repositorio oficial de paquetes para Flutter y Dart.
+
+### Supabase
+
+- [ Supabase Docs](https://supabase.com/docs) — Aprende a usar Supabase como backend, autenticación y base de datos en tiempo real.
+
+### Entornos de Desarrollo
+
+- [ Visual Studio Code](https://code.visualstudio.com/) — Editor de código multiplataforma recomendado.
+- [ Plugins de Flutter y Dart para VS Code](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter) — Extensiones necesarias para desarrollar con Flutter.
+- [ Android Studio](https://developer.android.com/studio) — IDE completo para el desarrollo y emulación de apps Android.
+- [ Instalar SDK de Android](https://developer.android.com/studio/install) — Guía para instalar y configurar el SDK de Android.
+
+### Desarrollo iOS (solo macOS)
+
+- [ Instalación de Xcode](https://developer.apple.com/xcode/) — Requisito esencial para compilar y ejecutar apps en dispositivos Apple.
+
+
+
+### Repositorio del Proyecto
+
+- [ DogWalkz en GitLab](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/src/dogwalkz) — Accede al código fuente, documentación y recursos del proyecto.
+
+---
