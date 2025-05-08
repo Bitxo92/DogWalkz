@@ -190,28 +190,28 @@ Para más detalles, consulta el archivo [LICENSE](LICENSE).
 ### Flutter
 
 - [ Instalación de Flutter](https://flutter.dev/docs/get-started/install) — Guía oficial para instalar Flutter en Windows, macOS y Linux.
-- [ Documentación de Flutter](https://docs.flutter.dev/) — Manual oficial para aprender Flutter y consultar referencias.
+- [ Documentación de Flutter](https://docs.flutter.dev/) — Documentación Oficial de Flutter.
 - [ Pub.dev](https://pub.dev/) — Repositorio oficial de paquetes para Flutter y Dart.
 
 ### Supabase
 
-- [ Supabase Docs](https://supabase.com/docs) — Aprende a usar Supabase como backend, autenticación y base de datos en tiempo real.
+- [ Supabase Docs](https://supabase.com/docs) — Documentación de Supabase, necesario para crear el backend del proyecto.
 
 ### Entornos de Desarrollo
 
 - [ Visual Studio Code](https://code.visualstudio.com/) — Editor de código multiplataforma recomendado.
 - [ Plugins de Flutter y Dart para VS Code](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter) — Extensiones necesarias para desarrollar con Flutter.
-- [ Android Studio](https://developer.android.com/studio) — IDE completo para el desarrollo y emulación de apps Android.
+- [ Android Studio](https://developer.android.com/studio) — IDE para el desarrollo y emulación de apps Android.
 - [ Instalar SDK de Android](https://developer.android.com/studio/install) — Guía para instalar y configurar el SDK de Android.
 
 ### Desarrollo iOS (solo macOS)
 
-- [ Instalación de Xcode](https://developer.apple.com/xcode/) — Requisito esencial para compilar y ejecutar apps en dispositivos Apple.
+- [ Instalación de Xcode](https://developer.apple.com/xcode/) — IDE para el desarrollo de apps IOS.
 
 
 
 ### Repositorio del Proyecto
 
-- [ DogWalkz en GitLab](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/tree/main/src/dogwalkz) — Accede al código fuente, documentación y recursos del proyecto.
+- [ DogWalkz en GitLab](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/tree/main/src/dogwalkz) — código fuente del proyecto.
 
 ---
