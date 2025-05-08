@@ -298,7 +298,6 @@ pie
 > [!note] 
 >**Salarios**:  
 >   - **Programador**: 2.000 €/mes (salario medio júnior-mid en España).  
->   - **Programador-Diseñador UX/UI**: 1.500 €/mes (freelance).  
 >   - **Marketing**: 1.200 €/mes (freelance).  
 >   - **Atención al cliente**: 1.200 €/mes (media España).  
 >
