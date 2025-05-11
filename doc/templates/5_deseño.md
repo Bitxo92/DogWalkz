@@ -4,7 +4,7 @@
 
 ### Diagrama de Clases.
 
-![Diagrama de clases](/doc/img/dogwalkzUML.png)
+![Diagrama de clases](/doc/img/dogwalkz_UML_ClassDiagram.png)
 
 ### Casos de uso [descritos en fichas e/ou mediante esquemas; deben incluír os actores (tipos de usuarios) implicados en cada caso de uso].
 
