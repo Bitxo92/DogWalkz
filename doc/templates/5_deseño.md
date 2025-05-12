@@ -61,6 +61,9 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 
 ### Diagrama de Base de Datos.
 
+
+![Diagrama de base de datos](/doc/img/dogwalkz_DBDiagram.png)
+
 ### Diagrama de compoñentes software que constitúen o produto e de despregue.
 
 ### Diagrama de despliegue.
