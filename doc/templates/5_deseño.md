@@ -63,7 +63,8 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 
 ### Diagrama de compoñentes software que constitúen o produto e de despregue.
 
-### Diagrama de despregamento
+### Diagrama de despliegue.
+![Diagrama de despliegue](/doc/img/dogwalkz_DeploymentDiagram.png)
 
 ### Outros diagramas, esquemas ou documentacion (seguridade, redundancia, expliacións, configuracións...)
 
