@@ -60,7 +60,9 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 ![Login-Register Wireframe](/doc/img/Login_Register_Wireframe.png)
 
 #### Pantalla de Home.
-![Home Wireframe](/doc/img/Home_Wireframe.png)
+<img src="/doc/img/Home_Wireframe.png" alt="Home Wireframe" height="300">
+
+
 
 ### Diagrama de Base de Datos.
 La arquitectura de base de datos del sistema `DogWalkz` ha sido diseñada para sustentar una plataforma integral de gestión de servicios de paseo de perros, con un enfoque en la **escalabilidad**, la **integridad de los datos** y la **trazabilidad** de las operaciones. 
