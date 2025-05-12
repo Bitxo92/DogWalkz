@@ -57,10 +57,10 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 
 ### Deseño de interfaces de usuarios.
 #### Pantalla de Login/Registro.
-![Login-Register Wireframe](/doc/img/Login_Register_Wireframe.png)
+<img src="/doc/img/Login_Register_Wireframe.png" alt="Home Wireframe" height="500">
 
 #### Pantalla de Home.
-<img src="/doc/img/Home_Wireframe.png" alt="Home Wireframe" height="300">
+<img src="/doc/img/Home_Wireframe.png" alt="Login-Register Wireframe" height="500">
 
 
 
