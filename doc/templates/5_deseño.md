@@ -55,8 +55,9 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 
 ![Diagrama de casos de uso](/doc/img/dogwalkz_UseCaseDiagram.png)
 
-### Deseño de interfaces de usuarios [mockups ou diagramas...].
-> TODO: Add Mockups
+### Deseño de interfaces de usuarios.
+#### Login/Register.
+![Login-Register Wireframe](/doc/img/Login_Register_Wireframe.png)
 
 ### Diagrama de Base de Datos.
 La arquitectura de base de datos del sistema `DogWalkz` ha sido diseñada para sustentar una plataforma integral de gestión de servicios de paseo de perros, con un enfoque en la **escalabilidad**, la **integridad de los datos** y la **trazabilidad** de las operaciones. 
