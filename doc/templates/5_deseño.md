@@ -25,8 +25,32 @@ Finalmente, la **Comunicación con el Backend** se maneja a través de `Supabase
 ![Diagrama de clases](/doc/img/dogwalkz_UML_ClassDiagram.png)
 
 ### Casos de uso.
+
+
 El presente **diagrama de casos de uso** describe las principales interacciones entre los **usuarios** y el **sistema** de la aplicación **DogWalkz**, enfocándose en los procesos clave relacionados, como son la **autenticación de usuarios** o la **gestión de los paseos**.
-Este tipo de diagrama permite representar de forma clara y estructurada los **requerimientos funcionales** del sistema desde la perspectiva del **tipo de usuario**.
+
+En este contexto, se identifican dos **actores principales**, cada uno con diferentes necesidades y formas de interacción con el sistema:
+
+- **Cliente (dueño del perro):**
+  - Registrarse y autenticarse en la aplicación.
+  - Solicitar paseos para su perro.
+  - Consultar el historial de paseos.
+  - Cancelar paseos programados.
+  - Marcar paseos como completados.
+  - Valorar al paseador tras el servicio.
+
+
+- **Paseador:**
+  - Registrarse y autenticarse en la aplicación.
+  - Ver solicitudes de paseo disponibles.
+  - Aceptar o rechazar paseos.
+  - Iniciar el paseo
+  - Cancelar paseos programados.
+  - Gestionar su agenda de paseos.
+
+
+Este tipo de diagrama permite representar de forma clara y estructurada los **requerimientos funcionales** del sistema desde la perspectiva del **tipo de usuario**, facilitando la comprensión de los flujos de interacción y apoyando el diseño centrado en el usuario.
+
 
 
 ![Diagrama de casos de uso](/doc/img/dogwalkz_UseCaseDiagram.png)
