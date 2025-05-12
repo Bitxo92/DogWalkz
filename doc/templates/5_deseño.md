@@ -62,6 +62,9 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 #### Pantalla de Home.
 <img src="/doc/img/Home_Wireframe.png" alt="Login-Register Wireframe" height="500">
 
+#### Pantalla de Monedero.
+<img src="/doc/img/Wallet_Wireframe.png" alt="Wallet Wireframe" height="500">
+
 
 
 ### Diagrama de Base de Datos.
@@ -84,7 +87,7 @@ El cliente móvil se ejecuta en dispositivos Android e iOS, mientras que la comu
 
 ![Diagrama de despliegue](/doc/img/dogwalkz_DeploymentDiagram.png)
 
-### Outros diagramas, esquemas ou documentacion (seguridade, redundancia, expliacións, configuracións...)
+
 
 ## Calidade
 
