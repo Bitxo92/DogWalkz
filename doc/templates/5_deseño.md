@@ -25,8 +25,7 @@ Finalmente, la **Comunicación con el Backend** se maneja a través de `Supabase
 ![Diagrama de clases](/doc/img/dogwalkz_UML_ClassDiagram.png)
 
 ### Casos de uso.
-l presente **diagrama de casos de uso** describe las principales interacciones entre los **usuarios** y el **sistema** de la aplicación **DogWalkz**, enfocándose en los procesos clave relacionados, como son la **autenticación de usuarios** o la **gestión de los paseos**.
-
+El presente **diagrama de casos de uso** describe las principales interacciones entre los **usuarios** y el **sistema** de la aplicación **DogWalkz**, enfocándose en los procesos clave relacionados, como son la **autenticación de usuarios** o la **gestión de los paseos**.
 Este tipo de diagrama permite representar de forma clara y estructurada los **requerimientos funcionales** del sistema desde la perspectiva del **tipo de usuario**.
 
 
