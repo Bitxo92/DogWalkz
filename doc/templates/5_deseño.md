@@ -64,6 +64,12 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 ### Diagrama de compoñentes software que constitúen o produto e de despregue.
 
 ### Diagrama de despliegue.
+DogWalkz es una app multiplataforma creada con **Flutter**, apoyandose de **Supabase** para el backend. Esta arquitectura permite que la app funcione sin necesidad de infraestructura personalizada, delegando tareas críticas como autenticación, persistencia de datos y almacenamiento de archivos a servicios gestionados por Supabase.
+
+El cliente móvil se ejecuta en dispositivos Android e iOS, mientras que la comunicación con el backend se realiza a través de una API RESTful segura, generada automáticamente por Supabase a partir del esquema de base de datos PostgreSQL. Esta interacción se refuerza con autenticación basada en tokens **JWT** y **RLS** (políticas de seguridad a nivel de fila), lo que garantiza el acceso controlado a los datos.
+
+
+
 ![Diagrama de despliegue](/doc/img/dogwalkz_DeploymentDiagram.png)
 
 ### Outros diagramas, esquemas ou documentacion (seguridade, redundancia, expliacións, configuracións...)
