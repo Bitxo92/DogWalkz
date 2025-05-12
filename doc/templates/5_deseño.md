@@ -56,15 +56,18 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 ![Diagrama de casos de uso](/doc/img/dogwalkz_UseCaseDiagram.png)
 
 ### Deseño de interfaces de usuarios [mockups ou diagramas...].
-
-### Diseño de interfaces software e hardware (se aplica)
+> TODO: Add Mockups
 
 ### Diagrama de Base de Datos.
+La arquitectura de base de datos del sistema `DogWalkz` ha sido diseñada para sustentar una plataforma integral de gestión de servicios de paseo de perros, con un enfoque en la **escalabilidad**, la **integridad de los datos** y la **trazabilidad** de las operaciones. 
+El modelo relacional propuesto establece una estructura coherente y normalizada que facilita la interacción entre los distintos actores del sistema.
 
+La entidad central del modelo es la tabla `users`, desde la cual se derivan múltiples relaciones hacia otras entidades clave como `dogs`, `walker_profiles`, `wallets`, y `walks`. Esta estructura permite representar tanto a clientes como a paseadores dentro de un mismo esquema, diferenciándolos mediante atributos y relaciones específicas.
+
+El modelo contempla buenas prácticas de diseño como el uso de claves primarias UUID para garantizar la unicidad, timestamps automáticos para auditoría, y campos con valores por defecto y restricciones de validación, todo ello orientado a garantizar la consistencia, seguridad y eficiencia de la plataforma en entornos productivos de alta demanda.
 
 ![Diagrama de base de datos](/doc/img/dogwalkz_DBDiagram.png)
 
-### Diagrama de compoñentes software que constitúen o produto e de despregue.
 
 ### Diagrama de despliegue.
 DogWalkz es una app multiplataforma creada con **Flutter**, apoyandose de **Supabase** para el backend. Esta arquitectura permite que la app funcione sin necesidad de infraestructura personalizada, delegando tareas críticas como autenticación, persistencia de datos y almacenamiento de archivos a servicios gestionados por Supabase.
