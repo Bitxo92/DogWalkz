@@ -56,6 +56,9 @@ Este tipo de diagrama permite representar de forma clara y estructurada los **re
 ![Diagrama de casos de uso](/doc/img/dogwalkz_UseCaseDiagram.png)
 
 ### Deseño de interfaces de usuarios.
+En esta sección, presentamos el enfoque de diseño de interfaces de usuario para la aplicación **DogWalkz** mediante prototipado por **wireframing**. La experiencia de usuario (UX) y la interfaz de usuario (UI) son elementos clave para garantizar que los usuarios interactúen de manera efectiva con la plataforma. Para ello, se han creado pantallas intuitivas y accesibles que facilitan tanto la navegación como la interacción con las funcionalidades principales de la aplicación.
+
+
 #### Pantalla de Login/Registro.
 <img src="/doc/img/Login_Register_Wireframe.png" alt="Home Wireframe" height="500">
 
