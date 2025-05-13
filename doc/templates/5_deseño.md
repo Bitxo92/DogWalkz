@@ -68,6 +68,12 @@ En esta sección, presentamos el enfoque de diseño de interfaces de usuario par
 #### Pantalla de Monedero.
 <img src="/doc/img/Wallet_Wireframe.png" alt="Wallet Wireframe" height="500">
 
+#### Pantalla de Solicitud de Paseo.
+<img src="/doc/img/ScheduleWalk_Wireframe.png" alt="Schedule Walk Wireframe" height="500">
+
+#### Pantallas de Agenda de Paseo.
+<img src="/doc/img/ManageWalks_Wireframe.png" alt="Manage Walks Wireframe" height="500">
+
 
 
 ### Diagrama de Base de Datos.
