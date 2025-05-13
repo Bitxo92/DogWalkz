@@ -77,6 +77,9 @@ En esta sección, presentamos el enfoque de diseño de interfaces de usuario par
 #### Pantallas de Perros.
 <img src="/doc/img/Dogs_Wireframe.png" alt="Dogs Wireframe" height="500">
 
+#### Pantalla de Perfil de Usuario.
+<img src="/doc/img/Profile_Wireframe.png" alt="Profile Wireframe" height="500">
+
 
 
 ### Diagrama de Base de Datos.
