@@ -74,6 +74,9 @@ En esta sección, presentamos el enfoque de diseño de interfaces de usuario par
 #### Pantallas de Agenda de Paseo.
 <img src="/doc/img/ManageWalks_Wireframe.png" alt="Manage Walks Wireframe" height="500">
 
+#### Pantallas de Perros.
+<img src="/doc/img/Dogs_Wireframe.png" alt="Dogs Wireframe" height="500">
+
 
 
 ### Diagrama de Base de Datos.
