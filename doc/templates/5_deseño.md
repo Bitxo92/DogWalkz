@@ -104,6 +104,48 @@ El cliente móvil se ejecuta en dispositivos Android e iOS, mientras que la comu
 
 
 
-## Calidade
+## Calidad
 
-> *TODO*: Identifica os aspectos que compre controlar para garantir a calidade do proxecto, determinando os procedementos de actuación ou execución das actividades, establecendo un sistema para garantir o cumprimento das condicións do proxecto (requisitos, funcionalidades...)
+Para garantizar la calidad del proyecto, se han definido y aplicado una serie de  procedimientos y controles:
+
+
+
+  - <ins>**Control de Requisitos**</ins>
+    - Verificación del cumplimiento de los **requisitos funcionales** (autenticación, paseos, valoraciones...) y **no funcionales** (rendimiento, seguridad, usabilidad).
+    - Alineación con las expectativas de los **usuarios finales**.
+
+
+
+  - <ins>**Pruebas y Validación**</ins>
+    - **Pruebas unitarias** y **de integración** para asegurar la estabilidad del código.
+    - **Pruebas de usuario (UX/UI)** para validar la facilidad de uso e interacción.
+    - Detección temprana de errores y regresiones.
+
+
+
+  - <ins>**Gestión de Errores**</ins>
+    - Sistema de manejo de **excepciones personalizadas**.
+    - Registro y tratamiento seguro de fallos durante la ejecución.
+    - Mejora continua de la **estabilidad y resiliencia** del sistema.
+
+
+
+  - <ins>**Control de Versiones**</ins>
+    - Uso de **Git** como sistema de control de versiones, incluyendo la **gestión de ramas** y la integración al branch principal (`main`) mediante *Pull Requests* (**PRs**).
+    - Trazabilidad completa de cambios y revisiones del código fuente.
+
+
+
+  - <ins>**Despliegue y Mantenimiento**</ins>
+    - Arquitectura basada en **Flutter + Supabase**, con servicios gestionados.
+    - Actualizaciones y despliegues seguros gracias a la automatización.
+    - Garantía de **escalabilidad** y **alta disponibilidad** del sistema.
+
+
+
+  - <ins>**Documentación Técnica**</ins>
+    - Diagramas de clases, casos de uso, base de datos y despliegue.
+    - Prototipos de interfaces mediante **wireframes**.
+    - Facilita la comprensión, mantenimiento y evolución del proyecto.
+
+---
