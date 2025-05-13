@@ -1,5 +1,21 @@
 # DISEÑO
 
+- [Diseño del proyecto](#diseño-del-proyecto)
+  - [Diagrama de Clases](#diagrama-de-clases)
+  - [Casos de uso](#casos-de-uso)
+  - [Diseño de interfaces de usuarios](#diseño-de-interfaces-de-usuarios)
+    - [Pantalla de Login/Registro](#pantalla-de-loginregistro)
+    - [Pantalla de Home](#pantalla-de-home)
+    - [Pantalla de Monedero](#pantalla-de-monedero)
+    - [Pantalla de Solicitud de Paseo](#pantalla-de-solicitud-de-paseo)
+    - [Pantallas de Agenda de Paseo](#pantallas-de-agenda-de-paseo)
+    - [Pantallas de Perros](#pantallas-de-perros)
+    - [Pantalla de Perfil de Usuario](#pantalla-de-perfil-de-usuario)
+  - [Diagrama de Base de Datos](#diagrama-de-base-de-datos)
+  - [Diagrama de despliegue](#diagrama-de-despliegue)
+
+- [Calidad](#calidad)
+
 ## Diseño del proyecto
 
 ### Diagrama de Clases.
