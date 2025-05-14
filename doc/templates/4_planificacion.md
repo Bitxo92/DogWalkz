@@ -249,7 +249,7 @@ pie
 |------------------------------------------------|-----------------|
 | **A) INVERSIONES**                             |                 |
 | Equipos informáticos (2 ordenadores)           | 2.500           |
-| Licencias de software (Figma, DBChart, etc.)   | 400             |
+| Licencias de software (Balsamiq, DBChart, etc.)   | 400             |
 | **Total Inversiones**                          | **2.900**       |
 |                                                |                 |
 | **B) GASTOS**                                  |                 |
