@@ -1,9 +1,14 @@
+import 'package:dogwalkz/models/walker.dart';
+import 'package:dogwalkz/repositories/dogs_repository.dart';
 import 'package:dogwalkz/repositories/wallet_repository.dart';
 import 'package:dogwalkz/services/notifications_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:lottie/lottie.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:vibration/vibration.dart';
 import '../models/walk.dart';
 import '../models/dog.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,6 +18,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class WalkDetailsPage extends StatelessWidget {
   final Walk walk;
   final _supabase = Supabase.instance.client;
+  final DogsRepository _dogsRepository = DogsRepository();
   late final currentUser;
   late final currentUserId;
 
@@ -25,6 +31,7 @@ class WalkDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFFF5E9D9),
       appBar: AppBar(
         centerTitle: true,
@@ -39,112 +46,130 @@ class WalkDetailsPage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.contactDetails,
-                        style: GoogleFonts.comicNeue(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    (walk.walker != null && walk.walkerId != currentUserId)
-                        ? _buildWalkerCard(context)
-                        : // Show walker card if current user is the customer
-                        _buildCustomerCard(
-                          context,
-                        ), // Show customer card if current user is the walker
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(padding: EdgeInsets.only(top: 60)),
+                      // Contact Details Card
+                      (walk.walker != null && walk.walkerId != currentUserId)
+                          ? _buildWalkerCard(context)
+                          : _buildCustomerCard(context),
 
-                    const SizedBox(height: 16),
-                    _buildStatusHeader(context),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.timePlace,
-                        style: GoogleFonts.comicNeue(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      const SizedBox(height: 16),
+                      _buildStatusHeader(context),
+                      const SizedBox(height: 8),
+
+                      GridView.count(
+                        crossAxisCount: 2,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        childAspectRatio: 1.5,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 4,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        children: [
+                          _buildSectionBadge(
+                            context,
+                            icon: Ionicons.time_outline,
+                            title: AppLocalizations.of(context)!.timePlace,
+                            onTap: () => _showTimePlaceDialog(context),
+                          ),
+                          _buildSectionBadge(
+                            context,
+                            icon: Ionicons.paw_outline,
+                            title: AppLocalizations.of(context)!.dogs,
+                            onTap: () => _showDogsDialog(context),
+                          ),
+                          _buildSectionBadge(
+                            context,
+                            icon: Ionicons.wallet_outline,
+                            title: AppLocalizations.of(context)!.billing,
+                            onTap: () => _showBillingDialog(context),
+                          ),
+                          _buildSectionBadge(
+                            context,
+                            icon: Ionicons.help_circle_outline,
+                            title: AppLocalizations.of(context)!.support,
+                            onTap: () => _showSupportOptions(context),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildTimeLocationCard(context),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.dogs,
-                        style: GoogleFonts.comicNeue(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildDogsSection(),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.billing,
-                        style: GoogleFonts.comicNeue(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildPaymentDetails(context),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            if (walk.walker != null) _buildActionButtons(context),
-          ],
+                if (walk.walker != null) _buildActionButtons(context),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
   /// Builds a header with the current status of the walk.
+  /// if the walk is in progress, it shows a Lottie animation.
+  /// Tapping on the header will navigate to Google Maps using the coordinates sent from the walker.
   Widget _buildStatusHeader(BuildContext context) {
     final statusColor = _getStatusColor(walk.status);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(_getStatusIcon(walk.status), color: statusColor, size: 32),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context)!.currentStatus,
-                style: GoogleFonts.comicNeue(color: Colors.grey.shade600),
+    final isInProgress = walk.status == "in_progress";
+
+    return GestureDetector(
+      onTap: () {
+        if (isInProgress) {
+          // TODO: Implement navigation to Google Maps
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: statusColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(_getStatusIcon(walk.status), color: statusColor, size: 32),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.currentStatus,
+                    style: GoogleFonts.comicNeue(color: Colors.grey.shade600),
+                  ),
+                  Text(
+                    _getWalkStatusText(walk.status.toUpperCase(), context),
+                    style: GoogleFonts.comicNeue(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                walk.status.toUpperCase(),
-                style: GoogleFonts.comicNeue(
-                  color: statusColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+            ),
+            if (isInProgress)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Lottie.network(
+                    'https://lottie.host/c0543e1b-dcd3-4f48-a530-612b51518b12/YNsMCAG9Iw.json',
+                    fit: BoxFit.contain,
+                    animate: true,
+                    repeat: true,
+                  ),
                 ),
               ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -174,7 +199,7 @@ class WalkDetailsPage extends StatelessWidget {
             _buildDetailRow(
               icon: Ionicons.location_outline,
               title: AppLocalizations.of(context)!.location,
-              value: walk.location.isNotEmpty ? walk.location : 'Not specified',
+              value: walk.location.isNotEmpty ? walk.city : 'Not specified',
             ),
           ],
         ),
@@ -250,6 +275,17 @@ class WalkDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const SizedBox(width: 4),
+                      Text(
+                        AppLocalizations.of(context)!.walker,
+                        style: GoogleFonts.comicNeue(
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
                   Row(
                     children: [
                       ...List.generate(5, (index) {
@@ -403,15 +439,15 @@ class WalkDetailsPage extends StatelessWidget {
   ///
   /// This method maps each dog in the [walk.dogs] list to a [_buildDogItem]
   /// widget and returns a [Column] widget with the mapped children.
-  Widget _buildDogsSection() {
+  Widget _buildDogsSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [...walk.dogs.map((dog) => _buildDogItem(dog))],
+      children: [...walk.dogs.map((dog) => _buildDogItem(dog, context))],
     );
   }
 
   /// Builds a widget for a dog in the walk details page.
-  Widget _buildDogItem(Dog dog) {
+  Widget _buildDogItem(Dog dog, BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -429,11 +465,21 @@ class WalkDetailsPage extends StatelessWidget {
           dog.name,
           style: GoogleFonts.comicNeue(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('${dog.breed} • ${dog.size}'),
-        trailing:
-            dog.isDangerousBreed
-                ? const Icon(Ionicons.warning_outline, color: Colors.orange)
-                : null,
+        subtitle: Text(
+          '${_dogsRepository.getLocalizedBreedName(dog.breed, context)}',
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (dog.isSociable)
+              const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: Icon(Ionicons.people_outline, color: Colors.green),
+              ),
+            if (dog.isDangerousBreed)
+              const Icon(Ionicons.warning_outline, color: Colors.orange),
+          ],
+        ),
       ),
     );
   }
@@ -618,27 +664,34 @@ class WalkDetailsPage extends StatelessWidget {
     final isWalker = currentUserId == walk.walkerId;
     final isRequested = walk.status.toLowerCase() == 'requested';
     final isAccepted = walk.status.toLowerCase() == 'accepted';
-
-    if (!isWalker) return const SizedBox.shrink();
+    final isInProgress = walk.status.toLowerCase() == 'in_progress';
+    final isCompleted = walk.status.toLowerCase() == 'completed';
 
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          if (isRequested)
+          if (isRequested && isWalker)
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _confirmWalk(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: Colors.brown,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
                     child: Text(
                       AppLocalizations.of(context)!.confirm,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.white,
+                        color: Colors.green,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -649,13 +702,20 @@ class WalkDetailsPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _declineWalk(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: Colors.brown,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
                     child: Text(
                       AppLocalizations.of(context)!.decline,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.white,
+                        color: Colors.red,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -664,17 +724,128 @@ class WalkDetailsPage extends StatelessWidget {
               ],
             ),
           if (isAccepted)
-            ElevatedButton(
-              onPressed: () => _cancelWalk(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: Text(
-                AppLocalizations.of(context)!.cancelWalk,
-                style: GoogleFonts.comicNeue(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _startWalk(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.startWalk,
+                      style: GoogleFonts.comicNeue(
+                        color: Colors.green,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _cancelWalk(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.cancel,
+                      style: GoogleFonts.comicNeue(
+                        color: Colors.red,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+          if (isInProgress && !(isWalker))
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _finishWalk(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.finishWalk,
+                      style: GoogleFonts.comicNeue(
+                        color: Colors.green,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          if (isCompleted)
+            GestureDetector(
+              onTap: () => _showReviewDetailsDialog(context),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.brown,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.rating,
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return Icon(
+                          index < (walk.rating ?? 0)
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: Colors.yellow[700],
+                          size: 28,
+                        );
+                      }),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -691,7 +862,17 @@ class WalkDetailsPage extends StatelessWidget {
   /// walk request.
   //
   /// This method is intended to be used when a walker accepts a walk request.
+
   Future<void> _confirmWalk(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => const Center(
+            child: CircularProgressIndicator(color: Colors.brown),
+          ),
+    );
+
     try {
       await _supabase
           .from('walks')
@@ -700,16 +881,18 @@ class WalkDetailsPage extends StatelessWidget {
 
       await NotificationService.sendNotification(
         userId: walk.customerId,
-        title: AppLocalizations.of(context)!.walkAcceptedTitle,
-        message: AppLocalizations.of(context)!.walkAcceptedMessage(walk.id),
+        title: 'walkAccepted',
+        message: 'walkAcceptedMessage',
         type: 'walk_accepted',
         relatedEntityType: 'walk',
         relatedEntityId: walk.id,
       );
-
-      Navigator.pop(context, true);
     } catch (e) {
       debugPrint('Failed to confirm walk: $e');
+    } finally {
+      // Close loading dialog
+      Navigator.pop(context, true);
+      Navigator.popUntil(context, ModalRoute.withName('/home'));
     }
   }
 
@@ -721,17 +904,34 @@ class WalkDetailsPage extends StatelessWidget {
   /// This method is intended to be used when a walker declines a walk request.
   ///
   Future<void> _declineWalk(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
     try {
       await _handleWalkCancellation(refundCustomer: true);
       Navigator.pop(context, true);
     } catch (e) {
       debugPrint('Failed to decline walk: $e');
+    } finally {
+      // Close loading dialog
+      Navigator.pop(context, true);
+      Navigator.popUntil(context, ModalRoute.withName('/home'));
     }
   }
 
   /// Cancels a walk and handles the associated payment operations
   /// asynchronously.
   Future<void> _cancelWalk(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => const Center(
+            child: CircularProgressIndicator(color: Colors.brown),
+          ),
+    );
     try {
       await _handleWalkCancellation(
         refundCustomer: true,
@@ -740,6 +940,9 @@ class WalkDetailsPage extends StatelessWidget {
       Navigator.pop(context, true);
     } catch (e) {
       debugPrint('Failed to cancel walk: $e');
+    } finally {
+      // Close loading dialog
+      Navigator.pop(context);
     }
   }
 
@@ -759,30 +962,27 @@ class WalkDetailsPage extends StatelessWidget {
     final walletRepo = WalletRepository();
 
     //Refund customer if needed
-    if (refundCustomer && walk.customerId != null) {
-      final customerWallet = await walletRepo.getWallet(walk.customerId!);
+    if (refundCustomer) {
+      final customerWallet = await walletRepo.getWallet(walk.customerId);
       if (customerWallet.isNotEmpty) {
         await walletRepo.addFunds(
-          userId: walk.customerId!,
+          userId: walk.customerId,
           walletId: customerWallet['id'],
+          isRefund: true,
           amount: walk.price,
-          description: 'Refund for cancelation ${walk.id}',
+          description: 'cancelationRefund',
         );
       }
     }
 
-    //Withdraw walker earnings if needed
-    if (withdrawWalkerEarnings && walk.walkerId != null) {
-      final walkerWallet = await walletRepo.getWallet(walk.walkerId!);
-      if (walkerWallet.isNotEmpty) {
-        await walletRepo.withdrawFunds(
-          userId: walk.walkerId!,
-          walletId: walkerWallet['id'],
-          amount: walk.walkerEarnings,
-          description: 'Customer Refund due to cancelation ${walk.id}',
-        );
-      }
-    }
+    NotificationService.sendNotification(
+      userId: walk.customerId,
+      title: 'walkCancelled',
+      message: 'walkCancelledMessage',
+      type: 'walk_cancelled',
+      relatedEntityType: 'walk',
+      relatedEntityId: walk.id,
+    );
 
     //Delete the walk and related records
     await _supabase.from('walks').delete().eq('id', walk.id);
@@ -908,6 +1108,606 @@ class WalkDetailsPage extends StatelessWidget {
                   }
                 },
                 child: Text(AppLocalizations.of(context)!.confirm),
+              ),
+            ],
+          ),
+    );
+  }
+
+  String _getWalkStatusText(String status, context) {
+    switch (status) {
+      case 'COMPLETED':
+        return AppLocalizations.of(context)!.completed;
+      case 'IN_PROGRESS':
+        return AppLocalizations.of(context)!.inProgress;
+      case 'ACCEPTED':
+        return AppLocalizations.of(context)!.accepted;
+      case 'CANCELLED':
+        return AppLocalizations.of(context)!.cancelled;
+      case 'REQUESTED':
+        return AppLocalizations.of(context)!.requested;
+      default:
+        return AppLocalizations.of(context)!.unknownStatus;
+    }
+  }
+
+  Widget _buildSectionBadge(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        // Vibration feedback when the button is tapped
+        //Vibration.vibrate(duration: 80, amplitude: 128);
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        width: 100,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.brown, size: 36),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.comicNeue(
+                color: Colors.brown,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTimePlaceDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Ionicons.time_outline, color: Colors.brown),
+                const SizedBox(width: 8),
+                Text(AppLocalizations.of(context)!.timePlace),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDialogDetailRow(
+                  icon: Ionicons.calendar_outline,
+                  title: AppLocalizations.of(context)!.date,
+                  value: _formatDate(walk.scheduledStart),
+                ),
+                const SizedBox(height: 12),
+                _buildDialogDetailRow(
+                  icon: Ionicons.time_outline,
+                  title: AppLocalizations.of(context)!.time,
+                  value:
+                      '${_formatTime(walk.scheduledStart)} - ${_formatTime(walk.scheduledEnd)}',
+                ),
+                const SizedBox(height: 12),
+                _buildDialogDetailRow(
+                  icon: Ionicons.location_outline,
+                  title: AppLocalizations.of(context)!.location,
+                  value: walk.walker?.city ?? 'not available',
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context)!.close),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildDialogDetailRow({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: Colors.brown, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.comicNeue(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: GoogleFonts.comicNeue(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showDogsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Ionicons.paw_outline, color: Colors.brown),
+                const SizedBox(width: 8),
+                Text(AppLocalizations.of(context)!.dogs),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children:
+                    walk.dogs
+                        .map((dog) => _buildDogDialogItem(dog, context))
+                        .toList(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context)!.close),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildDogDialogItem(Dog dog, BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(
+            dog.photoUrl ?? 'https://placehold.co/100x100?text=Dog',
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const Icon(Ionicons.paw_outline),
+          ),
+        ),
+        title: Text(
+          dog.name,
+          style: GoogleFonts.comicNeue(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${_dogsRepository.getLocalizedBreedName(dog.breed, context)}',
+            ),
+            const SizedBox(height: 4),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (dog.isSociable)
+                  Row(
+                    children: [
+                      const Icon(
+                        Ionicons.people_outline,
+                        size: 14,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        AppLocalizations.of(context)!.sociable,
+                        style: GoogleFonts.comicNeue(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                if (dog.isDangerousBreed)
+                  Row(
+                    children: [
+                      const Icon(
+                        Ionicons.warning_outline,
+                        size: 14,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        AppLocalizations.of(context)!.dangerous,
+                        style: GoogleFonts.comicNeue(fontSize: 12),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBillingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Ionicons.wallet_outline, color: Colors.brown),
+                const SizedBox(width: 8),
+                Text(AppLocalizations.of(context)!.billing),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildBillingRow(
+                  AppLocalizations.of(context)!.total,
+                  '\$${walk.price.toStringAsFixed(2)}',
+                ),
+                const Divider(),
+                _buildBillingRow(
+                  AppLocalizations.of(context)!.paymentStatus,
+                  _getPaymentStatus(walk.paymentStatus, context),
+                ),
+                const Divider(),
+                _buildBillingRow(
+                  AppLocalizations.of(context)!.platformCommission,
+                  '-\$${walk.platformCommission.toStringAsFixed(2)}',
+                ),
+                const Divider(),
+                _buildBillingRow(
+                  AppLocalizations.of(context)!.walkerEarnings,
+                  '\$${walk.walkerEarnings.toStringAsFixed(2)}',
+                  isEarnings: true,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context)!.close),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildBillingRow(
+    String label,
+    String value, {
+    bool isEarnings = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: GoogleFonts.comicNeue()),
+          Text(
+            value,
+            style: GoogleFonts.comicNeue(
+              color: isEarnings ? Colors.green : Colors.brown,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSupportOptions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Ionicons.help_circle_outline, color: Colors.brown),
+                const SizedBox(width: 8),
+                Text(AppLocalizations.of(context)!.support),
+              ],
+            ),
+            content: Text(AppLocalizations.of(context)!.supportOptionsMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context)!.close),
+              ),
+            ],
+          ),
+    );
+  }
+
+  String _getPaymentStatus(String? paymentStatus, context) {
+    switch (paymentStatus) {
+      case 'pending':
+        return AppLocalizations.of(context)!.pending;
+      case 'released':
+        return AppLocalizations.of(context)!.released;
+      case 'failed':
+        return AppLocalizations.of(context)!.failed;
+      default:
+        return AppLocalizations.of(context)!.unknownStatus;
+    }
+  }
+
+  Future<void> _startWalk(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => const Center(
+            child: CircularProgressIndicator(color: Colors.brown),
+          ),
+    );
+    try {
+      await _handleWalkStart();
+      Navigator.pop(context, true);
+      NotificationService.sendNotification(
+        userId: walk.customerId,
+        title: 'walkStarted',
+        message: 'walkStartedMessage',
+        type: 'walk_started',
+        relatedEntityType: 'walk',
+        relatedEntityId: walk.id,
+      );
+    } catch (e) {
+      debugPrint('Failed to start walk: $e');
+    } finally {
+      // Close loading dialog
+      Navigator.pop(context, true);
+      Navigator.popUntil(context, ModalRoute.withName('/home'));
+    }
+  }
+
+  _handleWalkStart() async {
+    await _supabase
+        .from('walks')
+        .update({
+          'status': 'in_progress',
+          'actual_start': DateTime.now().toIso8601String(),
+        })
+        .eq('id', walk.id);
+  }
+
+  Future<void> _finishWalk(BuildContext context) async {
+    final reviewData = await _showReviewDialog(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => const Center(
+            child: CircularProgressIndicator(color: Colors.brown),
+          ),
+    );
+    try {
+      await _handleWalkFinish();
+
+      // Insert review
+      await _supabase.from('reviews').insert({
+        'walk_id': walk.id,
+        'reviewer_id': currentUser.id,
+        'reviewed_id': walk.walker?.userId,
+        'rating': reviewData?['rating'],
+        'comment': reviewData?['comment'],
+      });
+      // Update walker's rating through a DB stored procedure
+      await _supabase.rpc(
+        'update_walker_after_review',
+        params: {
+          'p_walker_id': walk.walker?.userId,
+          'p_new_rating': reviewData?['rating'],
+        },
+      );
+
+      NotificationService.sendNotification(
+        userId: walk.walker!.userId,
+        title: 'walkCompleted',
+        message: 'walkCompletedMessage',
+        type: 'walk_completed',
+        relatedEntityType: 'walk',
+        relatedEntityId: walk.id,
+      );
+    } catch (e) {
+      debugPrint('Failed to finish walk: $e');
+    } finally {
+      // Close loading dialog
+      Navigator.pop(context, true);
+      Navigator.popUntil(context, ModalRoute.withName('/home'));
+    }
+  }
+
+  _handleWalkFinish() async {
+    try {
+      await _supabase
+          .from('walks')
+          .update({
+            'status': 'completed',
+            'actual_end': DateTime.now().toIso8601String(),
+          })
+          .eq('id', walk.id);
+    } catch (e) {
+      debugPrint('Failed to finish walk: $e');
+    }
+
+    try {
+      await _supabase.rpc(
+        'process_walker_payment',
+        params: {
+          'p_walker_id': walk.walker?.userId,
+          'p_walk_id': walk.id,
+          'p_amount': walk.walkerEarnings,
+        },
+      );
+    } catch (e) {
+      debugPrint('Failed to process walker payment: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> _showReviewDialog(BuildContext context) async {
+    int rating = 0;
+    final TextEditingController commentController = TextEditingController();
+
+    return showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Rate Your Walk'),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 20.0,
+              ), // Custom padding to fix overflow issue
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(5, (index) {
+                          return IconButton(
+                            icon: Icon(
+                              index < rating ? Icons.star : Icons.star_border,
+                              color: Colors.yellow[700],
+                              size: 32,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                rating = index + 1;
+                              });
+                            },
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: commentController,
+                        decoration: const InputDecoration(
+                          labelText: 'Review',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    if (rating > 0) {
+                      Navigator.pop(context, {
+                        'rating': rating,
+                        'comment': commentController.text.trim(),
+                      });
+                    }
+                  },
+                  child: Text(AppLocalizations.of(context)!.confirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showReviewDetailsDialog(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage:
+                      walk.customer?.profilePictureUrl != null
+                          ? NetworkImage(walk.customer!.profilePictureUrl!)
+                          : null,
+                  child:
+                      walk.customer?.profilePictureUrl == null
+                          ? const Icon(Ionicons.person_outline)
+                          : null,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  walk.customer?.fullName ??
+                      AppLocalizations.of(context)!.customer,
+                  style: GoogleFonts.comicNeue(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return Icon(
+                      index < (walk.rating ?? 0)
+                          ? Icons.star
+                          : Icons.star_border,
+                      color: Colors.yellow[700],
+                      size: 24,
+                    );
+                  }),
+                ),
+                const SizedBox(height: 16),
+
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.reviewComment,
+                      style: GoogleFonts.comicNeue(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      walk.reviewComment ??
+                          AppLocalizations.of(context)!.noReviewTitle,
+                      style: GoogleFonts.comicNeue(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context)!.close),
               ),
             ],
           ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../repositories/wallet_repository.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -125,7 +127,6 @@ class _WalletPageState extends State<WalletPage> {
       );
 
       await _loadWalletData();
-      Navigator.of(context).pop();
     } catch (e) {
       debugPrint('Error adding funds: $e');
     } finally {
@@ -151,7 +152,6 @@ class _WalletPageState extends State<WalletPage> {
       );
 
       await _loadWalletData();
-      Navigator.of(context).pop();
     } catch (e) {
       debugPrint('Error withdrawing funds: $e');
     } finally {
@@ -167,46 +167,121 @@ class _WalletPageState extends State<WalletPage> {
   ///
   /// If the [_isAddingFunds] state variable is true, the add button is
   /// disabled and a circular progress indicator is shown instead of the
-  /// button's text.
+  /// button's text.import 'package:font_awesome_flutter/font_awesome_flutter.dart';
   void _showAddFundsDialog() {
     showDialog(
       context: context,
+      barrierDismissible: !_isAddingFunds,
       builder:
-          (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.addFundsDialog),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _amountController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.amount,
-                    prefixText: '\$',
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.addFunds,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.brown,
+                                fontSize: 20,
+                              ),
+                            ),
+                            Padding(padding: const EdgeInsets.only(left: 8)),
+                            Icon(
+                              FontAwesomeIcons.piggyBank,
+                              color: Colors.brown,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          AppLocalizations.of(context)!.addFundsDialog,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: _amountController,
+                          keyboardType: TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.amount,
+                            prefixIcon: Icon(
+                              FontAwesomeIcons.dollarSign,
+                              color: Colors.brown,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.brown),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed:
+                            _isAddingFunds
+                                ? null
+                                : () => Navigator.of(context).pop(),
+                        child: Text(
+                          AppLocalizations.of(context)!.cancel,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed:
+                            _isAddingFunds
+                                ? null
+                                : () async {
+                                  setState(() => _isAddingFunds = true);
+                                  await _addFunds();
+                                  setState(() => _isAddingFunds = false);
+                                  Navigator.of(context).pop();
+                                },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.brown,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(AppLocalizations.of(context)!.add),
+                      ),
+                    ],
                   ),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  AppLocalizations.of(context)!.cancel,
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: _isAddingFunds ? null : _addFunds,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
-                child:
-                    _isAddingFunds
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(AppLocalizations.of(context)!.add),
-              ),
-            ],
+
+                  if (_isAddingFunds)
+                    const Positioned.fill(
+                      child: ColoredBox(
+                        color: Colors.black38,
+                        child: Center(
+                          child: CircularProgressIndicator(color: Colors.brown),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
     );
   }
@@ -215,42 +290,124 @@ class _WalletPageState extends State<WalletPage> {
   void _showWithdrawFundsDialog() {
     showDialog(
       context: context,
+      barrierDismissible: !_iswithdrawingFunds,
       builder:
-          (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.withdrawFundsDialog),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _amountController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.amount,
-                    prefixText: '\$',
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                    contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.withdraw,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.brown.shade700,
+                                fontSize: 20,
+                              ),
+                            ),
+                            Padding(padding: const EdgeInsets.only(left: 8)),
+                            Icon(
+                              FontAwesomeIcons.moneyBillTransfer,
+                              color: Colors.brown.shade700,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          AppLocalizations.of(context)!.withdrawFundsDialog,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: _amountController,
+                          keyboardType: TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.amount,
+                            prefixIcon: Icon(
+                              FontAwesomeIcons.dollarSign,
+                              color: Colors.brown,
+                              size: 18,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Colors.brown,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed:
+                            _iswithdrawingFunds
+                                ? null
+                                : () => Navigator.of(context).pop(),
+                        child: Text(
+                          AppLocalizations.of(context)!.cancel,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed:
+                            _iswithdrawingFunds
+                                ? null
+                                : () async {
+                                  setState(() => _iswithdrawingFunds = true);
+                                  await _withdrawFunds();
+                                  setState(() => _iswithdrawingFunds = false);
+                                  Navigator.of(context).pop();
+                                },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.brown,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(AppLocalizations.of(context)!.withdraw),
+                      ),
+                    ],
                   ),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  AppLocalizations.of(context)!.cancel,
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: _iswithdrawingFunds ? null : _withdrawFunds,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
-                child:
-                    _iswithdrawingFunds
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(AppLocalizations.of(context)!.withdraw),
-              ),
-            ],
+
+                  if (_iswithdrawingFunds)
+                    const Positioned.fill(
+                      child: ColoredBox(
+                        color: Colors.black38,
+                        child: Center(
+                          child: CircularProgressIndicator(color: Colors.brown),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
     );
   }
@@ -276,23 +433,15 @@ class _WalletPageState extends State<WalletPage> {
     }
   }
 
-  /// Returns an [IconData] based on the transaction type.
-  ///
-  /// This method interprets the transaction type and returns a specific icon:
-  /// - [Ionicons.add_outline] for 'deposit'.
-  /// - [Ionicons.remove_outline] for 'withdrawal'.
-  /// - [Ionicons.walk_outline] for 'payment'.
-  /// - [Ionicons.arrow_undo_outline] for 'refund'.
-  /// - [Ionicons.business_outline] for 'commission'.
-  /// - [Ionicons.wallet_outline] for other transaction types.
+  /// Returns an Icon based on the transaction type.
   IconData _getTransactionIcon(String type) {
     switch (type) {
       case 'deposit':
-        return Ionicons.add_outline;
+        return FontAwesomeIcons.piggyBank;
       case 'withdrawal':
-        return Ionicons.remove_outline;
+        return FontAwesomeIcons.moneyBillTransfer;
       case 'payment':
-        return Ionicons.walk_outline;
+        return FontAwesomeIcons.moneyBill1Wave;
       case 'refund':
         return Ionicons.arrow_undo_outline;
       case 'commission':
@@ -308,7 +457,7 @@ class _WalletPageState extends State<WalletPage> {
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFFF5E9D9),
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator(color: Colors.brown)),
       );
     }
 
@@ -332,8 +481,8 @@ class _WalletPageState extends State<WalletPage> {
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+        child: Container(
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
               Container(
@@ -380,30 +529,60 @@ class _WalletPageState extends State<WalletPage> {
                         ],
                       ),
                     ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 100,
-                          child: TextButton(
-                            onPressed: _showAddFundsDialog,
-                            child: Text(
-                              AppLocalizations.of(context)!.addFunds,
-                              style: TextStyle(color: Colors.brown),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 30),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GestureDetector(
+                            onTap: _showAddFundsDialog,
+                            child: Column(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    FontAwesomeIcons.piggyBank,
+                                    color: Colors.brown,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  AppLocalizations.of(context)!.addFunds,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          width: 100,
-                          child: TextButton(
-                            onPressed: _showWithdrawFundsDialog,
-                            child: Text(
-                              AppLocalizations.of(context)!.withdraw,
-                              style: TextStyle(color: Colors.brown),
+                          const SizedBox(height: 12),
+                          GestureDetector(
+                            onTap: _showWithdrawFundsDialog,
+                            child: Column(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    FontAwesomeIcons.moneyBillTransfer,
+                                    color: Colors.brown,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  AppLocalizations.of(context)!.withdraw,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -510,11 +689,12 @@ class _WalletPageState extends State<WalletPage> {
                 ),
               const SizedBox(height: 10),
 
-              if (_filteredTransactions.isEmpty)
-                _buildEmptyState()
-              else
-                _buildTransactionsList(),
-              const SizedBox(height: 30),
+              Expanded(
+                child:
+                    _filteredTransactions.isEmpty
+                        ? _buildEmptyState()
+                        : _buildTransactionsList(),
+              ),
             ],
           ),
         ),
@@ -566,8 +746,8 @@ class _WalletPageState extends State<WalletPage> {
         ],
       ),
       child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: false,
+        physics: AlwaysScrollableScrollPhysics(),
         itemCount: _filteredTransactions.length,
         separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, index) {
@@ -575,9 +755,7 @@ class _WalletPageState extends State<WalletPage> {
           final amount = (transaction['amount'] as num).toDouble();
           final type = transaction['transaction_type'] as String;
           final date = DateTime.parse(transaction['created_at'] as String);
-          final description =
-              transaction['description'] as String? ??
-              AppLocalizations.of(context)!.transaction;
+          final description = _getTransactionDescription(transaction);
 
           return ListTile(
             leading: Container(
@@ -602,11 +780,32 @@ class _WalletPageState extends State<WalletPage> {
               '${date.day}/${date.month}/${date.year}',
               style: TextStyle(color: Colors.grey.shade600),
             ),
-            trailing: Text(
-              '${type == 'deposit' || type == 'refund' || type == 'payment' ? '+' : '-'}\$${amount.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: _getTransactionColor(type),
+            trailing: SizedBox(
+              height: 100,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${type == 'deposit' || type == 'refund' || type == 'payment' ? '+' : '-'}\$${amount.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _getTransactionColor(type),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Clipboard.setData(
+                        ClipboardData(text: transaction['id'].toString()),
+                      );
+                    },
+                    child: Icon(
+                      Icons.copy,
+                      size: 16,
+                      color: Colors.brown.shade300,
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -623,5 +822,23 @@ class _WalletPageState extends State<WalletPage> {
   void dispose() {
     _amountController.dispose();
     super.dispose();
+  }
+
+  /// Returns a string description in the corresponding language based on the transactions type.
+  String _getTransactionDescription(Map<String, dynamic> transaction) {
+    switch (transaction['transaction_type']) {
+      case 'deposit':
+        return '${AppLocalizations.of(context)!.deposit} ${transaction['id'].toString()}';
+      case 'withdrawal':
+        return '${AppLocalizations.of(context)!.withdrawal} ${transaction['id'].toString()}';
+      case 'payment':
+        return '${AppLocalizations.of(context)!.payment} ${transaction['id'].toString()}';
+      case 'refund':
+        return '${AppLocalizations.of(context)!.cancelationRefund} ${transaction['id'].toString()}';
+      case 'charge':
+        return '${AppLocalizations.of(context)!.charge} ${transaction['id'].toString()}';
+      default:
+        return AppLocalizations.of(context)!.transaction;
+    }
   }
 }

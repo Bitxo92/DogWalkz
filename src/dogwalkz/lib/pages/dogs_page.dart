@@ -18,6 +18,7 @@ class DogsPage extends StatefulWidget {
 class _DogsPageState extends State<DogsPage> {
   final DogsRepository _dogsRepository = DogsRepository();
   late Future<List<Dog>> _dogsFuture;
+  final addEditDogPage = AddEditDogPage();
   final SupabaseClient _supabase = Supabase.instance.client;
 
   /// Initializes the state of the widget.
@@ -205,7 +206,10 @@ class _DogsPageState extends State<DogsPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  dog.breed,
+                                  DogsRepository().getLocalizedBreedName(
+                                    dog.breed,
+                                    context,
+                                  ),
                                   style: TextStyle(
                                     fontFamily:
                                         GoogleFonts.comicNeue().fontFamily,

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
@@ -30,6 +31,18 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
   bool _isSociable = true;
   File? _selectedImage;
   bool _isUploading = false;
+  final List<String> _dogBreeds = [
+    'germanShepherd',
+    'labradorRetriever',
+    'bulldog',
+    'goldenRetriever',
+    'beagle',
+    'poodle',
+    'rottweiler',
+    'yorkshireTerrier',
+    'boxer',
+    'dachshund',
+  ];
 
   /// Initializes the state of the widget.
   @override
@@ -79,6 +92,7 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5E9D9),
       appBar: AppBar(
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Ionicons.arrow_back_outline),
           color: Colors.white,
@@ -89,18 +103,12 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
               ? AppLocalizations.of(context)!.addDog
               : AppLocalizations.of(context)!.editDog,
           style: TextStyle(
+            fontWeight: FontWeight.bold,
             fontFamily: GoogleFonts.comicNeue().fontFamily,
             color: Colors.white,
           ),
         ),
         backgroundColor: Colors.brown,
-        actions: [
-          if (widget.dog != null)
-            IconButton(
-              icon: const Icon(Ionicons.trash_outline, color: Colors.red),
-              onPressed: _confirmDelete,
-            ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -170,7 +178,7 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _breedController,
+                readOnly: true,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.dogBreed,
                   labelStyle: TextStyle(
@@ -182,11 +190,26 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                controller: TextEditingController(
+                  text:
+                      _breedController.text.isNotEmpty
+                          ? DogsRepository().getLocalizedBreedName(
+                            _breedController.text,
+                            context,
+                          )
+                          : '',
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return AppLocalizations.of(context)!.required;
                   }
                   return null;
+                },
+                onTap: () async {
+                  await _showBreedSelectionDialog();
+                  setState(
+                    () {},
+                  ); //!Important --> Force rebuild so that the updated breed is translated
                 },
               ),
               const SizedBox(height: 16),
@@ -289,34 +312,44 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
                 maxLines: 3,
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isUploading ? null : _saveDog,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child:
-                      _isUploading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                            widget.dog == null
-                                ? AppLocalizations.of(context)!.addDog
-                                : AppLocalizations.of(context)!.updateDog,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: GoogleFonts.comicNeue().fontFamily,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                ),
-              ),
             ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        color: const Color(0xFFF5E9D9),
+        height: 100,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isUploading ? null : _saveDog,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child:
+                    _isUploading
+                        ? const CircularProgressIndicator(color: Colors.brown)
+                        : Text(
+                          widget.dog == null
+                              ? AppLocalizations.of(context)!.save
+                              : AppLocalizations.of(context)!.updateDog,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: GoogleFonts.comicNeue().fontFamily,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                          ),
+                        ),
+              ),
+            ),
           ),
         ),
       ),
@@ -365,8 +398,29 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
         } else {
           await _dogsRepository.updateDog(dog);
         }
-        Navigator.pop(context);
+        setState(() => _isUploading = false);
+        await showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text(AppLocalizations.of(context)!.dogProfileSaved),
+                content: Text(
+                  AppLocalizations.of(context)!.dogProfileSavedMessage,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.popUntil(context, ModalRoute.withName('/dogs'));
+                    },
+                    child: Text(AppLocalizations.of(context)!.ok),
+                  ),
+                ],
+              ),
+        );
       } catch (e) {
+        print(e);
+      } finally {
         setState(() => _isUploading = false);
       }
     }
@@ -434,5 +488,98 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
       default:
         return size;
     }
+  }
+
+  Future<void> _showBreedSelectionDialog() async {
+    String? searchTerm;
+    String? selectedBreed = _breedController.text;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final bottomInsets = MediaQuery.of(context).viewInsets.bottom;
+
+            return AlertDialog(
+              title: Text(AppLocalizations.of(context)!.dogBreed),
+              contentPadding: const EdgeInsets.all(16),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.searchBreeds,
+                        prefixIcon: const Icon(Ionicons.search_outline),
+                        enabledBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.brown),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.brown),
+                        ),
+                      ),
+                      cursorColor: Colors.brown,
+                      onChanged: (value) {
+                        setState(() {
+                          searchTerm = value.toLowerCase();
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.5,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children:
+                              _dogBreeds
+                                  .where(
+                                    (breedKey) =>
+                                        searchTerm == null ||
+                                        DogsRepository()
+                                            .getLocalizedBreedName(
+                                              breedKey,
+                                              context,
+                                            )
+                                            .toLowerCase()
+                                            .contains(searchTerm!),
+                                  )
+                                  .map((breedKey) {
+                                    final breedName = DogsRepository()
+                                        .getLocalizedBreedName(
+                                          breedKey,
+                                          context,
+                                        );
+                                    return RadioListTile<String>(
+                                      title: Text(breedName),
+                                      activeColor: Colors.brown,
+                                      value: breedKey,
+                                      groupValue: selectedBreed,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedBreed = value;
+                                        });
+                                        Navigator.pop(context);
+                                        setState(() {
+                                          _breedController.text = breedKey;
+                                        });
+                                      },
+                                    );
+                                  })
+                                  .toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actionsPadding: EdgeInsets.zero,
+            );
+          },
+        );
+      },
+    );
   }
 }

@@ -28,7 +28,7 @@ class NotificationService {
         .eq('user_id', userId)
         .order('created_at', ascending: false);
 
-    if (response == null || response is PostgrestException) {
+    if (response is PostgrestException) {
       print('Error fetching notifications');
       return [];
     }

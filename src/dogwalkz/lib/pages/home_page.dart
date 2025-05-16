@@ -72,11 +72,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     String? message;
     if (balance <= 0 && dogs.isEmpty) {
-      message = 'You need funds in your wallet and at least one dog listed.';
+      message = AppLocalizations.of(context)!.homeNoFundsAndNoDogs;
     } else if (balance <= 0) {
-      message = 'You don\'t have any funds in your wallet.';
+      message = AppLocalizations.of(context)!.homeNoFundsInWallet;
     } else if (dogs.isEmpty) {
-      message = 'You haven\'t added any dogs yet.';
+      message = AppLocalizations.of(context)!.homeNoDogsListed;
     }
 
     if (message != null) {
@@ -84,8 +84,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         context: context,
         builder:
             (context) => AlertDialog(
-              title: const Text(
-                'Hold on 🐶!!',
+              title: Text(
+                AppLocalizations.of(context)!.homeWarningTitle,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 33),
               ),
               content: Text(message ?? ''),
@@ -311,12 +311,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   ),
                   child:
                       _isLoadingWalks
-                          ? const Center(child: CircularProgressIndicator())
+                          ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.brown,
+                            ),
+                          )
                           : _upcomingWalks.isEmpty
                           ? Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Text(
-                              "No upcoming walks scheduled",
+                              AppLocalizations.of(context)!.noUpcomingWalks,
                               style: TextStyle(
                                 color: Colors.grey,
                                 fontSize: 16,
@@ -452,9 +456,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           allWalks
               .where(
                 (walk) =>
-                    walk.scheduledStart.isAfter(now) ||
-                    (walk.scheduledStart.isBefore(now) &&
-                        walk.scheduledEnd.isAfter(now)),
+                    (walk.scheduledStart.isAfter(now) ||
+                        (walk.scheduledStart.isBefore(now) &&
+                            walk.scheduledEnd.isAfter(now))) &&
+                    walk.status != 'completed',
               )
               .toList()
             ..sort((a, b) => a.scheduledStart.compareTo(b.scheduledStart));

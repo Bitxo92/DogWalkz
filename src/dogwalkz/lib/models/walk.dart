@@ -18,6 +18,8 @@ class Walk {
   Walker? walker;
   final String location;
   final String city;
+  final int? rating;
+  final String? reviewComment;
 
   Walk({
     required this.id,
@@ -33,6 +35,8 @@ class Walk {
     this.paymentStatus,
     required this.dogs,
     this.walker,
+    this.rating,
+    this.reviewComment,
     required this.location,
     required this.city,
   });
@@ -60,6 +64,15 @@ class Walk {
       });
     }
 
+    // Parse review
+    int? rating;
+    String? reviewComment;
+
+    if (json['review'] != null && json['review'] is Map) {
+      rating = json['review']['rating'] as int?;
+      reviewComment = json['review']['comment'] as String?;
+    }
+
     return Walk(
       id: json['id'],
       customer: customer,
@@ -73,6 +86,8 @@ class Walk {
       status: json['status'],
       paymentStatus: json['payment_status'],
       dogs: dogs,
+      rating: rating,
+      reviewComment: reviewComment,
       walker: walker,
       location: json['location'] ?? '',
       city: json['city'] ?? '',
@@ -93,6 +108,8 @@ class Walk {
       'payment_status': paymentStatus,
       'location': location,
       'city': city,
+      'rating': rating,
+      'review_comment': reviewComment,
       'dogs': dogs.map((dog) => dog.toJson()).toList(),
       'walker': walker,
       'customer': customer?.toJson(),

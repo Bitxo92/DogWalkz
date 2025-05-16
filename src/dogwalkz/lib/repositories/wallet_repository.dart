@@ -33,8 +33,9 @@ class WalletRepository {
   Future<void> addFunds({
     required String userId,
     required String walletId,
+    isRefund = false,
     required double amount,
-    String description = 'Deposit',
+    String description = 'deposit',
   }) async {
     // Update wallet balance
     await _supabase
@@ -49,7 +50,7 @@ class WalletRepository {
     await _supabase.from('wallet_transactions').insert({
       'wallet_id': walletId,
       'amount': amount,
-      'transaction_type': 'deposit',
+      'transaction_type': isRefund ? 'refund' : 'deposit',
       'status': 'completed',
       'description': description,
     });
@@ -60,7 +61,7 @@ class WalletRepository {
     required String userId,
     required String walletId,
     required double amount,
-    String description = 'Withdrawal',
+    String description = 'withdrawal',
   }) async {
     // Update wallet balance
     await _supabase

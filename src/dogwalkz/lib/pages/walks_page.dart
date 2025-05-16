@@ -77,7 +77,10 @@ class _WalksPageState extends State<WalksPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
+                child: Text(
+                  AppLocalizations.of(context)!.ok,
+                  style: TextStyle(color: Colors.brown.shade700),
+                ),
               ),
             ],
           ),
@@ -125,6 +128,7 @@ class _WalksPageState extends State<WalksPage> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: TableCalendar(
+          locale: Localizations.localeOf(context).toString(),
           firstDay: DateTime.now().subtract(const Duration(days: 365)),
           lastDay: DateTime.now().add(const Duration(days: 365)),
           focusedDay: _focusedDay,
@@ -198,13 +202,20 @@ class _WalksPageState extends State<WalksPage> {
           calendarBuilders: CalendarBuilders(
             markerBuilder: (context, date, events) {
               if (events.isNotEmpty) {
+                final isPast = date.isBefore(
+                  DateTime.now().subtract(const Duration(hours: 24)),
+                );
+
                 return Positioned(
                   bottom: 1,
                   child: Container(
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 237, 4, 4),
+                      color:
+                          isPast
+                              ? Colors.grey
+                              : const Color.fromARGB(255, 237, 4, 4),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -308,10 +319,19 @@ class _WalksPageState extends State<WalksPage> {
               children: [
                 SizedBox(height: 4),
                 Text(
+                  _getWalkStatusText(walk.status, context),
+                  style: TextStyle(
+                    color: _getStatusColor(walk.status),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
                   '${walk.scheduledStart.hour.toString().padLeft(2, '0')}:${walk.scheduledStart.minute.toString().padLeft(2, '0')} - '
                   '${walk.scheduledEnd.hour.toString().padLeft(2, '0')}:${walk.scheduledEnd.minute.toString().padLeft(2, '0')}',
                   style: TextStyle(
-                    color: _getStatusColor(walk.status),
+                    color: Colors.brown,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -329,10 +349,30 @@ class _WalksPageState extends State<WalksPage> {
     );
   }
 
+  String _getWalkStatusText(String status, context) {
+    switch (status.toUpperCase()) {
+      case 'COMPLETED':
+        return AppLocalizations.of(context)!.completed;
+      case 'IN_PROGRESS':
+        return AppLocalizations.of(context)!.inProgress;
+      case 'ACCEPTED':
+        return AppLocalizations.of(context)!.accepted;
+      case 'CANCELLED':
+        return AppLocalizations.of(context)!.cancelled;
+      case 'REQUESTED':
+        return AppLocalizations.of(context)!.requested;
+      default:
+        return AppLocalizations.of(context)!.unknownStatus;
+    }
+  }
+
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'completed':
+      case 'accepted':
         return Colors.green;
+      case 'scheduled':
+        return Colors.orange;
       case 'in_progress':
         return Colors.blue;
       case 'cancelled':

@@ -262,6 +262,27 @@ class _ProfilePageState extends State<ProfilePage> {
           'updated_at': DateTime.now().toIso8601String(),
         });
       }
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text(AppLocalizations.of(context)!.profileSaved),
+                content: Text(
+                  AppLocalizations.of(context)!.profileSavedMessage,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
+                    child: Text(AppLocalizations.of(context)!.ok),
+                  ),
+                ],
+              ),
+        );
+      }
     } catch (e) {
       _showError('Save failed: ${e.toString()}');
     } finally {
@@ -348,7 +369,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFFF5E9D9),
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator(color: Colors.brown)),
       );
     }
 
@@ -615,6 +636,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           AppLocalizations.of(context)!.registerWalker,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        activeColor: Colors.green,
                         secondary: const Icon(Ionicons.paw_outline),
                         value: _profileData['is_walker'] ?? false,
                         onChanged:
@@ -675,6 +697,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         SwitchListTile(
                           title: Text(AppLocalizations.of(context)!.walkSmall),
                           secondary: const Icon(Ionicons.paw_outline, size: 20),
+                          activeColor: Colors.green,
                           value: _walkerProfileData['can_walk_small'] ?? true,
                           onChanged:
                               (value) => setState(() {
@@ -684,6 +707,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         SwitchListTile(
                           title: Text(AppLocalizations.of(context)!.walkMedium),
                           secondary: const Icon(Ionicons.paw_outline, size: 20),
+                          activeColor: Colors.green,
                           value: _walkerProfileData['can_walk_medium'] ?? true,
                           onChanged:
                               (value) => setState(() {
@@ -693,6 +717,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         SwitchListTile(
                           title: Text(AppLocalizations.of(context)!.walkLarge),
                           secondary: const Icon(Ionicons.paw_outline, size: 20),
+                          activeColor: Colors.green,
                           value: _walkerProfileData['can_walk_large'] ?? false,
                           onChanged:
                               (value) => setState(() {
@@ -704,6 +729,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             AppLocalizations.of(context)!.dangerousBreed,
                           ),
                           secondary: const Icon(Ionicons.warning_outline),
+                          activeColor: Colors.green,
                           value:
                               _walkerProfileData['has_dangerous_breed_certification'] ??
                               false,
@@ -775,6 +801,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         title: Text(
                           AppLocalizations.of(context)!.notifications,
                         ),
+                        activeColor: Colors.green,
                         subtitle: Text(
                           AppLocalizations.of(context)!.enableNotifications,
                         ),
@@ -791,29 +818,42 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child:
-                      _isSaving
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                            AppLocalizations.of(context)!.saveProfile,
-                            style: TextStyle(fontSize: 16),
-                          ),
-                ),
-              ),
             ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        color: const Color(0xFFF5E9D9),
+        height: 100,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child:
+                    _isSaving
+                        ? const CircularProgressIndicator(color: Colors.brown)
+                        : Text(
+                          AppLocalizations.of(context)!.save,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: GoogleFonts.comicNeue().fontFamily,
+                          ),
+                        ),
+              ),
+            ),
           ),
         ),
       ),

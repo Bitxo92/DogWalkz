@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/notifications_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../repositories/walk_repository.dart';
+import 'walk_details_page.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -33,9 +36,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load notifications: $e')),
-      );
+      debugPrint('Error loading notifications: $e');
     }
   }
 
@@ -53,8 +54,50 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final type = notification['type'];
     final entityId = notification['related_entity_id'];
 
-    if (type == 'walk_scheduled' &&
-        entityId != null) {} // TODO: Navigate to walk details
+    if ((type == 'walk_scheduled' ||
+            type == 'walk_completed' ||
+            type == 'walk_accepted' ||
+            type == 'walk_started') &&
+        entityId != null) {
+      _navigateToWalkDetails(entityId);
+    }
+  }
+
+  /// Navigates to the WalkDetailsPage for the given walk ID
+  Future<void> _navigateToWalkDetails(String walkId) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (_) => const Center(
+              child: CircularProgressIndicator(color: Colors.brown),
+            ),
+      );
+
+      // Fetch the walk details
+      final walkRepository = WalkRepository();
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final walks = await walkRepository.getUserWalks(userId);
+      final walk = walks.firstWhere((w) => w.id == walkId);
+
+      // Close loading dialog and navigate
+      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => WalkDetailsPage(walk: walk)),
+      );
+    } catch (e) {
+      // Close loading dialog if still open
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      debugPrint('Error navigating to walk details: $e');
+    }
   }
 
   /// Deletes a notification from the list and the server.
@@ -66,9 +109,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         _notifications.removeWhere((n) => n['id'] == id);
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete notification: $e')),
-      );
+      debugPrint('Error deleting notification: $e');
     }
   }
 
@@ -88,7 +129,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               : _notifications.isEmpty
               ? Center(
                 child: Text(
-                  "No Notifications",
+                  AppLocalizations.of(context)!.noNotifications,
                   style: TextStyle(color: Colors.grey),
                 ),
               )
@@ -119,7 +160,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 : Colors.brown,
                       ),
                       title: Text(
-                        notification['title'],
+                        _getNotificationTitle(notification['type']),
                         style: TextStyle(
                           fontWeight:
                               notification['is_read']
@@ -127,7 +168,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   : FontWeight.bold,
                         ),
                       ),
-                      subtitle: Text(notification['message']),
+                      subtitle: Text(
+                        _getNotificationMessage(notification['type']),
+                      ),
                       trailing: Text(
                         _formatDate(notification['created_at']),
                         style: TextStyle(color: Colors.grey, fontSize: 12),
@@ -147,8 +190,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return Ionicons.walk_outline;
       case 'walk_accepted':
         return Ionicons.checkmark_done_outline;
+      case 'walk_declined':
+        return Ionicons.close_circle_outline;
       case 'walk_completed':
         return Ionicons.checkmark_done_outline;
+      case 'walk_started':
+        return Ionicons.walk_outline;
       case 'payment':
         return Ionicons.wallet_outline;
       default:
@@ -160,5 +207,47 @@ class _NotificationsPageState extends State<NotificationsPage> {
   String _formatDate(String dateString) {
     final date = DateTime.parse(dateString);
     return '${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _getNotificationTitle(notification) {
+    switch (notification) {
+      case 'walk_scheduled':
+        return AppLocalizations.of(context)!.walkScheduledTitle;
+      case 'walk_accepted':
+        return AppLocalizations.of(context)!.walkAcceptedTitle;
+      case 'walk_declined':
+      case 'walk_cancelled':
+        return AppLocalizations.of(context)!.walkDeclinedTitle;
+      case 'walk_started':
+      case 'walk_in_progress':
+        return AppLocalizations.of(context)!.walkStartedTitle;
+      case 'walk_completed':
+        return AppLocalizations.of(context)!.walkCompletedTitle;
+      case 'payment':
+        return AppLocalizations.of(context)!.paymentReceivedTitle;
+      default:
+        return AppLocalizations.of(context)!.notificationTitle;
+    }
+  }
+
+  String _getNotificationMessage(notification) {
+    switch (notification) {
+      case 'walk_scheduled':
+        return AppLocalizations.of(context)!.walkScheduledText;
+      case 'walk_accepted':
+        return AppLocalizations.of(context)!.walkAcceptedText;
+      case 'walk_declined':
+      case 'walk_cancelled':
+        return AppLocalizations.of(context)!.walkDeclinedText;
+      case 'walk_started':
+      case 'walk_in_progress':
+        return AppLocalizations.of(context)!.walkStartedText;
+      case 'walk_completed':
+        return AppLocalizations.of(context)!.walkCompletedText;
+      case 'payment':
+        return AppLocalizations.of(context)!.paymentReceivedText;
+      default:
+        return AppLocalizations.of(context)!.notificationText;
+    }
   }
 }

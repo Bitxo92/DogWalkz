@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/dog.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DogsRepository {
   final SupabaseClient _supabase;
@@ -34,10 +35,6 @@ class DogsRepository {
         .from('dogs')
         .update(dog.toJson())
         .eq('id', dog.id);
-
-    if (response.error != null) {
-      throw Exception('Failed to update dog: ${response.error!.message}');
-    }
   }
 
   /// Deletes the dog with the given `dogId` from the database.
@@ -73,6 +70,33 @@ class DogsRepository {
     } catch (e) {
       print('Error uploading dog photo: $e');
       return null;
+    }
+  }
+
+  String getLocalizedBreedName(String breedKey, context) {
+    switch (breedKey) {
+      case 'germanShepherd':
+        return AppLocalizations.of(context)!.germanShepherd;
+      case 'labradorRetriever':
+        return AppLocalizations.of(context)!.labradorRetriever;
+      case 'bulldog':
+        return AppLocalizations.of(context)!.bulldog;
+      case 'goldenRetriever':
+        return AppLocalizations.of(context)!.goldenRetriever;
+      case 'beagle':
+        return AppLocalizations.of(context)!.beagle;
+      case 'poodle':
+        return AppLocalizations.of(context)!.poodle;
+      case 'rottweiler':
+        return AppLocalizations.of(context)!.rottweiler;
+      case 'yorkshireTerrier':
+        return AppLocalizations.of(context)!.yorkshireTerrier;
+      case 'boxer':
+        return AppLocalizations.of(context)!.boxer;
+      case 'dachshund':
+        return AppLocalizations.of(context)!.dachshund;
+      default:
+        return breedKey;
     }
   }
 }

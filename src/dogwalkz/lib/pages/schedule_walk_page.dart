@@ -1,4 +1,4 @@
-import 'package:dogwalkz/models/walk.dart';
+import 'package:dogwalkz/repositories/dogs_repository.dart';
 import 'package:dogwalkz/services/notifications_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -22,7 +22,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   final _formKey = GlobalKey<FormState>();
   final _locationController = TextEditingController();
   final _cityController = TextEditingController();
-
+  final _dogsRepository = DogsRepository();
   DateTime? _startDateTime;
   DateTime? _endDateTime;
   Walker? _selectedWalker;
@@ -328,18 +328,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
               .map((entry) => entry.value.id)
               .toList();
 
-      await _walkRepository.scheduleWalk(
-        customerId: userId,
-        walkerId: _selectedWalker?.userId,
-        scheduledStart: _startDateTime!,
-        scheduledEnd: _endDateTime!,
-        totalPrice: _totalPrice,
-        dogIds: dogIds,
-        location: _locationController.text,
-        city: _cityController.text,
-      );
-
-      final walkId = await _walkRepository.scheduleWalk(
+      final walkID = await _walkRepository.scheduleWalk(
         customerId: userId,
         walkerId: _selectedWalker?.userId,
         scheduledStart: _startDateTime!,
@@ -353,7 +342,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
       if (_selectedWalker != null) {
         await NotificationService.sendWalkScheduledNotification(
           walkerId: _selectedWalker!.userId,
-          walkId: walkId,
+          walkId: walkID,
         );
       }
 
@@ -471,7 +460,9 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
       ),
       body:
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(
+                child: CircularProgressIndicator(color: Colors.brown),
+              )
               : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Form(
@@ -684,7 +675,12 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
                                             fontSize: 16,
                                           ),
                                         ),
-                                        Text('${dog.breed}'),
+                                        Text(
+                                          _dogsRepository.getLocalizedBreedName(
+                                            dog.breed,
+                                            context,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -842,38 +838,46 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
                         ),
 
                       const SizedBox(height: 16),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isSubmitting ? null : _submitWalkRequest,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.brown,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child:
-                              _isSubmitting
-                                  ? const CircularProgressIndicator()
-                                  : Text(
-                                    AppLocalizations.of(context)!.scheduleWalk,
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      fontFamily:
-                                          GoogleFonts.comicNeue().fontFamily,
-                                    ),
-                                  ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
+      bottomNavigationBar: Container(
+        color: const Color(0xFFF5E9D9),
+        height: 100,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _submitWalkRequest,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child:
+                    _isSubmitting
+                        ? const CircularProgressIndicator(color: Colors.brown)
+                        : Text(
+                          AppLocalizations.of(context)!.scheduleWalk,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontFamily: GoogleFonts.comicNeue().fontFamily,
+                          ),
+                        ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

@@ -34,6 +34,7 @@ class Walker {
   });
 
   factory Walker.fromJson(Map<String, dynamic> json) {
+    final address = json['address'] as Map<String, dynamic>?;
     return Walker(
       userId: json['user_id'] ?? json['id'] ?? '',
       firstName: json['first_name'] ?? '',
@@ -49,7 +50,7 @@ class Walker {
       hasDangerousBreedCertification:
           json['has_dangerous_breed_certification'] as bool? ?? false,
       baseRatePerHour: (json['base_rate_per_hour'] as num?)?.toDouble() ?? 15.0,
-      city: json['city'] ?? '',
+      city: address?['city'] ?? '',
       phone: json['phone'],
     );
   }

@@ -510,7 +510,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
         ),
         child:
             _isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
+                ? const CircularProgressIndicator(color: Colors.brown)
                 : Text(
                   text,
                   style: const TextStyle(fontSize: 18, color: Colors.white),

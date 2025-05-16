@@ -95,7 +95,7 @@ class WalkRepository {
   /// Returns a list of `Walk` objects associated with the user.
   Future<List<Walk>> getUserWalks(String userId) async {
     try {
-      final response = await _supabase
+      var response = await _supabase
           .from('walks')
           .select('''
           *,
@@ -106,12 +106,15 @@ class WalkRepository {
             *,
             walker_profiles!fk_walker_profiles_user(*)
           ),
-           customers:users!fk_walks_customer(*)
+           customers:users!fk_walks_customer(*),
+           review:reviews!fk_reviews_walk(*)
         ''')
           .or('customer_id.eq.$userId,walker_id.eq.$userId')
           .order('scheduled_start', ascending: true);
 
-      if (response == null || response.isEmpty) {
+      print("Response: $response"); // Log response for debugging error
+
+      if (response.isEmpty) {
         return []; // Return an empty list if no walks found
       }
 
@@ -141,6 +144,15 @@ class WalkRepository {
           });
         }
 
+        // Parse review
+        int? rating;
+        String? reviewComment;
+
+        if (walkJson['review'] != null && walkJson['review'] is Map) {
+          rating = walkJson['review']['rating'] as int?;
+          reviewComment = walkJson['review']['comment'] as String?;
+        }
+
         final customerJson = walkJson['customers'];
         Customer? customer;
         if (customerJson != null) {
@@ -153,6 +165,8 @@ class WalkRepository {
           'dogs': walkDogs,
           'walker': walker,
           'customer': customer,
+          'rating': rating,
+          'reviewComment': reviewComment,
         });
       }).toList();
     } catch (e) {
@@ -177,21 +191,25 @@ class WalkRepository {
       final walkerEarnings = totalPrice - platformCommission;
 
       final walkResponse =
-          await _supabase.from('walks').insert({
-            'customer_id': customerId,
-            'walker_id': walkerId,
-            'scheduled_start': scheduledStart.toIso8601String(),
-            'scheduled_end': scheduledEnd.toIso8601String(),
-            'price': totalPrice,
-            'platform_commission': platformCommission,
-            'walker_earnings': walkerEarnings,
-            'status': 'requested',
-            'payment_status': 'pending',
-          }).select();
+          await _supabase
+              .from('walks')
+              .insert({
+                'customer_id': customerId,
+                'walker_id': walkerId,
+                'scheduled_start': scheduledStart.toIso8601String(),
+                'scheduled_end': scheduledEnd.toIso8601String(),
+                'price': totalPrice,
+                'platform_commission': platformCommission,
+                'walker_earnings': walkerEarnings,
+                'status': 'requested',
+                'payment_status': 'pending',
+              })
+              .select('id')
+              .single();
 
       if (walkResponse.isEmpty) throw Exception('Failed to create walk');
 
-      final walkId = walkResponse.first['id'] as String;
+      final walkId = walkResponse['id'] as String;
 
       for (final dogId in dogIds) {
         await _supabase.from('walk_dogs').insert({
@@ -208,7 +226,6 @@ class WalkRepository {
           'p_amount': totalPrice,
         },
       );
-
       return walkId;
     } catch (e) {
       throw Exception('Failed to schedule walk: $e');
