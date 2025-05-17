@@ -487,3 +487,238 @@ class LanguageService {
 > [!NOTE]  
 > La implementación de `flutter_localizations` es una solución escalable para internacionalizar la app, ya que permite gestionar múltiples idiomas mediante archivos `.arb`. Esto facilita agregar nuevas traducciones, mantener el contenido organizado y aprovechar el soporte nativo de Flutter para widgets y formatos localizados, todo sin alterar la lógica principal de la aplicación.
 
+
+## Geolocalización: Sistema de Rastreo del Paseador
+
+El sistema de rastreo por geolocalización está compuesto por tres módulos principales:
+
+- `location_service.dart`: Acceso al GPS del dispositivo.
+
+- `walk_repository.dart`: Almacenamiento y actualización de ubicaciones.
+
+- `walk_details_page.dart`: Interfaz de usuario para iniciar y visualizar el seguimiento.
+
+``` mermaid
+sequenceDiagram
+    participant Paseador
+    participant App
+    participant GPSDispositivo
+    participant BaseDeDatos
+    participant Cliente
+
+    %% Paseador comienza paseo
+    Paseador->>App: Toca "Iniciar Paseo"
+    App->>BaseDeDatos: Actualiza estado a "en_progreso"
+    App->>GPSDispositivo: Comienza a rastrear ubicación
+
+    %% Actualizaciones de ubicación
+    loop Cada 30 segundos
+        GPSDispositivo->>App: Envía nueva ubicación
+        App->>BaseDeDatos: Guarda ubicación (lat, lng, timestamp)
+    end
+
+    %% Cliente consulta ubicación
+    Cliente->>App: Toca "Ver Paseador"
+    App->>BaseDeDatos: Obtiene última ubicación
+    BaseDeDatos-->>App: Devuelve coordenadas
+    App->>Cliente: Muestra en el mapa
+
+    %% Paseador finaliza
+    Paseador->>App: Toca "Finalizar Paseo"
+    App->>GPSDispositivo: Detiene rastreo
+    App->>BaseDeDatos: Actualiza estado a "completado"
+
+```
+
+A continuación se explica en detalla el proceso de su implementación en la app:
+
+- Añadir dependencias al fichero `pubspec.yaml`:
+
+``` yaml
+dependencies:
+  geolocator: ^10.0.0  # Para acceso al GPS del dispositivo
+  permission_handler: ^10.0.0  # Manejo de permisos en tiempo de ejecución
+  url_launcher: ^6.1.11  # Para la redirección a Google maps
+
+```
+> [!WARNING]
+> Para el correcto funcionamiento de esta funcionalidad, es imprescindible contar con los siguientes permisos:
+> - Android(`android/app/src/main/AndroidManifest.xml`)
+> ``` xml
+> <manifest>
+>    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+>    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+>    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+>    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+>    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+> </manifest>
+> ```
+> - IOS(`ios/Runner/Info.plist`)
+> ``` xml
+><dict>
+>    <key>NSLocationWhenInUseUsageDescription</key>
+>    <string>Necesitamos acceder a tu ubicación para mostrar el recorrido del paseo</string>
+>    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+>    <string>Necesitamos acceso continuo para rastrear paseos completos</string>
+>    <key>NSLocationAlwaysUsageDescription</key>
+>    <string>Necesitamos acceso continuo para rastrear paseos completos</string>
+>    <key>UIBackgroundModes</key>
+>    <array>
+>        <string>location</string>
+>        <string>fetch</string>
+>    </array>
+>    <key>NSLocationDefaultAccuracyReduced</key>
+>    <false/>
+></dict>
+> ```
+
+
+- Implementar la lógico de acceso al gps por `location_service.dart`,la cual gestiona la obtención de la ubicación del dispositivo móvil utilizando permisos y 
+  servicios de geolocalización.
+  
+  - `_checkPermissions()`: Solicita al usuario permiso para acceder a la ubicación. Devuelve `true` si el permiso es concedido.
+
+  - `getCurrentLocation()`: Obtiene la ubicación actual del dispositivo con la mejor precisión disponible. Devuelve un objeto `Position` o `null` si falla.
+
+  - `getLocationStream()`:  Devuelve un `Stream<Position>` que emite actualizaciones en tiempo real de la ubicación, con alta precisión y mínimo movimiento de 10 
+     metros entre lecturas.
+
+  
+``` dart
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+class LocationService {
+  static Future<bool> _checkPermissions() async {
+    final status = await Permission.location.request();
+    return status.isGranted;
+  }
+
+  static Future<Position?> getCurrentLocation() async {
+    try {
+      final hasPermission = await _checkPermissions();
+      if (!hasPermission) return null;
+
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+    } catch (e) {
+      print('Error getting location: $e');
+      return null;
+    }
+  }
+
+  static Stream<Position> getLocationStream() {
+    return Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 10,
+      ),
+    );
+  }
+}
+```
+- Envio de la ubicación del paseador a la base de datos(`walk_repository.dart`).
+    - Utilizamos `upsert` en lugar de `insert` para evitar la creación innecesaria de múltiples registros de ubicación por cada caminante, actualizando el registro 
+      en su lugar. 
+
+``` dart
+Future<void> trackWalkerLocation(String walkId, Position position) async {
+  await _supabase.from('walk_locations').upsert({
+    'walk_id': walkId,
+    'latitude': position.latitude,
+    'longitude': position.longitude,
+    'updated_at': DateTime.now().toIso8601String(),
+  });
+}
+```
+- Implementamos la lógica para iniciar el tracking en la interfaz (`walk_details.dart`):  
+  - Al comenzar el paseo, se ejecuta `_startLocationTracking()`, que inicia el seguimiento en tiempo real de la ubicación del *dog walker* (paseador).  
+  - Este método asegura que solo el paseador asignado pueda activar el tracking, gestionando permisos de ubicación y enviando actualizaciones constantes al backend 
+    durante todo el paseo.  
+  - Así, se garantiza un monitoreo continuo y preciso del recorrido, mejorando la experiencia y la seguridad tanto del paseador como del dueño del perro.
+
+      
+
+``` dart
+  /// Start tracking the walker's location
+  void _startLocationTracking() async {
+    // Check if we're the walker
+    if (currentUserId != walk.walkerId) return;
+
+    // Check permissions for geolocation
+    final status = await Permission.location.request();
+    if (!status.isGranted) {
+      debugPrint('Location permission denied');
+      return;
+    }
+
+    // Cancel any existing subscription, preventing posible duplicated records
+    _locationStreamSubscription?.cancel();
+
+    // Start listening to location updates
+    _locationStreamSubscription = LocationService.getLocationStream().listen(
+      (position) async {
+        _currentPosition = position;
+        try {
+          await WalkRepository().trackWalkerLocation(
+            walkId: walk.id,
+            latitude: position.latitude,
+            longitude: position.longitude,
+          );
+        } catch (e) {
+          debugPrint('Failed to update location: $e');
+        }
+      },
+      onError: (e) {
+        debugPrint('Location stream error: $e');
+      },
+    );
+  }
+```
+
+ - El *dog owner* (dueño del perro) puede consultar la ubicación actual del paseador simplemente tocando el indicador de estado.  
+    - Al hacerlo, se dispara el método `_openWalkerLocationInMaps`, que abre Google Maps mostrando la posición más reciente del paseador.  
+    - Este flujo permite al dueño del perro monitorear fácilmente el progreso del paseo en tiempo real, garantizando mayor transparencia y confianza durante la 
+      caminata.
+
+
+``` dart
+/// Open Google Maps with walker's current location
+  Future<void> _openWalkerLocationInMaps(BuildContext context) async {
+    try {
+      final location = await WalkRepository().getWalkerLocation(walk.id);
+
+      if (location == null ||
+          location['latitude'] == null ||
+          location['longitude'] == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Walker location not available yet')),
+        );
+        return;
+      }
+
+      final lat = location['latitude'];
+      final lng = location['longitude'];
+      final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
+
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url));
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to open maps: $e')));
+    }
+  }
+```
+
+- Cuando el paseo termine, la transmisión de la ubicación se detendrá automáticamente.  
+- El indicador de estado dejará de responder a eventos, evitando que el dueño intente escuchar actualizaciones una vez finalizado el paseo.
+ 
+
+
+
+
