@@ -8,6 +8,7 @@
     - [Restablecer contraseña](#restablecer-contraseña)
   - [Flutter Localizations: Soporte Multilingue](#flutter-localizations-soporte-multilingue)
     - [Persistencia del Idioma Seleccionado](#persistencia-del-idioma-seleccionado)
+  - [Geolocalización: Sistema de Rastreo del Paseador](#geolocalización-sistema-de-rastreo-del-paseador)
 
 
 ## Proceso de Autenticación
@@ -718,7 +719,26 @@ Future<void> trackWalkerLocation(String walkId, Position position) async {
 - Cuando el paseo termine, la transmisión de la ubicación se detendrá automáticamente.  
 - El indicador de estado dejará de responder a eventos, evitando que el dueño intente escuchar actualizaciones una vez finalizado el paseo.
  
+``` dart
+  Widget _buildStatusHeader(BuildContext context) {
+    final statusColor = _getStatusColor(walk.status);
+    final isInProgress = walk.status == "in_progress";
 
+    return GestureDetector(
+      onTap: () {
+        if (isInProgress) {
+          _openWalkerLocationInMaps(context);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          ...
+        ),
+      ),
+    ),      
+  }
+```
 
 
 
