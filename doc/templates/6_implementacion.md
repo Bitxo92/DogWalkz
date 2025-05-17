@@ -1,14 +1,13 @@
 # Fase de implementación
 
-- [Fase de implementación](#fase-de-implementación)
   - [Proceso de Autenticación](#proceso-de-autenticación)
     - [Inicialización de Supabase](#inicialización-de-supabase)
     - [Login](#login)
     - [SharedPreferences](#sharedpreferences)
     - [Registro](#registro)
     - [Restablecer contraseña](#restablecer-contraseña)
-- [Flutter Localizations: Soporte Multilingue](#flutter-localizations-soporte-multilingue)
-  - [Persistencia del Idioma Seleccionado](#persistencia-del-idioma-seleccionado)
+  - [Flutter Localizations: Soporte Multilingue](#flutter-localizations-soporte-multilingue)
+    - [Persistencia del Idioma Seleccionado](#persistencia-del-idioma-seleccionado)
 
 
 ## Proceso de Autenticación
