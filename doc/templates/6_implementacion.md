@@ -409,7 +409,11 @@ A continuación detallamos el proceso para su implementación en la app:
 
 ``` bash
   flutter gen-l10n
+```
+- Accedemos a las cadenas traducidas utilizando `AppLocalizations.of(context).[nombreDeLaVariable]`:
 
+``` dart
+  Text(AppLocalizations.of(context)!.welcome),
 ```
 
 - Implementación en `main.dart`:
