@@ -146,10 +146,10 @@ Para la gestión de todo el flujo de inicio de sesión de un usuario en la aplic
   }
 ```
 
-## Registro
+### Registro
 
 Para  la gestión de todo el flujo de registro de un nuevo usuario en la aplicación utilizamos el método `_register()`. 
-A continuación se detalla cada paso de forma estructurada:
+
 
 
 
@@ -258,7 +258,7 @@ A continuación se detalla cada paso de forma estructurada:
 ```
 
 
-## Restablecer contraseña
+### Restablecer contraseña
 
 Para permitir que el usuario recupere el acceso a su cuenta en caso de olvidar la contraseña, se utiliza el método `_resetPassword()`.  
 Este método envía un correo con un enlace de restablecimiento de contraseña utilizando los servicios de autenticación de Supabase.  
@@ -338,4 +338,138 @@ Future<void> _resetPassword(String email) async {
     }
   }
 ```
+---
+## Flutter Localizations: Soporte Multilingue
+Las **localizaciones** (*localizations*) en Flutter permiten que una aplicación muestre su contenido adaptado al **idioma y región del usuario**, como textos, formatos de fecha, hora, moneda y más.
+Este proceso es parte del soporte internacional conocido como **i18n** (internacionalización) y **l10n** (localización).
+Para ello, utilizamos  el paquete `flutter_localizations` junto con la generación automática de traducciones mediante `flutter_gen`.
+
+``` mermaid
+sequenceDiagram
+    participant FlutterApp
+    participant MaterialApp
+    participant LocalizationDelegate
+    participant AppLocalizations
+
+    FlutterApp->>MaterialApp: Inicializa con localizationsDelegates y supportedLocales
+    MaterialApp->>LocalizationDelegate: Carga recursos de idioma
+    LocalizationDelegate->>AppLocalizations: Genera instancia con traducciones
+    FlutterApp->>AppLocalizations: Solicita texto localizado
+    AppLocalizations-->>FlutterApp: Retorna texto traducido
+
+
+```
+A continuación detallamos el proceso para su implementación en la app:
+
+- Añadir dependencias al fichero `pubspec.yaml`:
+``` yaml
+  dependencies:
+    flutter:
+      sdk: flutter
+    flutter_localizations:
+      sdk: flutter
+    intl: any
+
+  flutter:
+    generate: true
+    uses-material-design: true
+```
+- Crea la carpeta `lib/l10n` en la ráiz del proyecto
+  - Dentro de dicho directorio añadimos los archivos .arb para cada idioma que queremos soportar.
+  - Estos ficheros .arb siguen una notación json:
+
+``` json
+ {
+  "@@locale": "en",
+  "welcomeBack": "Welcome back,",
+  "@welcomeBack": {
+    "description": "Welcome message prefix"
+  },
+  
+  "walletBalance": "Wallet Balance",
+  "addFunds": "Deposit",
+  "upcomingWalks": "Upcoming Walks",
+  "selectLanguage": "Select Language",
+  "personalInfo": "Personal Information",
+  "firstName": "First Name",
+  ...
+ }
+```
+- Ejecutamos el siguiente comando en la terminal para crear las clases `AppLocalizations`:
+
+``` bash
+  flutter gen-l10n
+
+```
+
+- Implementación en `main.dart`:
+   - El widget `MaterialApp` aplica la traducción en toda la app al recibir el idioma actual (`locale`), la lista de idiomas disponibles (`supportedLocales`) y los delegados (`localizationsDelegates`) que cargan los textos traducidos. 
+     
+  > [!NOTE]
+  > Esto permite que la app muestre su contenido en el idioma elegido por el usuario. 
+
+``` dart
+  import 'package:flutter_localizations/flutter_localizations.dart';
+  import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+  MaterialApp(
+    locale: _locale,  // Current language of the app
+    supportedLocales: AppLocalizations.supportedLocales,  // Available languages list
+    localizationsDelegates: const [
+    AppLocalizations.delegate,               // Generated Translations
+    GlobalMaterialLocalizations.delegate,  
+    GlobalWidgetsLocalizations.delegate,    
+    GlobalCupertinoLocalizations.delegate,  
+  ],
+  ...
+);
+
+```
+  - La función `setLocale()` del `main.dart` actualiza el estado del idioma actual (`_locale`) y guarda la preferencia del usuario usando LanguageService, para que el idioma se mantenga aunque se cierre la app.
+
+``` dart
+  /// Sets the locale of the app and saves the selected language to shared preferences.
+  void setLocale(Locale locale) async {
+    setState(() {
+      _locale = locale;
+    });
+    // Save the selected language
+    await LanguageService.saveLanguage(locale.languageCode);
+  }
+
+```
+### Persistencia del Idioma Seleccionado 
+
+Para garantizar que la aplicación recuerde el idioma elegido por el usuario incluso después de cerrarla o reiniciarla, se implementa el servicio `language_service.dart`, el cual utiliza la librería `SharedPreferences` para almacenar localmente el código del idioma seleccionado.
+
+
+``` dart
+import 'package:shared_preferences/shared_preferences.dart';
+
+class LanguageService {
+  static const String _languageKey = 'selected_language';
+
+  /// Saves the selected language code to shared preferences.
+  /// [languageCode] is the language code to be saved (e.g., 'en', 'es', etc.).
+  static Future<void> saveLanguage(String languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_languageKey, languageCode);
+  }
+
+  /// Retrieves the saved language code from shared preferences.
+  static Future<String?> getLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_languageKey);
+  }
+}
+
+```
+- `saveLanguage()` se encarga de guardar el código del idioma en la memoria local del dispositivo.
+   Para ello,se usa `SharedPreferences`, que actúa como un sistema de almacenamiento clave-valor persistente.
+
+- `getLanguage()` se invoca en el arranque de la aplicación para recuperar el idioma previamente guardado.
+
+
+> [!NOTE]  
+> La implementación de `flutter_localizations` es una solución escalable para internacionalizar la app, ya que permite gestionar múltiples idiomas mediante archivos `.arb`. Esto facilita agregar nuevas traducciones, mantener el contenido organizado y aprovechar el soporte nativo de Flutter para widgets y formatos localizados, todo sin alterar la lógica principal de la aplicación.
 
