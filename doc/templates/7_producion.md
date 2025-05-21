@@ -32,33 +32,35 @@
 
 ### FAQ
 
-**¿El app está disponible para iphone?**  
-Si, tenemos tanto una versión ios como android.
+**¿La app está disponible para iPhone?**  
+Sí, DogWalkz está disponible tanto para iOS como para Android.
 
 **¿Cómo me doy de alta como paseador?**  
-Desde tu pantalla de perfil de usuario, activa la opción **activar modo paseador** y rellena los campos necesarios.
+Desde tu perfil de usuario, activa la opción **"Activar modo paseador"** y completa los campos requeridos, incluyendo la verificación de identidad si es necesario.
 
 **¿Cómo recupero mi contraseña?**  
-Desde la pantalla de inicio de sesión, selecciona "*Forgot Password?*" y sigue los pasos para restablecerla vía email.
+En la pantalla de inicio de sesión, selecciona "*¿Olvidaste tu contraseña?*" y sigue las instrucciones para restablecerla por correo electrónico.
 
 **¿Puedo usar la app en más de un dispositivo?**  
-Sí, solo asegúrate de iniciar sesión con las mismas credenciales.
+Sí, puedes acceder desde varios dispositivos siempre que utilices las mismas credenciales de inicio de sesión.
 
-**¿Qué pasa si el paseador no llega?**  
-Puedes cancelar el paseo desde la app. Si ya pagaste, el saldo se reembolsa automáticamente.
+**¿Qué pasa si el paseador no se presenta?**  
+Puedes cancelar el paseo desde la app. Si ya realizaste el pago, el saldo se reembolsa automáticamente a tu monedero virtual.
 
-**¿Puedo pasear perros peligrosos?**  
-Solo si has indicado en tu perfil que posees la certificación correspondiente.
+**¿Puedo pasear perros considerados potencialmente peligrosos?**  
+Solo si has indicado en tu perfil que cuentas con la certificación oficial para ello.
 
 **¿Cómo califico un paseo?**  
-Después de completarlo, saldrá una dialogo para puntuar el paseo 1-5 y escribir una reseña. Esta reseña solo es visible para los integrantes del paseo
+Al finalizar el paseo, se te mostrará un cuadro para valorar el servicio de 1 a 5 estrellas y dejar una reseña. Esta será visible solo para las partes involucradas.
 
-**¿Qué hago si hay un incidente durante el paseo?**  
-En la sección detalles del paseo puedes optar por 2 opciones:
-    - contactarnos a través de soporte por la opción "*llamanos*" al tratarse de una urgencia, para ser atendido de forma inmediata.
-    - llamar directamente al dueño del perro.
+**¿Qué hago si ocurre un incidente durante el paseo?**  
+Desde la sección *Detalles del paseo* puedes:
 
----
+- **Contactar con soporte** usando la opción "*Llámanos*", para asistencia inmediata en casos urgentes.  
+- **Llamar directamente al dueño del perro**, si la situación lo requiere.
+
+La seguridad de los usuarios y sus mascotas es siempre nuestra prioridad.
+
 
 # Protección de datos de carácter personal
 
