@@ -349,6 +349,89 @@ Future<void> _resetPassword(String email) async {
     }
   }
 ```
+
+- Una vez que el usuario toca el enlace recibido por correo, la app se encarga de capturarlo mediante *deep linking* y lo redirige a la pantalla para cambiar su contraseña.
+
+- Para ello utilizamos la libreria `app_links` para detectar los *deep links* entrantes
+
+``` dart
+@override
+void initState() {
+  super.initState();
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (widget.initialUri != null) {
+      _handleDeepLink(widget.initialUri!);
+    }
+    _setupDeepLinks(); 
+  });
+}
+
+void _setupDeepLinks() async {
+  final appLinks = AppLinks();
+
+  final initialUri = await appLinks.getInitialLink();
+  if (initialUri != null) _handleDeepLink(initialUri);
+
+  appLinks.uriLinkStream.listen(_handleDeepLink);
+}
+
+void _handleDeepLink(Uri uri) {
+  if (uri.host == 'reset-password') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PasswordResetPage()),
+    );
+  }
+}
+
+
+```
+
+> [!CAUTION]
+> Para implementar *deep linking* a nuestra aplicación debemos añadir al `AndroidManifest.xml` el intent a la página correspondiente a la cual quremos redirigirnos
+> ``` xml
+>    <intent-filter>
+>             <data android:scheme="dogwalkz" android:host="reset-password" />
+>             <action android:name="android.intent.action.VIEW" />
+>             <category android:name="android.intent.category.DEFAULT" />
+>             <category android:name="android.intent.category.BROWSABLE" />
+>    </intent-filter>
+>
+> ```
+
+- Una vez redirigido, el usuario verá un formulario para ingresar su nueva contraseña. Al confirmarla, se llama a `supabase.auth.updateUser()` para aplicar el cambio en la tabla `auth_users`.
+
+
+```dart
+Future<void> _updatePassword() async {
+  if (!_formKey.currentState!.validate()) return;
+  if (_newPasswordController.text != _confirmPasswordController.text) {
+    setState(() => _errorMessage = 'Passwords do not match');
+    return;
+  }
+
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  try {
+    await _supabase.auth.updateUser(
+      UserAttributes(password: _newPasswordController.text),
+    );
+    setState(() => _isSuccess = true);
+  } on AuthException catch (e) {
+    setState(() => _errorMessage = e.message);
+  } catch (e) {
+    setState(() => _errorMessage = 'An unexpected error occurred');
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
+
+```
+
 ---
 ## Flutter Localizations: Soporte Multilingue
 Las **localizaciones** (*localizations*) en Flutter permiten que una aplicación muestre su contenido adaptado al **idioma y región del usuario**, como textos, formatos de fecha, hora, moneda y más.
