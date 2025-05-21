@@ -1,3 +1,4 @@
+import 'package:dogwalkz/pages/wallet_page.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -60,6 +61,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
             type == 'walk_started') &&
         entityId != null) {
       _navigateToWalkDetails(entityId);
+    } else {
+      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => WalletPage()),
+      );
     }
   }
 

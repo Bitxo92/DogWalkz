@@ -18,7 +18,7 @@
   "state": "Estado/Provincia",
   "postalCode": "Código postal",
   "country": "País",
-  "registerWalker": "Registrarse como paseador",
+  "registerWalker": "Estado Paseador",
   "bio": "Biografía",
   "experience": "Años de experiencia",
   "nie": "Número de NIE/Pasaporte",
@@ -118,7 +118,7 @@
   "finishWalk": "Finalizar",
 
   "myWalks": "Mis Paseos",
-  "error": "Error",
+  "error": "¡Aviso!",
   "ok": "Aceptar",
   "failedToLoadWalks": "Error al cargar los paseos: {error}",
   "noWalksForDay": "No hay paseos programados para este día",
@@ -221,7 +221,25 @@
   "noReviewMessage": "No hay detalles de reseña \ndisponibles para este paseo.",
   "reviewComment": "Reseña",
   "rating": "Calificación",
-  "save": "Guardar"
+  "save": "Guardar",
+  "callSupport": "Llamanos",
+    "submit": "¡Enviar!",
+  "next": "Siguiente",
+  "back": "Atrás",
+  "balance": "Saldo disponible: ",
+  "almost": "¡Casi listo! 🎉",
+  "match": "Tu pareja perfecta 🦮",
+  "join": "¿Quién se une? 🐾",
+  "estimate": "Total estimado: ",
+  "selectEnd": "Selecciona la hora de fin: ",
+  "ends": "Termina: ",
+  "selectStart": "Selecciona la hora de inicio",
+  "starts": "Comienza",
+  "walkTime": "¿Cuándo es la caminata? ⏰",
+  "helpUs": "¡Ayúdanos a encontrar los mejores paseadores en tu zona!",
+  "meet": "¿Dónde Quedamos? 🗺️",
+  "selectStartEnd": "Por favor selecciona la hora de inicio y fin",
+  "selectOneDog": "Por favor selecciona al menos un perro"
 
 
 }

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dogwalkz/constants/supabase.dart';
 import 'package:dogwalkz/services/language_service.dart';
@@ -54,6 +55,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    // Initialize the app with the saved or default locale
     _locale = widget.locale;
   }
 
@@ -81,7 +83,42 @@ class _MyAppState extends State<MyApp> {
       ],
       theme: ThemeData(
         primarySwatch: Colors.brown,
+        primaryColor: Colors.brown,
         scaffoldBackgroundColor: const Color(0xFFF5E9D9),
+        focusColor: Colors.brown,
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: Colors.brown,
+          selectionColor: Colors.brown.withOpacity(0.5),
+          selectionHandleColor: Colors.brown,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.brown, width: 2.0),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.brown.withOpacity(0.5),
+              width: 1.5,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.red, width: 2.0),
+          ),
+
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.red.shade700, width: 2.0),
+          ),
+          floatingLabelStyle: TextStyle(color: Colors.brown),
+          labelStyle: TextStyle(color: Colors.brown.withOpacity(0.9)),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: Colors.brown),
+        ),
+        iconTheme: IconThemeData(color: Colors.brown),
+        primaryIconTheme: IconThemeData(color: Colors.brown),
+        textTheme: GoogleFonts.comicNeueTextTheme(),
+
+        primaryTextTheme: GoogleFonts.comicNeueTextTheme(),
       ),
       initialRoute: '/',
       routes: {

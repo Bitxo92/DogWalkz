@@ -89,39 +89,249 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
   /// Builds the UI for the AddEditDogPage.
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: const Color(0xFFF5E9D9),
-      appBar: AppBar(
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Ionicons.arrow_back_outline),
-          color: Colors.white,
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.dog == null
-              ? AppLocalizations.of(context)!.addDog
-              : AppLocalizations.of(context)!.editDog,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontFamily: GoogleFonts.comicNeue().fontFamily,
-            color: Colors.white,
+
+      body: Stack(
+        children: [
+          Container(
+            height: screenHeight * 0.16,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(0),
+                bottomRight: Radius.circular(0),
+              ),
+              child: AppBar(
+                elevation: 0,
+                backgroundColor: Colors.brown,
+                centerTitle: true,
+                leading: IconButton(
+                  icon: const Icon(Ionicons.arrow_back_outline),
+                  color: Colors.white,
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(
+                  widget.dog == null
+                      ? AppLocalizations.of(context)!.addDog
+                      : AppLocalizations.of(context)!.editDog,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: GoogleFonts.comicNeue().fontFamily,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-        backgroundColor: Colors.brown,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _pickImage,
-                child: Stack(
-                  alignment: Alignment.bottomRight,
+
+          Container(
+            padding: EdgeInsets.only(top: screenHeight * 0.16),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
                   children: [
-                    CircleAvatar(
+                    SizedBox(height: screenHeight * 0.07),
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.dogName,
+                        labelStyle: TextStyle(
+                          fontFamily: GoogleFonts.comicNeue().fontFamily,
+                          color: Colors.brown,
+                        ),
+                        prefixIcon: Icon(
+                          Ionicons.paw_outline,
+                          color: Colors.brown,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return AppLocalizations.of(context)!.required;
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.dogBreed,
+                        labelStyle: TextStyle(
+                          fontFamily: GoogleFonts.comicNeue().fontFamily,
+                          color: Colors.brown,
+                        ),
+                        prefixIcon: Icon(
+                          Ionicons.earth_outline,
+                          color: Colors.brown,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      controller: TextEditingController(
+                        text:
+                            _breedController.text.isNotEmpty
+                                ? DogsRepository().getLocalizedBreedName(
+                                  _breedController.text,
+                                  context,
+                                )
+                                : '',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return AppLocalizations.of(context)!.required;
+                        }
+                        return null;
+                      },
+                      onTap: () async {
+                        await _showBreedSelectionDialog();
+                        setState(
+                          () {},
+                        ); //!Important --> Force rebuild so that the updated breed is translated
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _ageController,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.dogAge,
+                        labelStyle: TextStyle(
+                          fontFamily: GoogleFonts.comicNeue().fontFamily,
+                          color: Colors.brown,
+                        ),
+                        prefixIcon: Icon(
+                          Ionicons.calendar_outline,
+                          color: Colors.brown,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _size,
+                      items:
+                          ['small', 'medium', 'large']
+                              .map(
+                                (size) => DropdownMenuItem(
+                                  value: size,
+                                  child: Text(
+                                    _localizedSize(size, context),
+                                    style: TextStyle(
+                                      fontFamily:
+                                          GoogleFonts.comicNeue().fontFamily,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                      onChanged: (value) => setState(() => _size = value!),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.size,
+                        labelStyle: TextStyle(
+                          fontFamily: GoogleFonts.comicNeue().fontFamily,
+                          color: Colors.brown,
+                        ),
+                        prefixIcon: Icon(
+                          Ionicons.scale_outline,
+                          color: Colors.brown,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      title: Text(
+                        AppLocalizations.of(context)!.dangerous,
+                        style: TextStyle(
+                          fontFamily: GoogleFonts.comicNeue().fontFamily,
+                        ),
+                      ),
+                      secondary: Icon(
+                        Ionicons.warning_outline,
+                        color: _isDangerousBreed ? Colors.red : Colors.brown,
+                      ),
+                      value: _isDangerousBreed,
+                      onChanged:
+                          (value) => setState(() => _isDangerousBreed = value),
+                      activeColor: Colors.red,
+                    ),
+                    SwitchListTile(
+                      title: Text(
+                        AppLocalizations.of(context)!.sociable,
+                        style: TextStyle(
+                          fontFamily: GoogleFonts.comicNeue().fontFamily,
+                        ),
+                      ),
+                      secondary: Icon(
+                        Ionicons.people_outline,
+                        color: _isSociable ? Colors.green : Colors.brown,
+                      ),
+                      value: _isSociable,
+                      onChanged: (value) => setState(() => _isSociable = value),
+                      activeColor: Colors.green,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _specialInstructionsController,
+                      decoration: InputDecoration(
+                        labelText:
+                            AppLocalizations.of(context)!.specialInstructions,
+                        labelStyle: TextStyle(
+                          fontFamily: GoogleFonts.comicNeue().fontFamily,
+                          color: Colors.brown,
+                        ),
+                        prefixIcon: Icon(
+                          Ionicons.document_text_outline,
+                          color: Colors.brown,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            top: (screenHeight * 0.16) - 40,
+            left: screenWidth / 2 - 60,
+            child: GestureDetector(
+              onTap: _pickImage,
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
                       radius: 60,
                       backgroundColor: Colors.brown.shade100,
                       backgroundImage:
@@ -139,182 +349,25 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
                               )
                               : null,
                     ),
-                    if (_selectedImage == null)
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.brown,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Ionicons.camera_outline,
-                          size: 20,
-                          color: Colors.white,
-                        ),
+                  ),
+                  if (_selectedImage == null)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Colors.brown,
+                        shape: BoxShape.circle,
                       ),
-                  ],
-                ),
+                      child: const Icon(
+                        Ionicons.camera_outline,
+                        size: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.dogName,
-                  labelStyle: TextStyle(
-                    fontFamily: GoogleFonts.comicNeue().fontFamily,
-                    color: Colors.brown,
-                  ),
-                  prefixIcon: Icon(Ionicons.paw_outline, color: Colors.brown),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!.required;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.dogBreed,
-                  labelStyle: TextStyle(
-                    fontFamily: GoogleFonts.comicNeue().fontFamily,
-                    color: Colors.brown,
-                  ),
-                  prefixIcon: Icon(Ionicons.earth_outline, color: Colors.brown),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                controller: TextEditingController(
-                  text:
-                      _breedController.text.isNotEmpty
-                          ? DogsRepository().getLocalizedBreedName(
-                            _breedController.text,
-                            context,
-                          )
-                          : '',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!.required;
-                  }
-                  return null;
-                },
-                onTap: () async {
-                  await _showBreedSelectionDialog();
-                  setState(
-                    () {},
-                  ); //!Important --> Force rebuild so that the updated breed is translated
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _ageController,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.dogAge,
-                  labelStyle: TextStyle(
-                    fontFamily: GoogleFonts.comicNeue().fontFamily,
-                    color: Colors.brown,
-                  ),
-                  prefixIcon: Icon(
-                    Ionicons.calendar_outline,
-                    color: Colors.brown,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _size,
-                items:
-                    ['small', 'medium', 'large']
-                        .map(
-                          (size) => DropdownMenuItem(
-                            value: size,
-                            child: Text(
-                              _localizedSize(size, context),
-                              style: TextStyle(
-                                fontFamily: GoogleFonts.comicNeue().fontFamily,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                onChanged: (value) => setState(() => _size = value!),
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.size,
-                  labelStyle: TextStyle(
-                    fontFamily: GoogleFonts.comicNeue().fontFamily,
-                    color: Colors.brown,
-                  ),
-                  prefixIcon: Icon(Ionicons.scale_outline, color: Colors.brown),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: Text(
-                  AppLocalizations.of(context)!.dangerous,
-                  style: TextStyle(
-                    fontFamily: GoogleFonts.comicNeue().fontFamily,
-                  ),
-                ),
-                secondary: Icon(
-                  Ionicons.warning_outline,
-                  color: _isDangerousBreed ? Colors.red : Colors.brown,
-                ),
-                value: _isDangerousBreed,
-                onChanged: (value) => setState(() => _isDangerousBreed = value),
-                activeColor: Colors.red,
-              ),
-              SwitchListTile(
-                title: Text(
-                  AppLocalizations.of(context)!.sociable,
-                  style: TextStyle(
-                    fontFamily: GoogleFonts.comicNeue().fontFamily,
-                  ),
-                ),
-                secondary: Icon(
-                  Ionicons.people_outline,
-                  color: _isSociable ? Colors.green : Colors.brown,
-                ),
-                value: _isSociable,
-                onChanged: (value) => setState(() => _isSociable = value),
-                activeColor: Colors.green,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _specialInstructionsController,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.specialInstructions,
-                  labelStyle: TextStyle(
-                    fontFamily: GoogleFonts.comicNeue().fontFamily,
-                    color: Colors.brown,
-                  ),
-                  prefixIcon: Icon(
-                    Ionicons.document_text_outline,
-                    color: Colors.brown,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: Container(
         color: const Color(0xFFF5E9D9),

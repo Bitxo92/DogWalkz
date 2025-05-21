@@ -57,51 +57,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   /// Handles the Floating Action Button press event.
   /// Checks if the user has funds in their wallet and at least one dog listed.
   Future<void> _handleFabPressed() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-
-    setState(() => _isLoadingBalance = true);
-
-    final wallet = await _walletRepository.getWallet(user.id);
-    final balance = (wallet['balance'] as num?)?.toDouble() ?? 0.0;
-
-    final dogsRepo = DogsRepository();
-    final dogs = await dogsRepo.getDogsByOwner(user.id);
-
-    setState(() => _isLoadingBalance = false);
-
-    String? message;
-    if (balance <= 0 && dogs.isEmpty) {
-      message = AppLocalizations.of(context)!.homeNoFundsAndNoDogs;
-    } else if (balance <= 0) {
-      message = AppLocalizations.of(context)!.homeNoFundsInWallet;
-    } else if (dogs.isEmpty) {
-      message = AppLocalizations.of(context)!.homeNoDogsListed;
-    }
-
-    if (message != null) {
-      showDialog(
-        context: context,
-        builder:
-            (context) => AlertDialog(
-              title: Text(
-                AppLocalizations.of(context)!.homeWarningTitle,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 33),
-              ),
-              content: Text(message ?? ''),
-              actions: [
-                Center(
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'),
-                  ),
-                ),
-              ],
-            ),
-      );
-      return;
-    }
-
     Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ScheduleWalkPage()),

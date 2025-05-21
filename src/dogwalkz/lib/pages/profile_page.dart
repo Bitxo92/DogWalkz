@@ -145,16 +145,16 @@ class _ProfilePageState extends State<ProfilePage> {
   /// If the user doesn't select an image, the function does nothing.
   Future<void> _pickImage() async {
     try {
-      final pickedFile = await _picker.pickImage(
+      final pickedFile = await ImagePicker().pickImage(
         source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 80,
       );
-      if (pickedFile == null) return;
-
-      setState(() => _localImage = File(pickedFile.path));
-      await _uploadImage(_localImage!);
+      if (pickedFile != null) {
+        final imageFile = File(pickedFile.path);
+        setState(() {
+          _localImage = imageFile;
+        });
+        await _uploadImage(imageFile); // Upload after setting the local image
+      }
     } catch (e) {
       _showError('Image selection failed: ${e.toString()}');
     }
@@ -175,25 +175,40 @@ class _ProfilePageState extends State<ProfilePage> {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return;
 
-      final fileExt = image.path.split('.').last;
-      final fileName = '${userId}_profile.$fileExt';
-      final fileBytes = await image.readAsBytes();
+      // Validate image file
+      if (!await image.exists()) {
+        throw Exception('Image file does not exist');
+      }
 
+      final fileExt = image.path.split('.').last.toLowerCase();
+      if (!['jpg', 'jpeg', 'png', 'gif'].contains(fileExt)) {
+        throw Exception('Unsupported image format');
+      }
+      // create unique file name to avoid cached images
+      final fileName =
+          '${userId}_profile_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
+      // Show loading state
+      setState(() => _isSaving = true);
+
+      // Upload the file
       await _supabase.storage
           .from('profile-pictures')
           .upload(
             fileName,
-            File(image.path),
+            image,
             fileOptions: FileOptions(
               upsert: true,
               contentType: 'image/${fileExt == 'jpg' ? 'jpeg' : fileExt}',
             ),
           );
 
+      // Get the public URL
       final imageUrl = _supabase.storage
           .from('profile-pictures')
           .getPublicUrl(fileName);
 
+      // Update user profile with the new URL
       await _supabase
           .from('users')
           .update({
@@ -202,13 +217,20 @@ class _ProfilePageState extends State<ProfilePage> {
           })
           .eq('id', userId);
 
+      // Update local state
       setState(() {
         _profileData['profile_picture_url'] = imageUrl;
-        _localImage = image;
+        _localImage = null; // Clear local image since we now have a URL
       });
     } catch (e) {
       _showError('Upload failed: ${e.toString()}');
       debugPrint('Image upload error: $e');
+      // Optionally show error to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to upload image: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -275,7 +297,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      Navigator.popUntil(context, (route) => route.isFirst);
+                      Navigator.popUntil(context, ModalRoute.withName('/home'));
                     },
                     child: Text(AppLocalizations.of(context)!.ok),
                   ),
@@ -303,18 +325,33 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Stack(
         alignment: Alignment.bottomRight,
         children: [
-          CircleAvatar(
-            radius: 60,
-            backgroundColor: Colors.brown.shade100,
-            backgroundImage: _getProfileImage(),
-            child:
-                _shouldShowPlaceholder()
-                    ? const Icon(
-                      Ionicons.person_outline,
-                      size: 60,
-                      color: Colors.brown,
-                    )
-                    : null,
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 2,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: CircleAvatar(
+              radius: 60,
+              backgroundColor: Colors.brown.shade100,
+              backgroundImage: _getProfileImage(),
+              child:
+                  _shouldShowPlaceholder()
+                      ? const Icon(
+                        Ionicons.person_outline,
+                        size: 60,
+                        color: Colors.brown,
+                      )
+                      : null,
+            ),
           ),
           Container(
             padding: const EdgeInsets.all(8),
@@ -328,6 +365,7 @@ class _ProfilePageState extends State<ProfilePage> {
               color: Colors.white,
             ),
           ),
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -355,6 +393,21 @@ class _ProfilePageState extends State<ProfilePage> {
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Color(0xFF6D4C41),
+              onPrimary: Colors.white,
+              onSurface: Colors.brown,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: Color(0xFF6D4C41)),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       setState(() {
@@ -366,461 +419,552 @@ class _ProfilePageState extends State<ProfilePage> {
   /// Builds the UI for the ProfilePage widget.
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFFF5E9D9),
         body: Center(child: CircularProgressIndicator(color: Colors.brown)),
       );
     }
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5E9D9),
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.myProfile),
-        titleTextStyle: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          fontFamily: GoogleFonts.comicNeue().fontFamily,
-        ),
-        centerTitle: true,
 
-        backgroundColor: Colors.brown,
-        leading: IconButton(
-          icon: const Icon(Ionicons.arrow_back_outline),
-          color: Colors.white,
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Center(child: _buildProfileImage()),
-              const SizedBox(height: 24),
-
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+      body: Stack(
+        children: [
+          Container(
+            height: screenHeight * 0.16,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(0),
+                bottomRight: Radius.circular(0),
+              ),
+              child: AppBar(
+                title: Text(AppLocalizations.of(context)!.myProfile),
+                titleTextStyle: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: GoogleFonts.comicNeue().fontFamily,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          AppLocalizations.of(context)!.personalInfo,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.brown,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _firstNameController,
-                              decoration: InputDecoration(
-                                labelText:
-                                    AppLocalizations.of(context)!.firstName,
-                                prefixIcon: const Icon(Ionicons.person_outline),
-                              ),
-                              validator:
-                                  (value) =>
-                                      value?.isEmpty ?? true
-                                          ? AppLocalizations.of(
-                                            context,
-                                          )!.required
-                                          : null,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _lastNameController,
-                              decoration: InputDecoration(
-                                labelText:
-                                    AppLocalizations.of(context)!.lastName,
-                              ),
-                              validator:
-                                  (value) =>
-                                      value?.isEmpty ?? true
-                                          ? AppLocalizations.of(
-                                            context,
-                                          )!.required
-                                          : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.email,
-                          prefixIcon: const Icon(Ionicons.mail_outline),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value?.isEmpty ?? true)
-                            return AppLocalizations.of(context)!.required;
-                          if (!value!.contains('@'))
-                            return AppLocalizations.of(context)!.emailInvalid;
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _phoneController,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.phone,
-                          prefixIcon: Icon(Ionicons.call_outline),
-                        ),
-                        keyboardType: TextInputType.phone,
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? AppLocalizations.of(context)!.required
-                                    : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _dobController,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.dob,
-                          prefixIcon: const Icon(Ionicons.calendar_outline),
-                        ),
-                        readOnly: true,
-                        onTap: () => _selectDate(context),
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? AppLocalizations.of(context)!.required
-                                    : null,
-                      ),
-                      const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          AppLocalizations.of(context)!.address,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.brown,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _streetController,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.street,
-                          prefixIcon: Icon(Ionicons.home_outline),
-                        ),
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? AppLocalizations.of(context)!.required
-                                    : null,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: TextFormField(
-                              controller: _cityController,
-                              decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context)!.city,
-                                prefixIcon: Icon(Ionicons.business_outline),
-                              ),
-                              validator:
-                                  (value) =>
-                                      value?.isEmpty ?? true
-                                          ? AppLocalizations.of(
-                                            context,
-                                          )!.required
-                                          : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: TextFormField(
-                              controller: _stateController,
-                              decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context)!.state,
-                                prefixIcon: Icon(Ionicons.map_outline),
-                              ),
-                              validator:
-                                  (value) =>
-                                      value?.isEmpty ?? true
-                                          ? AppLocalizations.of(
-                                            context,
-                                          )!.required
-                                          : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: TextFormField(
-                              controller: _postalCodeController,
-                              decoration: InputDecoration(
-                                labelText:
-                                    AppLocalizations.of(context)!.postalCode,
-                                prefixIcon: Icon(Ionicons.code_outline),
-                              ),
-                              validator:
-                                  (value) =>
-                                      value?.isEmpty ?? true
-                                          ? AppLocalizations.of(
-                                            context,
-                                          )!.required
-                                          : null,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            flex: 3,
-                            child: TextFormField(
-                              controller: _countryController,
-                              decoration: InputDecoration(
-                                labelText:
-                                    AppLocalizations.of(context)!.country,
-                                prefixIcon: Icon(Ionicons.earth_outline),
-                              ),
-                              validator:
-                                  (value) =>
-                                      value?.isEmpty ?? true
-                                          ? AppLocalizations.of(
-                                            context,
-                                          )!.required
-                                          : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                centerTitle: true,
+
+                backgroundColor: Colors.brown,
+                leading: IconButton(
+                  icon: const Icon(Ionicons.arrow_back_outline),
+                  color: Colors.white,
+                  onPressed: () => Navigator.pop(context),
                 ),
               ),
-              const SizedBox(height: 20),
-
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.registerWalker,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        activeColor: Colors.green,
-                        secondary: const Icon(Ionicons.paw_outline),
-                        value: _profileData['is_walker'] ?? false,
-                        onChanged:
-                            (value) => setState(() {
-                              _profileData['is_walker'] = value;
-                              if (value) {
-                                _loadWalkerProfile(
-                                  _supabase.auth.currentUser!.id,
-                                );
-                              }
-                            }),
-                      ),
-                      if (_profileData['is_walker'] == true) ...[
-                        const Divider(),
-                        TextFormField(
-                          controller: _bioController,
-                          decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!.bio,
-                            prefixIcon: Icon(Ionicons.document_text_outline),
-                          ),
-                          maxLines: 3,
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true
-                                      ? AppLocalizations.of(context)!.required
-                                      : null,
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _experienceController,
-                          decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!.experience,
-                            prefixIcon: Icon(Ionicons.time_outline),
-                          ),
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value?.isEmpty ?? true)
-                              return AppLocalizations.of(context)!.required;
-                            final years = int.tryParse(value!);
-                            if (years == null || years < 0) return 'Invalid';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _docIdController,
-                          decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!.nie,
-                            prefixIcon: Icon(Ionicons.card_outline),
-                          ),
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true
-                                      ? AppLocalizations.of(context)!.required
-                                      : null,
-                        ),
-                        const SizedBox(height: 16),
-                        SwitchListTile(
-                          title: Text(AppLocalizations.of(context)!.walkSmall),
-                          secondary: const Icon(Ionicons.paw_outline, size: 20),
-                          activeColor: Colors.green,
-                          value: _walkerProfileData['can_walk_small'] ?? true,
-                          onChanged:
-                              (value) => setState(() {
-                                _walkerProfileData['can_walk_small'] = value;
-                              }),
-                        ),
-                        SwitchListTile(
-                          title: Text(AppLocalizations.of(context)!.walkMedium),
-                          secondary: const Icon(Ionicons.paw_outline, size: 20),
-                          activeColor: Colors.green,
-                          value: _walkerProfileData['can_walk_medium'] ?? true,
-                          onChanged:
-                              (value) => setState(() {
-                                _walkerProfileData['can_walk_medium'] = value;
-                              }),
-                        ),
-                        SwitchListTile(
-                          title: Text(AppLocalizations.of(context)!.walkLarge),
-                          secondary: const Icon(Ionicons.paw_outline, size: 20),
-                          activeColor: Colors.green,
-                          value: _walkerProfileData['can_walk_large'] ?? false,
-                          onChanged:
-                              (value) => setState(() {
-                                _walkerProfileData['can_walk_large'] = value;
-                              }),
-                        ),
-                        SwitchListTile(
-                          title: Text(
-                            AppLocalizations.of(context)!.dangerousBreed,
-                          ),
-                          secondary: const Icon(Ionicons.warning_outline),
-                          activeColor: Colors.green,
-                          value:
-                              _walkerProfileData['has_dangerous_breed_certification'] ??
-                              false,
-                          onChanged:
-                              (value) => setState(() {
-                                _walkerProfileData['has_dangerous_breed_certification'] =
-                                    value;
-                              }),
-                        ),
-                        if (_walkerProfileData['has_dangerous_breed_certification'] ==
-                            true) ...[
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _certificationNumberController,
-                            decoration: InputDecoration(
-                              labelText:
-                                  AppLocalizations.of(
-                                    context,
-                                  )!.certificationNumber,
-                              prefixIcon: Icon(Ionicons.ribbon_outline),
-                            ),
-                            validator:
-                                (value) =>
-                                    value?.isEmpty ?? true
-                                        ? 'Required when certification is enabled'
-                                        : null,
-                          ),
-                        ],
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          AppLocalizations.of(context)!.settings,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.brown,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ListTile(
-                        title: Text(AppLocalizations.of(context)!.language),
-                        subtitle: Text(
-                          _isEnglish
-                              ? AppLocalizations.of(context)!.english
-                              : AppLocalizations.of(context)!.spanish,
-                        ),
-                        leading: const Icon(Ionicons.language_outline),
-                        trailing: const Icon(Ionicons.chevron_forward_outline),
-                        onTap: () => _showLanguageDialog(context),
-                      ),
-                      SwitchListTile(
-                        title: Text(
-                          AppLocalizations.of(context)!.notifications,
-                        ),
-                        activeColor: Colors.green,
-                        subtitle: Text(
-                          AppLocalizations.of(context)!.enableNotifications,
-                        ),
-                        secondary: const Icon(Ionicons.notifications_outline),
-                        value: _notificationsEnabled,
-                        onChanged: (value) {
-                          setState(() {
-                            _notificationsEnabled = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
-        ),
+
+          Container(
+            padding: EdgeInsets.only(top: screenHeight * 0.16),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    SizedBox(height: screenHeight * 0.07),
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                AppLocalizations.of(context)!.personalInfo,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.brown,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _firstNameController,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.firstName,
+                                      prefixIcon: const Icon(
+                                        Ionicons.person_outline,
+                                      ),
+                                    ),
+                                    validator:
+                                        (value) =>
+                                            value?.isEmpty ?? true
+                                                ? AppLocalizations.of(
+                                                  context,
+                                                )!.required
+                                                : null,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _lastNameController,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.lastName,
+                                    ),
+                                    validator:
+                                        (value) =>
+                                            value?.isEmpty ?? true
+                                                ? AppLocalizations.of(
+                                                  context,
+                                                )!.required
+                                                : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              readOnly: true,
+                              controller: _emailController,
+                              decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.email,
+                                prefixIcon: const Icon(Ionicons.mail_outline),
+                              ),
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value?.isEmpty ?? true)
+                                  return AppLocalizations.of(context)!.required;
+                                if (!value!.contains('@'))
+                                  return AppLocalizations.of(
+                                    context,
+                                  )!.emailInvalid;
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _phoneController,
+                              decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.phone,
+                                prefixIcon: Icon(Ionicons.call_outline),
+                              ),
+                              keyboardType: TextInputType.phone,
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _dobController,
+                              decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.dob,
+                                prefixIcon: const Icon(
+                                  Ionicons.calendar_outline,
+                                ),
+                              ),
+                              readOnly: true,
+                              onTap: () => _selectDate(context),
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                            const SizedBox(height: 16),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                AppLocalizations.of(context)!.address,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.brown,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _streetController,
+                              decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.street,
+                                prefixIcon: Icon(Ionicons.home_outline),
+                              ),
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty ?? true
+                                          ? AppLocalizations.of(
+                                            context,
+                                          )!.required
+                                          : null,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: TextFormField(
+                                    controller: _cityController,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(context)!.city,
+                                      prefixIcon: Icon(
+                                        Ionicons.business_outline,
+                                      ),
+                                    ),
+                                    validator:
+                                        (value) =>
+                                            value?.isEmpty ?? true
+                                                ? AppLocalizations.of(
+                                                  context,
+                                                )!.required
+                                                : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: TextFormField(
+                                    controller: _stateController,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(context)!.state,
+                                      prefixIcon: Icon(Ionicons.map_outline),
+                                    ),
+                                    validator:
+                                        (value) =>
+                                            value?.isEmpty ?? true
+                                                ? AppLocalizations.of(
+                                                  context,
+                                                )!.required
+                                                : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: TextFormField(
+                                    controller: _postalCodeController,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.postalCode,
+                                      prefixIcon: Icon(Ionicons.code_outline),
+                                    ),
+                                    validator:
+                                        (value) =>
+                                            value?.isEmpty ?? true
+                                                ? AppLocalizations.of(
+                                                  context,
+                                                )!.required
+                                                : null,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  flex: 3,
+                                  child: TextFormField(
+                                    controller: _countryController,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(context)!.country,
+                                      prefixIcon: Icon(Ionicons.earth_outline),
+                                    ),
+                                    validator:
+                                        (value) =>
+                                            value?.isEmpty ?? true
+                                                ? AppLocalizations.of(
+                                                  context,
+                                                )!.required
+                                                : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              title: Text(
+                                AppLocalizations.of(context)!.registerWalker,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.brown,
+                                ),
+                              ),
+                              activeColor: Colors.green,
+                              secondary: const Icon(Ionicons.paw_outline),
+                              value: _profileData['is_walker'] ?? false,
+                              onChanged:
+                                  (value) => setState(() {
+                                    _profileData['is_walker'] = value;
+                                    if (value) {
+                                      _loadWalkerProfile(
+                                        _supabase.auth.currentUser!.id,
+                                      );
+                                    }
+                                  }),
+                            ),
+                            if (_profileData['is_walker'] == true) ...[
+                              TextFormField(
+                                controller: _bioController,
+                                decoration: InputDecoration(
+                                  labelText: AppLocalizations.of(context)!.bio,
+                                  prefixIcon: Icon(
+                                    Ionicons.document_text_outline,
+                                  ),
+                                ),
+                                maxLines: 3,
+                                validator:
+                                    (value) =>
+                                        value?.isEmpty ?? true
+                                            ? AppLocalizations.of(
+                                              context,
+                                            )!.required
+                                            : null,
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _experienceController,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      AppLocalizations.of(context)!.experience,
+                                  prefixIcon: Icon(Ionicons.time_outline),
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true)
+                                    return AppLocalizations.of(
+                                      context,
+                                    )!.required;
+                                  final years = int.tryParse(value!);
+                                  if (years == null || years < 0)
+                                    return 'Invalid';
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _docIdController,
+                                decoration: InputDecoration(
+                                  labelText: AppLocalizations.of(context)!.nie,
+                                  prefixIcon: Icon(Ionicons.card_outline),
+                                ),
+                                validator:
+                                    (value) =>
+                                        value?.isEmpty ?? true
+                                            ? AppLocalizations.of(
+                                              context,
+                                            )!.required
+                                            : null,
+                              ),
+                              const SizedBox(height: 16),
+                              SwitchListTile(
+                                title: Text(
+                                  AppLocalizations.of(context)!.walkSmall,
+                                ),
+                                secondary: const Icon(
+                                  Ionicons.paw_outline,
+                                  size: 20,
+                                ),
+                                activeColor: Colors.green,
+                                value:
+                                    _walkerProfileData['can_walk_small'] ??
+                                    true,
+                                onChanged:
+                                    (value) => setState(() {
+                                      _walkerProfileData['can_walk_small'] =
+                                          value;
+                                    }),
+                              ),
+                              SwitchListTile(
+                                title: Text(
+                                  AppLocalizations.of(context)!.walkMedium,
+                                ),
+                                secondary: const Icon(
+                                  Ionicons.paw_outline,
+                                  size: 20,
+                                ),
+                                activeColor: Colors.green,
+                                value:
+                                    _walkerProfileData['can_walk_medium'] ??
+                                    true,
+                                onChanged:
+                                    (value) => setState(() {
+                                      _walkerProfileData['can_walk_medium'] =
+                                          value;
+                                    }),
+                              ),
+                              SwitchListTile(
+                                title: Text(
+                                  AppLocalizations.of(context)!.walkLarge,
+                                ),
+                                secondary: const Icon(
+                                  Ionicons.paw_outline,
+                                  size: 20,
+                                ),
+                                activeColor: Colors.green,
+                                value:
+                                    _walkerProfileData['can_walk_large'] ??
+                                    false,
+                                onChanged:
+                                    (value) => setState(() {
+                                      _walkerProfileData['can_walk_large'] =
+                                          value;
+                                    }),
+                              ),
+                              SwitchListTile(
+                                title: Text(
+                                  AppLocalizations.of(context)!.dangerousBreed,
+                                ),
+                                secondary: const Icon(Ionicons.warning_outline),
+                                activeColor: Colors.green,
+                                value:
+                                    _walkerProfileData['has_dangerous_breed_certification'] ??
+                                    false,
+                                onChanged:
+                                    (value) => setState(() {
+                                      _walkerProfileData['has_dangerous_breed_certification'] =
+                                          value;
+                                    }),
+                              ),
+                              if (_walkerProfileData['has_dangerous_breed_certification'] ==
+                                  true) ...[
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _certificationNumberController,
+                                  decoration: InputDecoration(
+                                    labelText:
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.certificationNumber,
+                                    prefixIcon: Icon(Ionicons.ribbon_outline),
+                                  ),
+                                  validator:
+                                      (value) =>
+                                          value?.isEmpty ?? true
+                                              ? 'Required when certification is enabled'
+                                              : null,
+                                ),
+                              ],
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                AppLocalizations.of(context)!.settings,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.brown,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ListTile(
+                              title: Text(
+                                AppLocalizations.of(context)!.language,
+                              ),
+                              subtitle: Text(
+                                _isEnglish
+                                    ? AppLocalizations.of(context)!.english
+                                    : AppLocalizations.of(context)!.spanish,
+                              ),
+                              leading: const Icon(Ionicons.language_outline),
+                              trailing: const Icon(
+                                Ionicons.chevron_forward_outline,
+                              ),
+                              onTap: () => _showLanguageDialog(context),
+                            ),
+                            SwitchListTile(
+                              title: Text(
+                                AppLocalizations.of(context)!.notifications,
+                              ),
+                              activeColor: Colors.green,
+                              subtitle: Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.enableNotifications,
+                              ),
+                              secondary: const Icon(
+                                Ionicons.notifications_outline,
+                              ),
+                              value: _notificationsEnabled,
+                              onChanged: (value) {
+                                setState(() {
+                                  _notificationsEnabled = value;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            top: (screenHeight * 0.16) - 40,
+            left: screenWidth / 2 - 60,
+            child: _buildProfileImage(),
+          ),
+        ],
       ),
       bottomNavigationBar: Container(
         color: const Color(0xFFF5E9D9),
@@ -834,6 +978,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveProfile,
                 style: ElevatedButton.styleFrom(
+                  elevation: 4,
                   backgroundColor: Colors.brown,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -872,6 +1017,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               RadioListTile<bool>(
                 title: Text(AppLocalizations.of(context)!.english),
+                activeColor: Colors.brown,
                 value: true,
                 groupValue: _isEnglish,
                 onChanged: (value) {
@@ -881,6 +1027,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               RadioListTile<bool>(
                 title: Text(AppLocalizations.of(context)!.spanish),
+                activeColor: Colors.brown,
                 value: false,
                 groupValue: _isEnglish,
                 onChanged: (value) {

@@ -2,9 +2,11 @@ import 'package:dogwalkz/repositories/dogs_repository.dart';
 import 'package:dogwalkz/services/notifications_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:intl/intl.dart';
 import '../models/dog.dart';
 import '../models/walker.dart';
 import '../repositories/walk_repository.dart';
@@ -36,6 +38,17 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   double _pricePerDog = 0.0;
   double _platformCommission = 0.0;
   double _walkerEarnings = 0.0;
+  List<Walker> _availableWalkers = [];
+  bool _isLoadingWalkers = false;
+
+  int _currentStep = 0;
+  final List<StepItem> _steps = [
+    StepItem(Ionicons.location_outline, ""),
+    StepItem(Ionicons.time_outline, ""),
+    StepItem(Ionicons.paw_outline, ""),
+    StepItem(Ionicons.person_outline, ""),
+    StepItem(Ionicons.checkmark_done_outline, ""),
+  ];
 
   @override
   void initState() {
@@ -43,7 +56,6 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     _loadInitialData();
   }
 
-  /// Loads initial data such as user dogs and wallet balance.
   Future<void> _loadInitialData() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
@@ -63,8 +75,6 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     }
   }
 
-  /// Selects the start date and time for the walk.
-  /// Displays a date picker and a time picker to the user.
   Future<void> _selectStartDateTime() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -122,8 +132,6 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     });
   }
 
-  /// Selects the end date and time for the walk.
-  /// Displays a date picker and a time picker to the user.
   Future<void> _selectEndDateTime() async {
     if (_startDateTime == null) {
       _showError(AppLocalizations.of(context)!.selectStartTimeMessage);
@@ -193,9 +201,6 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     });
   }
 
-  /// Calculates the total price of the walk.
-  /// Takes into account the number of dogs, their sizes, and the selected walker.
-  /// Updates the state with the calculated values.
   void _calculatePrice() {
     if (_startDateTime == null || _endDateTime == null) return;
     if (_selectedDogs.every((selected) => !selected)) return;
@@ -211,7 +216,6 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     if (_hasDangerousBreeds()) total *= 1.3;
 
     final platformCommission = total * WalkRepository.platformCommissionRate;
-
     final walkerEarnings = total - platformCommission;
 
     setState(() {
@@ -222,19 +226,15 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     });
   }
 
-  /// Checks if any of the selected dogs are large.
   bool _hasLargeDogs() => _userDogs.asMap().entries.any(
     (entry) => _selectedDogs[entry.key] && entry.value.size == 'large',
   );
 
-  /// Checks if any of the selected dogs are of a dangerous breed.
   bool _hasDangerousBreeds() => _userDogs.asMap().entries.any(
     (entry) => _selectedDogs[entry.key] && entry.value.isDangerousBreed,
   );
 
-  /// Selects a walker for the scheduled walk.
-  /// Displays a list of available walkers based on the selected criteria.
-  Future<void> _selectWalker() async {
+  Future<void> _loadAvailableWalkers() async {
     if (_cityController.text.isEmpty) {
       _showError(AppLocalizations.of(context)!.enterLocation);
       return;
@@ -248,6 +248,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
       return;
     }
 
+    setState(() => _isLoadingWalkers = true);
     try {
       final walkers = await _walkRepository.getAvailableWalkers(
         city: _cityController.text,
@@ -256,6 +257,11 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
         needsLargeDogWalker: _hasLargeDogs(),
         needsDangerousBreedCertification: _hasDangerousBreeds(),
       );
+
+      setState(() {
+        _availableWalkers = walkers;
+        _isLoadingWalkers = false;
+      });
 
       if (walkers.isEmpty) {
         showDialog(
@@ -269,37 +275,18 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
+                    child: Text(AppLocalizations.of(context)!.ok),
                   ),
                 ],
               ),
         );
-        return;
       }
-
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => WalkerSelectionPage(
-                walkers: walkers,
-
-                onWalkerSelected: (walker) {
-                  setState(() {
-                    _selectedWalker = walker;
-                    _calculatePrice();
-                  });
-                },
-              ),
-        ),
-      );
     } catch (e) {
+      setState(() => _isLoadingWalkers = false);
       _showError('Failed to load walkers: $e');
     }
   }
 
-  /// Submits the walk request to the server.
-  /// Validates the input fields and checks if the user has sufficient funds.
   Future<void> _submitWalkRequest() async {
     if (!_formKey.currentState!.validate())
       return;
@@ -359,66 +346,18 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Error'),
+            title: Text(AppLocalizations.of(context)!.error),
             content: Text(message),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
+                child: Text(AppLocalizations.of(context)!.ok),
               ),
             ],
           ),
     );
   }
 
-  /// Builds a card widget for displaying walker information.
-  /// Displays the walker's name, rating, and profile picture.
-  Widget _buildWalkerCard(Walker walker) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage:
-              walker.profilePictureUrl != null
-                  ? NetworkImage(walker.profilePictureUrl!)
-                  : null,
-          child:
-              walker.profilePictureUrl == null
-                  ? const Icon(Ionicons.person_outline)
-                  : null,
-        ),
-        title: Text(
-          walker.fullName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ...List.generate(5, (index) {
-              final fullStar = index < walker.rating.floor();
-              final halfStar =
-                  index == walker.rating.floor() && walker.rating % 1 >= 0.5;
-
-              return Icon(
-                fullStar
-                    ? Ionicons.star
-                    : halfStar
-                    ? Ionicons.star_half
-                    : Ionicons.star_outline,
-                size: 16,
-                color: Colors.amber,
-              );
-            }),
-          ],
-        ),
-        trailing: const Icon(Ionicons.checkmark_circle, color: Colors.green),
-        onTap: () {},
-      ),
-    );
-  }
-
-  /// Displays a success message after scheduling a walk.
-  /// Shows a dialog with the success message and an OK button to return to the main screen.
   void _showSuccess(String message) {
     if (mounted) {
       showDialog(
@@ -433,7 +372,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
                       () => Navigator.of(
                         context,
                       ).popUntil((route) => route.isFirst),
-                  child: const Text('OK'),
+                  child: Text(AppLocalizations.of(context)!.ok),
                 ),
               ],
             ),
@@ -441,9 +380,10 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     }
   }
 
-  /// Builds the main UI of the Schedule Walk page.
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
@@ -463,430 +403,669 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
               ? const Center(
                 child: CircularProgressIndicator(color: Colors.brown),
               )
-              : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.selectTimeAndLocation,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.brown,
-                          fontSize: 18,
-                        ),
+              : Column(
+                children: [
+                  _buildStepperHeader(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: NeverScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
                       ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _cityController,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.enterCity,
-                          //hintText: 'Location',
-                          labelStyle: TextStyle(
-                            color: Colors.brown,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          floatingLabelStyle: TextStyle(
-                            color: Colors.brown,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Colors.brown,
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Colors.brown,
-                              width: 2,
-                            ),
-                          ),
-                          prefixIcon: const Icon(
-                            Ionicons.location_outline,
-                            color: Colors.brown,
-                          ),
-                        ),
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? AppLocalizations.of(context)!.required
-                                    : null,
-                      ),
-                      const SizedBox(height: 16),
+                      padding: const EdgeInsets.all(16),
+                      child: Form(key: _formKey, child: _buildStepContent()),
+                    ),
+                  ),
+                  _buildNavigationControls(),
+                ],
+              ),
+    );
+  }
 
-                      GestureDetector(
-                        onTap: _selectStartDateTime,
+  Widget _buildStepperHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 60,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  left: 20,
+                  right: 20,
+                  top: 30,
+                  child: Container(height: 2, color: Colors.grey.shade300),
+                ),
+
+                Positioned(
+                  left: 20,
+                  right: 20,
+                  top: 30,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final progress = (_currentStep / (_steps.length - 1))
+                          .clamp(0.0, 1.0);
+                      return Align(
+                        alignment: Alignment.centerLeft,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.brown, width: 1),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Ionicons.time_outline,
-                                color: Colors.brown,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  _startDateTime == null
-                                      ? AppLocalizations.of(context)!.startTime
-                                      : '${AppLocalizations.of(context)!.start} ${_startDateTime!.toLocal().toString().substring(0, 16)}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.brown,
-                                  ),
-                                ),
-                              ),
-                              const Icon(
-                                Ionicons.chevron_forward,
-                                color: Colors.brown,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      GestureDetector(
-                        onTap: _selectEndDateTime,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.brown, width: 1),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Ionicons.time_outline,
-                                color: Colors.brown,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  _endDateTime == null
-                                      ? AppLocalizations.of(context)!.endTime
-                                      : '${AppLocalizations.of(context)!.end} ${_endDateTime!.toLocal().toString().substring(0, 16)}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.brown,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const Icon(
-                                Ionicons.chevron_forward,
-                                color: Colors.brown,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Dogs
-                      Text(
-                        AppLocalizations.of(context)!.selectDogs,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          width: constraints.maxWidth * progress,
+                          height: 2,
                           color: Colors.brown,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _userDogs.length,
-                        itemBuilder: (context, index) {
-                          final dog = _userDogs[index];
-                          final isSelected = _selectedDogs[index];
-
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedDogs[index] = !isSelected;
-                                _calculatePrice();
-                              });
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 6),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color:
-                                      isSelected ? Colors.green : Colors.brown,
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child:
-                                        dog.photoUrl != null
-                                            ? Image.network(
-                                              dog.photoUrl!,
-                                              width: 64,
-                                              height: 64,
-                                              fit: BoxFit.cover,
-                                            )
-                                            : Container(
-                                              width: 64,
-                                              height: 64,
-                                              decoration: BoxDecoration(
-                                                color: Colors.brown.shade100,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Icon(
-                                                Ionicons.paw_outline,
-                                                size: 40,
-                                                color: Colors.brown,
-                                              ),
-                                            ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          dog.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        Text(
-                                          _dogsRepository.getLocalizedBreedName(
-                                            dog.breed,
-                                            context,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (isSelected)
-                                    const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.green,
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(
-                        AppLocalizations.of(context)!.selectWalker,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.brown,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      _selectedWalker == null
-                          ? Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.brown, width: 1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                              leading: const Icon(
-                                Ionicons.person_outline,
-                                color: Colors.brown,
-                              ),
-                              title: Text(
-                                AppLocalizations.of(context)!.selectWalker,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.brown,
-                                ),
-                              ),
-                              trailing: const Icon(
-                                Ionicons.chevron_forward,
-                                color: Colors.brown,
-                              ),
-                              onTap: _selectWalker,
-                            ),
-                          )
-                          : Column(
-                            children: [_buildWalkerCard(_selectedWalker!)],
-                          ),
-                      const SizedBox(height: 16),
-
-                      // Price
-                      if (_totalPrice > 0)
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Center(
-                                  child: Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.paymentDetails,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Total Price
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.totalPrice,
-                                    ),
-                                    Text(
-                                      '\$${_totalPrice.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.pricePerDog,
-                                    ),
-                                    Text(
-                                      '\$${_pricePerDog.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.platformCommission,
-                                    ),
-                                    Text(
-                                      '\$${_platformCommission.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.walkerEarnings,
-                                    ),
-                                    Text(
-                                      '\$${_walkerEarnings.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      const SizedBox(height: 16),
-                    ],
+                      );
+                    },
                   ),
                 ),
-              ),
-      bottomNavigationBar: Container(
-        color: const Color(0xFFF5E9D9),
-        height: 100,
-        child: Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitWalkRequest,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child:
-                    _isSubmitting
-                        ? const CircularProgressIndicator(color: Colors.brown)
-                        : Text(
-                          AppLocalizations.of(context)!.scheduleWalk,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontFamily: GoogleFonts.comicNeue().fontFamily,
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children:
+                      _steps.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final step = entry.value;
+                        final isActive = index == _currentStep;
+                        final isCompleted = index < _currentStep;
+
+                        return Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color:
+                                isActive
+                                    ? Colors.brown
+                                    : isCompleted
+                                    ? Colors.brown.shade300
+                                    : Colors.grey.shade300,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey.shade300),
                           ),
-                        ),
-              ),
+                          child: Icon(
+                            step.icon,
+                            color:
+                                isActive || isCompleted
+                                    ? Colors.white
+                                    : Colors.brown.shade300,
+                          ),
+                        );
+                      }).toList(),
+                ),
+              ],
             ),
           ),
+
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children:
+                _steps.map((step) {
+                  return SizedBox(
+                    width: 40,
+                    child: Text(
+                      step.title,
+                      style: const TextStyle(fontSize: 12),
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepContent() {
+    switch (_currentStep) {
+      case 0:
+        return _buildLocationStep();
+      case 1:
+        return _buildTimeStep();
+      case 2:
+        return _buildDogsStep();
+      case 3:
+        return _buildWalkerStep();
+      case 4:
+      default:
+        return _buildConfirmationStep();
+    }
+  }
+
+  Widget _buildLocationStep() {
+    return Column(
+      children: [
+        Text(
+          AppLocalizations.of(context)!.meet,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: Colors.brown,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 24),
+        TextFormField(
+          controller: _cityController,
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.city,
+            prefixIcon: const Icon(
+              Ionicons.location_outline,
+              color: Colors.brown,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.brown),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.brown, width: 2),
+            ),
+          ),
+          validator:
+              (value) =>
+                  value?.isEmpty ?? true
+                      ? AppLocalizations.of(context)!.required
+                      : null,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          AppLocalizations.of(context)!.helpUs,
+          style: TextStyle(
+            color: Colors.brown.shade600,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeStep() {
+    return Column(
+      children: [
+        Text(
+          AppLocalizations.of(context)!.walkTime,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: Colors.brown,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 24),
+        _buildDateTimePicker(
+          label:
+              _startDateTime == null
+                  ? AppLocalizations.of(context)!.selectStart
+                  : "${AppLocalizations.of(context)!.starts} ${DateFormat('MMM dd, hh:mm a').format(_startDateTime!)}",
+          onTap: _selectStartDateTime,
+        ),
+        const SizedBox(height: 16),
+        _buildDateTimePicker(
+          label:
+              _endDateTime == null
+                  ? AppLocalizations.of(context)!.selectEnd
+                  : "${AppLocalizations.of(context)!.ends} ${DateFormat('MMM dd, hh:mm a').format(_endDateTime!)}",
+          onTap: _selectEndDateTime,
+        ),
+        const SizedBox(height: 16),
+        if (_totalPrice > 0)
+          Text(
+            "${AppLocalizations.of(context)!.estimate} \$${_totalPrice.toStringAsFixed(2)}",
+            style: const TextStyle(
+              color: Colors.green,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDateTimePicker({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.brown),
+          color: Colors.brown.shade50,
+        ),
+        child: Row(
+          children: [
+            const Icon(Ionicons.calendar_outline, color: Colors.brown),
+            const SizedBox(width: 16),
+            Text(label, style: const TextStyle(fontSize: 16)),
+            const Spacer(),
+            const Icon(Ionicons.chevron_forward, color: Colors.brown),
+          ],
         ),
       ),
     );
   }
 
-  /// Disposes of the controllers used in the form.
-  /// Cleans up resources and prevents memory leaks.
+  Widget _buildDogsStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context)!.join,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: Colors.brown,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _userDogs.length,
+          itemBuilder: (context, index) {
+            final dog = _userDogs[index];
+            final isSelected = _selectedDogs[index];
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedDogs[index] = !isSelected;
+                  _calculatePrice();
+                });
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isSelected ? Colors.green : Colors.brown,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child:
+                          dog.photoUrl != null
+                              ? Image.network(
+                                dog.photoUrl!,
+                                width: 64,
+                                height: 64,
+                                fit: BoxFit.cover,
+                              )
+                              : Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: Colors.brown.shade100,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Ionicons.paw_outline,
+                                  size: 40,
+                                  color: Colors.brown,
+                                ),
+                              ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            dog.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            _dogsRepository.getLocalizedBreedName(
+                              dog.breed,
+                              context,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isSelected)
+                      const Icon(Icons.check_circle, color: Colors.green),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWalkerStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Text(
+            AppLocalizations.of(context)!.match,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.brown,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 33),
+
+        if (_availableWalkers.isEmpty && !_isLoadingWalkers)
+          GestureDetector(
+            onTap: _loadAvailableWalkers,
+            child: const Center(
+              child: Icon(FontAwesomeIcons.arrowsRotate, size: 100.0),
+            ),
+          ),
+        if (_isLoadingWalkers)
+          const Center(child: CircularProgressIndicator(color: Colors.brown)),
+
+        if (_availableWalkers.isNotEmpty)
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _availableWalkers.length,
+            itemBuilder: (context, index) {
+              final walker = _availableWalkers[index];
+              final isSelected = _selectedWalker?.userId == walker.userId;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedWalker = isSelected ? null : walker;
+                    _calculatePrice();
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isSelected ? Colors.green : Colors.brown,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundImage:
+                            walker.profilePictureUrl != null
+                                ? NetworkImage(walker.profilePictureUrl!)
+                                : null,
+                        child:
+                            walker.profilePictureUrl == null
+                                ? const Icon(Ionicons.person_outline, size: 30)
+                                : null,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              walker.fullName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Row(
+                              children: List.generate(5, (starIndex) {
+                                return Icon(
+                                  starIndex < walker.rating.floor()
+                                      ? Ionicons.star
+                                      : starIndex == walker.rating.floor() &&
+                                          walker.rating % 1 >= 0.5
+                                      ? Ionicons.star_half
+                                      : Ionicons.star_outline,
+                                  size: 16,
+                                  color: Colors.amber,
+                                );
+                              }),
+                            ),
+                            if (walker.experienceYears != null)
+                              Text('${walker.experienceYears} years'),
+                            Text(
+                              '\$${walker.baseRatePerHour.toStringAsFixed(2)}/hr',
+                              style: TextStyle(
+                                color: Colors.brown.shade700,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isSelected)
+                        const Icon(Icons.check_circle, color: Colors.green),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildConfirmationStep() {
+    return Column(
+      children: [
+        Text(
+          AppLocalizations.of(context)!.almost,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: Colors.brown,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 24),
+        if (_totalPrice > 0)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      AppLocalizations.of(context)!.paymentDetails,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppLocalizations.of(context)!.totalPrice),
+                      Text(
+                        '\$${_totalPrice.toStringAsFixed(2)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppLocalizations.of(context)!.pricePerDog),
+                      Text(
+                        '\$${_pricePerDog.toStringAsFixed(2)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppLocalizations.of(context)!.platformCommission),
+                      Text(
+                        '\$${_platformCommission.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppLocalizations.of(context)!.walkerEarnings),
+                      Text(
+                        '\$${_walkerEarnings.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: 24),
+        Text(
+          "${AppLocalizations.of(context)!.balance} \$${_walletBalance.toStringAsFixed(2)}",
+          style: TextStyle(
+            color: _walletBalance >= _totalPrice ? Colors.green : Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNavigationControls() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(color: Colors.transparent),
+      child: Row(
+        children: [
+          if (_currentStep > 0)
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => setState(() => _currentStep--),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  side: const BorderSide(color: Colors.brown),
+                  foregroundColor: Colors.brown,
+                ),
+                child: Text(
+                  AppLocalizations.of(context)!.back,
+                  style: TextStyle(fontSize: 24),
+                ),
+              ),
+            ),
+          if (_currentStep > 0) const SizedBox(width: 16),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _handleNextStep,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.brown,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child:
+                  _isSubmitting
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                      : Text(
+                        _currentStep == _steps.length - 1
+                            ? AppLocalizations.of(context)!.submit
+                            : AppLocalizations.of(context)!.next,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          color: Colors.white,
+                        ),
+                      ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleNextStep() {
+    if (_currentStep == _steps.length - 1) {
+      _submitWalkRequest();
+    } else {
+      if (_validateCurrentStep()) {
+        setState(() => _currentStep++);
+      }
+    }
+  }
+
+  bool _validateCurrentStep() {
+    final localizations = AppLocalizations.of(context)!;
+    switch (_currentStep) {
+      case 0:
+        if (_cityController.text.isEmpty) {
+          _showError(localizations.enterCity);
+          return false;
+        }
+        return true;
+      case 1:
+        if (_startDateTime == null || _endDateTime == null) {
+          _showError(localizations.selectStartEnd);
+          return false;
+        }
+        return true;
+      case 2:
+        if (_selectedDogs.every((selected) => !selected)) {
+          _showError(localizations.selectOneDog);
+          return false;
+        }
+        return true;
+      case 3:
+        if (_selectedWalker == null) {
+          _showError(localizations.selectWalker);
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  }
+
   @override
   void dispose() {
     _locationController.dispose();
     _cityController.dispose();
     super.dispose();
   }
+}
+
+class StepItem {
+  final IconData icon;
+  final String title;
+
+  StepItem(this.icon, this.title);
 }

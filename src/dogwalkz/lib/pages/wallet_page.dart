@@ -76,9 +76,14 @@ class _WalletPageState extends State<WalletPage> {
 
   void _applyFilter() {
     final now = DateTime.now();
-    final beginningOfWeek = now.subtract(
-      Duration(days: now.weekday % 7),
-    ); // Sunday as start of the week
+
+    // Calculate the beginning of the week (Starts:Sunday at midnight)
+    final beginningOfWeek = now.subtract(Duration(days: now.weekday % 7));
+    final startOfWeek = DateTime(
+      beginningOfWeek.year,
+      beginningOfWeek.month,
+      beginningOfWeek.day,
+    );
 
     setState(() {
       _filteredTransactions =
@@ -87,7 +92,7 @@ class _WalletPageState extends State<WalletPage> {
 
             switch (_selectedFilter) {
               case 'week':
-                return date.isAfter(beginningOfWeek);
+                return date.isAfter(startOfWeek);
               case 'month':
                 return date.isAfter(DateTime(now.year, now.month - 1, now.day));
               case 'halfYear':
@@ -139,6 +144,11 @@ class _WalletPageState extends State<WalletPage> {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount > _balance || amount <= 0) {
       debugPrint('Invalid amount: $amount');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showInsufficientFundsDialog(
+          AppLocalizations.of(context)!.insufficientFunds,
+        );
+      });
 
       return;
     }
@@ -255,6 +265,7 @@ class _WalletPageState extends State<WalletPage> {
                                 : () async {
                                   setState(() => _isAddingFunds = true);
                                   await _addFunds();
+                                  _amountController.clear();
                                   setState(() => _isAddingFunds = false);
                                   Navigator.of(context).pop();
                                 },
@@ -381,6 +392,7 @@ class _WalletPageState extends State<WalletPage> {
                                 : () async {
                                   setState(() => _iswithdrawingFunds = true);
                                   await _withdrawFunds();
+                                  _amountController.clear();
                                   setState(() => _iswithdrawingFunds = false);
                                   Navigator.of(context).pop();
                                 },
@@ -463,241 +475,262 @@ class _WalletPageState extends State<WalletPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5E9D9),
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          AppLocalizations.of(context)!.wallet,
-          style: TextStyle(
-            fontFamily: GoogleFonts.comicNeue().fontFamily,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.brown,
-        leading: IconButton(
-          icon: const Icon(Ionicons.arrow_back_outline),
-          color: Colors.white,
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+      body: Stack(
+        children: [
+          Container(
+            height:
+                Size.fromHeight(
+                  MediaQuery.of(context).size.height * 0.17,
+                ).height,
+            child: AppBar(
+              centerTitle: true,
+              title: Text(
+                AppLocalizations.of(context)!.wallet,
+                style: TextStyle(
+                  fontFamily: GoogleFonts.comicNeue().fontFamily,
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.brown.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Ionicons.wallet_outline,
-                      size: 40,
-                      color: Colors.brown,
-                    ),
-                    const SizedBox(width: 15),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.walletBalance,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          Text(
-                            '\$${_balance.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 30),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GestureDetector(
-                            onTap: _showAddFundsDialog,
-                            child: Column(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  child: Icon(
-                                    FontAwesomeIcons.piggyBank,
-                                    color: Colors.brown,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  AppLocalizations.of(context)!.addFunds,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          GestureDetector(
-                            onTap: _showWithdrawFundsDialog,
-                            child: Column(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  child: Icon(
-                                    FontAwesomeIcons.moneyBillTransfer,
-                                    color: Colors.brown,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  AppLocalizations.of(context)!.withdraw,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 30),
+              backgroundColor: Colors.brown,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          Card(
+            color: Colors.transparent,
+            elevation: 0,
+            margin: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height * 0.10,
+            ),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  Text(
-                    AppLocalizations.of(context)!.recentTransactions,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(
+                            255,
+                            105,
+                            105,
+                            105,
+                          ).withOpacity(0.5),
+                          blurRadius: 10,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Ionicons.wallet_outline,
+                          size: 40,
+                          color: Colors.brown,
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppLocalizations.of(context)!.walletBalance,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              Text(
+                                '\$${_balance.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.brown.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 30),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                onTap: _showAddFundsDialog,
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.white,
+                                      child: Icon(
+                                        FontAwesomeIcons.piggyBank,
+                                        color: Colors.brown,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      AppLocalizations.of(context)!.addFunds,
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              GestureDetector(
+                                onTap: _showWithdrawFundsDialog,
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.white,
+                                      child: Icon(
+                                        FontAwesomeIcons.moneyBillTransfer,
+                                        color: Colors.brown,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      AppLocalizations.of(context)!.withdraw,
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
+                  const SizedBox(height: 30),
 
-              if (_transactions.isNotEmpty)
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      FilterChip(
-                        label: Text(AppLocalizations.of(context)!.all),
-                        selected: _selectedFilter == 'all',
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedFilter = 'all';
-                            _applyFilter();
-                          });
-                        },
-                        selectedColor: Colors.brown.withOpacity(0.2),
-                        checkmarkColor: Colors.brown,
-                        labelStyle: TextStyle(
-                          color:
-                              _selectedFilter == 'all'
-                                  ? Colors.brown
-                                  : Colors.grey.shade700,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: Text(AppLocalizations.of(context)!.thisWeek),
-                        selected: _selectedFilter == 'week',
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedFilter = 'week';
-                            _applyFilter();
-                          });
-                        },
-                        selectedColor: Colors.brown.withOpacity(0.2),
-                        checkmarkColor: Colors.brown,
-                        labelStyle: TextStyle(
-                          color:
-                              _selectedFilter == 'week'
-                                  ? Colors.brown
-                                  : Colors.grey.shade700,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: Text(AppLocalizations.of(context)!.thisMonth),
-                        selected: _selectedFilter == 'month',
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedFilter = 'month';
-                            _applyFilter();
-                          });
-                        },
-                        selectedColor: Colors.brown.withOpacity(0.2),
-                        checkmarkColor: Colors.brown,
-                        labelStyle: TextStyle(
-                          color:
-                              _selectedFilter == 'month'
-                                  ? Colors.brown
-                                  : Colors.grey.shade700,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: Text(AppLocalizations.of(context)!.last6Months),
-                        selected: _selectedFilter == 'halfYear',
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedFilter = 'halfYear';
-                            _applyFilter();
-                          });
-                        },
-                        selectedColor: Colors.brown.withOpacity(0.2),
-                        checkmarkColor: Colors.brown,
-                        labelStyle: TextStyle(
-                          color:
-                              _selectedFilter == 'halfYear'
-                                  ? Colors.brown
-                                  : Colors.grey.shade700,
+                      Text(
+                        AppLocalizations.of(context)!.recentTransactions,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.brown,
                         ),
                       ),
                     ],
                   ),
-                ),
-              const SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
-              Expanded(
-                child:
-                    _filteredTransactions.isEmpty
-                        ? _buildEmptyState()
-                        : _buildTransactionsList(),
+                  if (_transactions.isNotEmpty)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          FilterChip(
+                            label: Text(AppLocalizations.of(context)!.all),
+                            selected: _selectedFilter == 'all',
+                            onSelected: (selected) {
+                              setState(() {
+                                _selectedFilter = 'all';
+                                _applyFilter();
+                              });
+                            },
+                            selectedColor: Colors.brown.withOpacity(0.2),
+                            checkmarkColor: Colors.brown,
+                            labelStyle: TextStyle(
+                              color:
+                                  _selectedFilter == 'all'
+                                      ? Colors.brown
+                                      : Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilterChip(
+                            label: Text(AppLocalizations.of(context)!.thisWeek),
+                            selected: _selectedFilter == 'week',
+                            onSelected: (selected) {
+                              setState(() {
+                                _selectedFilter = 'week';
+                                _applyFilter();
+                              });
+                            },
+                            selectedColor: Colors.brown.withOpacity(0.2),
+                            checkmarkColor: Colors.brown,
+                            labelStyle: TextStyle(
+                              color:
+                                  _selectedFilter == 'week'
+                                      ? Colors.brown
+                                      : Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilterChip(
+                            label: Text(
+                              AppLocalizations.of(context)!.thisMonth,
+                            ),
+                            selected: _selectedFilter == 'month',
+                            onSelected: (selected) {
+                              setState(() {
+                                _selectedFilter = 'month';
+                                _applyFilter();
+                              });
+                            },
+                            selectedColor: Colors.brown.withOpacity(0.2),
+                            checkmarkColor: Colors.brown,
+                            labelStyle: TextStyle(
+                              color:
+                                  _selectedFilter == 'month'
+                                      ? Colors.brown
+                                      : Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilterChip(
+                            label: Text(
+                              AppLocalizations.of(context)!.last6Months,
+                            ),
+                            selected: _selectedFilter == 'halfYear',
+                            onSelected: (selected) {
+                              setState(() {
+                                _selectedFilter = 'halfYear';
+                                _applyFilter();
+                              });
+                            },
+                            selectedColor: Colors.brown.withOpacity(0.2),
+                            checkmarkColor: Colors.brown,
+                            labelStyle: TextStyle(
+                              color:
+                                  _selectedFilter == 'halfYear'
+                                      ? Colors.brown
+                                      : Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 10),
+
+                  Expanded(
+                    child:
+                        _filteredTransactions.isEmpty
+                            ? _buildEmptyState()
+                            : _buildTransactionsList(),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -718,15 +751,22 @@ class _WalletPageState extends State<WalletPage> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Icon(Ionicons.wallet_outline, size: 60, color: Colors.brown.shade200),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context)!.noTransactionsFound,
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-          ),
-        ],
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Icon(
+              Ionicons.wallet_outline,
+              size: 60,
+              color: Colors.brown.shade200,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              AppLocalizations.of(context)!.noTransactionsFound,
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -811,6 +851,23 @@ class _WalletPageState extends State<WalletPage> {
           );
         },
       ),
+    );
+  }
+
+  void _showInsufficientFundsDialog(String message) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text("Error", style: TextStyle(color: Colors.red)),
+            content: Text(message),
+            actions: [
+              TextButton(
+                child: Text(AppLocalizations.of(context)!.ok),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
     );
   }
 

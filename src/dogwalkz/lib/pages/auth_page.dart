@@ -34,6 +34,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   bool _isPasswordVisible = false;
   bool _rememberMe = false;
   bool _acceptTerms = false;
+  bool _isLogin = true;
 
   /// Initializes the state of the widget.
   @override
@@ -151,10 +152,8 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
       final response = await _supabase.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        data: {
-          'name': _nameController.text.trim(),
-          'phone': _phoneController.text.trim(),
-        },
+        emailRedirectTo: 'https://fanciful-brioche-0801c9.netlify.app/',
+        data: {'name': _nameController.text.trim()},
       );
 
       if (response.user == null) {
@@ -194,6 +193,87 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> _resetPassword(String email) async {
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await _supabase.auth.resetPasswordForEmail(email);
+      if (!mounted) return;
+
+      // Show success dialog
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Password Reset Email Sent'),
+              content: Text(
+                'A password reset link has been sent to $email. '
+                'Please check your inbox and follow the instructions.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+      );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.message}')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showResetPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final emailController = TextEditingController(
+          text: _emailController.text,
+        );
+        return AlertDialog(
+          title: const Text('Reset Password'),
+          content: TextField(
+            controller: emailController,
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              hintText: 'Enter your email address',
+            ),
+            keyboardType: TextInputType.emailAddress,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _resetPassword(emailController.text.trim());
+              },
+              child: const Text('Send'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   /// Builds the UI for the authentication page.
   @override
   Widget build(BuildContext context) {
@@ -201,30 +281,34 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
       backgroundColor: const Color(0xFFF5E9D9),
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header Section
               SizedBox(
-                height: 200,
+                height: 140,
                 child: Row(
                   children: [
                     Expanded(
                       flex: 2,
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 20),
+                        padding: const EdgeInsets.only(left: 24, right: 24),
                         child: Text(
-                          _tabController.index == 0
-                              ? 'Welcome Back to the Pack! 🐾' // Login message
-                              : 'Where Pets & Walkers Connect! 🐾', // Register message
+                          _isLogin
+                              ? 'Welcome Back to the Pack! 🐾'
+                              : 'Where Pets & Walkers Connect! 🐾',
                           style: GoogleFonts.comicNeue(
-                            fontSize: 28,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.brown[800],
                           ),
                         ),
                       ),
                     ),
-                    Expanded(
-                      flex: 3,
+                    SizedBox(
+                      width: 140,
+                      height: 140,
                       child: Lottie.network(
                         'https://lottie.host/22aeebc6-fcf5-460e-ac08-91cdedf3dc55/hdaZK2C6hn.json',
                         controller: _animationController,
@@ -240,46 +324,54 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                   ],
                 ),
               ),
-              // Auth Container
-              Container(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.brown.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    TabBar(
-                      controller: _tabController,
-                      labelColor: Colors.brown,
-                      unselectedLabelColor: Colors.grey,
-                      indicatorColor: Colors.brown,
-                      tabs: const [Tab(text: 'Login'), Tab(text: 'Register')],
-                    ),
 
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.55,
-                      ),
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          SingleChildScrollView(child: _buildLoginForm()),
-                          SingleChildScrollView(child: _buildRegisterForm()),
-                        ],
-                      ),
+              const SizedBox(height: 20),
+
+              // Auth Forms
+              _isLogin ? _buildLoginForm() : _buildRegisterForm(),
+
+              const SizedBox(height: 20),
+
+              // Toggle Login/Register
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isLogin = !_isLogin;
+                    });
+                  },
+                  child: Text(
+                    _isLogin
+                        ? "Don't have an account? Sign up"
+                        : "Already have an account? Log in",
+                    style: TextStyle(
+                      color: Colors.brown[700],
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
                     ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // OAuth Icons Row
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildOAuthIconButton(Ionicons.logo_google, () {
+                      // Handle Google login
+                    }),
+                    const SizedBox(width: 20),
+                    _buildOAuthIconButton(Ionicons.logo_facebook, () {
+                      // Handle Facebook login
+                    }),
+                    const SizedBox(width: 20),
+                    _buildOAuthIconButton(Ionicons.logo_instagram, () {
+                      // Handle Instagram login
+                    }),
                   ],
                 ),
               ),
@@ -287,6 +379,22 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildOAuthButton(IconData icon, String label) {
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.brown.shade100,
+        foregroundColor: Colors.brown[800],
+        minimumSize: const Size(double.infinity, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      onPressed: () {
+        // Implement actual OAuth login logic here
+      },
+      icon: Icon(icon, size: 24),
+      label: Text(label, style: const TextStyle(fontSize: 16)),
     );
   }
 
@@ -351,15 +459,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                     ],
                   ),
                   TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Password reset functionality coming soon!',
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: () => _showResetPasswordDialog(),
                     child: const Text(
                       'Forgot Password?',
                       style: TextStyle(color: Colors.brown),
@@ -372,6 +472,29 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
             _buildAuthButton('Login', _login),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAuthButton(String text, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.brown,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 15),
+        ),
+        child:
+            _isLoading
+                ? const CircularProgressIndicator(color: Colors.brown)
+                : Text(
+                  text,
+                  style: const TextStyle(fontSize: 18, color: Colors.white),
+                ),
       ),
     );
   }
@@ -401,14 +524,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
               },
               keyboardType: TextInputType.emailAddress,
             ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: _phoneController,
-              decoration: _inputDecoration('Phone', Ionicons.call_outline),
-              validator:
-                  (value) => value!.isEmpty ? 'Please enter phone' : null,
-              keyboardType: TextInputType.phone,
-            ),
+
             const SizedBox(height: 20),
             TextFormField(
               controller: _passwordController,
@@ -496,25 +612,23 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   /// Builds an auth button widget.
   /// This button is used for both login and register actions.
   /// It shows a loading indicator when the action is in progress.
-  Widget _buildAuthButton(String text, VoidCallback onPressed) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.brown,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 15),
+  Widget _buildOAuthIconButton(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.brown.shade100,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.brown.withOpacity(0.2),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child:
-            _isLoading
-                ? const CircularProgressIndicator(color: Colors.brown)
-                : Text(
-                  text,
-                  style: const TextStyle(fontSize: 18, color: Colors.white),
-                ),
+        child: Icon(icon, size: 28, color: Colors.brown[800]),
       ),
     );
   }

@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:dogwalkz/models/walker.dart';
 import 'package:dogwalkz/repositories/dogs_repository.dart';
+import 'package:dogwalkz/repositories/walk_repository.dart';
 import 'package:dogwalkz/repositories/wallet_repository.dart';
+import 'package:dogwalkz/services/location_service.dart';
 import 'package:dogwalkz/services/notifications_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +18,9 @@ import '../models/dog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class WalkDetailsPage extends StatelessWidget {
   final Walk walk;
@@ -21,6 +28,9 @@ class WalkDetailsPage extends StatelessWidget {
   final DogsRepository _dogsRepository = DogsRepository();
   late final currentUser;
   late final currentUserId;
+  Timer? _locationUpdateTimer;
+  StreamSubscription<Position>? _locationStreamSubscription;
+  Position? _currentPosition;
 
   WalkDetailsPage({super.key, required this.walk}) {
     currentUser = _supabase.auth.currentUser;
@@ -55,7 +65,11 @@ class WalkDetailsPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(padding: EdgeInsets.only(top: 60)),
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).size.height * 0.1,
+                        ),
+                      ),
                       // Contact Details Card
                       (walk.walker != null && walk.walkerId != currentUserId)
                           ? _buildWalkerCard(context)
@@ -63,7 +77,7 @@ class WalkDetailsPage extends StatelessWidget {
 
                       const SizedBox(height: 16),
                       _buildStatusHeader(context),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 2),
 
                       GridView.count(
                         crossAxisCount: 2,
@@ -122,7 +136,7 @@ class WalkDetailsPage extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (isInProgress) {
-          // TODO: Implement navigation to Google Maps
+          _openWalkerLocationInMaps(context);
         }
       },
       child: Container(
@@ -246,7 +260,7 @@ class WalkDetailsPage extends StatelessWidget {
   Widget _buildWalkerCard(BuildContext context) {
     final walker = walk.walker!;
     return Card(
-      elevation: 2,
+      elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -327,7 +341,7 @@ class WalkDetailsPage extends StatelessWidget {
   Widget _buildCustomerCard(BuildContext context) {
     final customer = walk.customer!;
     return Card(
-      elevation: 2,
+      elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -691,7 +705,7 @@ class WalkDetailsPage extends StatelessWidget {
                       AppLocalizations.of(context)!.confirm,
                       style: GoogleFonts.comicNeue(
                         color: Colors.green,
-                        fontSize: 24,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -715,7 +729,7 @@ class WalkDetailsPage extends StatelessWidget {
                       AppLocalizations.of(context)!.decline,
                       style: GoogleFonts.comicNeue(
                         color: Colors.red,
-                        fontSize: 24,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -723,7 +737,35 @@ class WalkDetailsPage extends StatelessWidget {
                 ),
               ],
             ),
-          if (isAccepted)
+          if (isRequested && !(isWalker))
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _cancelWalk(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.cancel,
+                      style: GoogleFonts.comicNeue(
+                        color: Colors.red,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          if (isAccepted && isWalker)
             Row(
               children: [
                 Expanded(
@@ -743,7 +785,7 @@ class WalkDetailsPage extends StatelessWidget {
                       AppLocalizations.of(context)!.startWalk,
                       style: GoogleFonts.comicNeue(
                         color: Colors.green,
-                        fontSize: 24,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -767,7 +809,35 @@ class WalkDetailsPage extends StatelessWidget {
                       AppLocalizations.of(context)!.cancel,
                       style: GoogleFonts.comicNeue(
                         color: Colors.red,
-                        fontSize: 24,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          if (isAccepted && !(isWalker))
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _cancelWalk(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.cancel,
+                      style: GoogleFonts.comicNeue(
+                        color: Colors.red,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -796,7 +866,7 @@ class WalkDetailsPage extends StatelessWidget {
                       AppLocalizations.of(context)!.finishWalk,
                       style: GoogleFonts.comicNeue(
                         color: Colors.green,
-                        fontSize: 24,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1430,7 +1500,53 @@ class WalkDetailsPage extends StatelessWidget {
                 Text(AppLocalizations.of(context)!.support),
               ],
             ),
-            content: Text(AppLocalizations.of(context)!.supportOptionsMessage),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(AppLocalizations.of(context)!.supportOptionsMessage),
+                ListTile(
+                  leading: Image.network(
+                    'https://img.icons8.com/color/48/whatsapp--v1.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  title: const Text('WhatsApp'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    launchUrl(Uri.parse('https://wa.me/+34603659696'));
+                  },
+                ),
+                ListTile(
+                  leading: Image.network(
+                    'https://img.icons8.com/color/48/telegram-app--v1.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  title: const Text('Telegram'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    launchUrl(Uri.parse('https://t.me/dogwalkzsupport'));
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.email, color: Colors.redAccent),
+                  title: const Text('Email'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    launchUrl(Uri.parse('mailto:dogwalkzsupport@mail.com'));
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.phone, color: Colors.green),
+                  title: Text(AppLocalizations.of(context)!.callSupport),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    const number = '+34603659696';
+                    await FlutterPhoneDirectCaller.callNumber(number);
+                  },
+                ),
+              ],
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -1465,6 +1581,9 @@ class WalkDetailsPage extends StatelessWidget {
     );
     try {
       await _handleWalkStart();
+      if (currentUserId == walk.walkerId) {
+        _startLocationTracking();
+      }
       Navigator.pop(context, true);
       NotificationService.sendNotification(
         userId: walk.customerId,
@@ -1712,5 +1831,81 @@ class WalkDetailsPage extends StatelessWidget {
             ],
           ),
     );
+  }
+
+  /// Start tracking the walker's location
+  void _startLocationTracking() async {
+    // Check if we're the walker
+    if (currentUserId != walk.walkerId) return;
+
+    // Check permissions
+    final status = await Permission.location.request();
+    if (!status.isGranted) {
+      debugPrint('Location permission denied');
+      return;
+    }
+
+    // Cancel any existing subscription
+    _locationStreamSubscription?.cancel();
+
+    // Start listening to location updates
+    _locationStreamSubscription = LocationService.getLocationStream().listen(
+      (position) async {
+        _currentPosition = position;
+        try {
+          await WalkRepository().trackWalkerLocation(
+            walkId: walk.id,
+            latitude: position.latitude,
+            longitude: position.longitude,
+          );
+        } catch (e) {
+          debugPrint('Failed to update location: $e');
+        }
+      },
+      onError: (e) {
+        debugPrint('Location stream error: $e');
+      },
+    );
+  }
+
+  /// Open Google Maps with walker's current location
+  Future<void> _openWalkerLocationInMaps(BuildContext context) async {
+    try {
+      // First try to get the latest from our local cache
+      if (_currentPosition != null) {
+        final url =
+            'https://www.google.com/maps/search/?api=1&query=${_currentPosition!.latitude},${_currentPosition!.longitude}';
+        if (await canLaunchUrl(Uri.parse(url))) {
+          await launchUrl(Uri.parse(url));
+          return;
+        }
+      }
+
+      // Fall back to database if local cache is empty
+      final location = await WalkRepository().getWalkerLocation(walk.id);
+
+      if (location == null ||
+          location['latitude'] == null ||
+          location['longitude'] == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Walker location not available yet')),
+        );
+        return;
+      }
+
+      final lat = location['latitude'];
+      final lng = location['longitude'];
+      final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
+
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url));
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to open maps: $e')));
+    }
   }
 }

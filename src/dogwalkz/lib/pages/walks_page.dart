@@ -93,29 +93,49 @@ class _WalksPageState extends State<WalksPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5E9D9),
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.myWalks,
-          style: TextStyle(
-            fontFamily: GoogleFonts.comicNeue().fontFamily,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        backgroundColor: Colors.brown,
-      ),
-      body:
-          _isLoading
-              ? Center(child: CircularProgressIndicator(color: Colors.brown))
-              : Column(
-                children: [
-                  _buildCalendar(),
-                  const SizedBox(height: 8),
-                  Expanded(child: _buildWalksList()),
-                ],
+      body: Stack(
+        children: [
+          Container(
+            height:
+                Size.fromHeight(
+                  MediaQuery.of(context).size.height * 0.25,
+                ).height,
+            child: AppBar(
+              title: Text(
+                AppLocalizations.of(context)!.myWalks,
+                style: TextStyle(
+                  fontFamily: GoogleFonts.comicNeue().fontFamily,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
+              foregroundColor: Colors.white,
+              centerTitle: true,
+              backgroundColor: Colors.brown,
+            ),
+          ),
+          Card(
+            color: Colors.transparent,
+            elevation: 0,
+            margin: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height * 0.11,
+            ),
+
+            child:
+                _isLoading
+                    ? Center(
+                      child: CircularProgressIndicator(color: Colors.brown),
+                    )
+                    : Column(
+                      children: [
+                        _buildCalendar(),
+                        const SizedBox(height: 8),
+                        Expanded(child: _buildWalksList()),
+                      ],
+                    ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -124,6 +144,7 @@ class _WalksPageState extends State<WalksPage> {
   Widget _buildCalendar() {
     return Card(
       margin: const EdgeInsets.all(8),
+      elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(8.0),

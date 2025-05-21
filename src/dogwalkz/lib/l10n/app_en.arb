@@ -22,7 +22,7 @@
   "state": "State/Province",
   "postalCode": "Postal Code",
   "country": "Country",
-  "registerWalker": "Register as Dog Walker",
+  "registerWalker": "Walker Status",
   "bio": "Bio",
   "experience": "Years of Experience",
   "nie": "ID/Passport Number",
@@ -124,7 +124,7 @@
   "finishWalk": "Finish",
 
   "myWalks": "My Walks",
-  "error": "Error",
+  "error": "Alert!",
   "ok": "OK",
   "failedToLoadWalks": "Failed to load walks: {error}",
   "noWalksForDay": "No walks scheduled for this day",
@@ -228,7 +228,25 @@
   "noReviewMessage": "No review details are available for this walk.",
   "reviewComment": "Review",
   "rating": "Rating",
-  "save": "Save"
+  "save": "Save",
+  "callSupport": "Call Us",
+  "submit": "Submit!",
+  "next": "Next",
+  "back": "Back",
+  "balance": "Available Balance: ",
+  "almost": "Almost there! 🎉",
+  "match": "Your Perfect Match 🦮",
+  "join": "Who's joining? 🐾",
+  "estimate": "Estimated Total: ",
+  "selectEnd": "Select End Time: ",
+  "ends": "Ends: ",
+  "selectStart": "Select Start Time",
+  "starts": "Starts",
+  "walkTime": "When's walk time? ⏰",
+  "helpUs": "Help us find the best walkers in your area!",
+  "meet": "Where should we meet? 🗺️",
+  "selectStartEnd": "Please select start and end times",
+  "selectOneDog": "Please select at least one dog"
   
 
  

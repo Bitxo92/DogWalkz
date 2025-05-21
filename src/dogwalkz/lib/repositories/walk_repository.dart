@@ -231,4 +231,59 @@ class WalkRepository {
       throw Exception('Failed to schedule walk: $e');
     }
   }
+
+  /// Track walker's location during a walk
+  Future<void> trackWalkerLocation({
+    required String walkId,
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      // Check if location already exists
+      final existingLocation =
+          await _supabase
+              .from('walk_locations')
+              .select()
+              .eq('walk_id', walkId)
+              .maybeSingle();
+
+      if (existingLocation == null) {
+        // Insert new location
+        await _supabase.from('walk_locations').insert({
+          'walk_id': walkId,
+          'latitude': latitude,
+          'longitude': longitude,
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+      } else {
+        // Update existing location
+        await _supabase
+            .from('walk_locations')
+            .update({
+              'latitude': latitude,
+              'longitude': longitude,
+              'updated_at': DateTime.now().toIso8601String(),
+            })
+            .eq('walk_id', walkId);
+      }
+    } catch (e) {
+      throw Exception('Failed to track walker location: $e');
+    }
+  }
+
+  /// Get current walker location for a walk
+  Future<Map<String, dynamic>?> getWalkerLocation(String walkId) async {
+    try {
+      final response =
+          await _supabase
+              .from('walk_locations')
+              .select()
+              .eq('walk_id', walkId)
+              .maybeSingle();
+
+      return response;
+    } catch (e) {
+      throw Exception('Failed to get walker location: $e');
+    }
+  }
 }
