@@ -279,16 +279,16 @@ Esta sección está diseñada para ayudarte a resolver cualquier incidencia, ofr
   Desde tu perfil de usuario, activa la opción **"Activar modo paseador"** y completa los campos requeridos, incluyendo la verificación de identidad si es necesario.
 
 - **¿Cómo recupero mi contraseña?**  
-- En la pantalla de inicio de sesión, selecciona "*¿Olvidaste tu contraseña?*" y sigue las instrucciones para restablecerla por correo electrónico.
+  En la pantalla de inicio de sesión, selecciona "*¿Olvidaste tu contraseña?*" y sigue las instrucciones para restablecerla por correo electrónico.
 
 - **¿Puedo usar la app en más de un dispositivo?**  
-- Sí, puedes acceder desde varios dispositivos siempre que utilices las mismas credenciales de inicio de sesión.
+  Sí, puedes acceder desde varios dispositivos siempre que utilices las mismas credenciales de inicio de sesión.
 
 - **¿Qué pasa si el paseador no se presenta?**  
-- Puedes cancelar el paseo desde la app. Si ya realizaste el pago, el saldo se reembolsa automáticamente a tu monedero virtual.
+  Puedes cancelar el paseo desde la app. Si ya realizaste el pago, el saldo se reembolsa automáticamente a tu monedero virtual.
 
 - **¿Puedo pasear perros considerados potencialmente peligrosos?**  
-- Solo si has indicado en tu perfil que cuentas con la certificación oficial para ello.
+  Solo si has indicado en tu perfil que cuentas con la certificación oficial para ello.
 
 - **¿Cómo califico un paseo?**  
   Al finalizar el paseo, se te mostrará un cuadro para valorar el servicio de 1 a 5 estrellas y dejar una reseña. Esta será visible solo para las partes involucradas.
@@ -306,21 +306,21 @@ Esta sección está diseñada para ayudarte a resolver cualquier incidencia, ofr
 
 En DogWalkz gestionamos datos personales y sensibles cumpliendo con el Reglamento General de Protección de Datos (GDPR). 
 
-## Almacenamiento y seguridad
+- **Almacenamiento y seguridad:**
 
-- Los datos se almacenan de forma segura en **Supabase**, usando base de datos cifrada.
-- La comunicación con el backend se realiza siempre por conexiones **HTTPS** seguras.
-- Las contraseñas y datos sensibles están protegidos mediante cifrado AES-256.
+   - Los datos se almacenan de forma segura en **Supabase**, usando base de datos cifrada.
+   - La comunicación con el backend se realiza siempre por conexiones **HTTPS** seguras.
+   - Las contraseñas y datos sensibles están protegidos mediante cifrado AES-256.
 
-## Autenticación y control de acceso
+- **Autenticación y control de acceso:**
 
-- Usamos **OAuth** para autenticar usuarios con proveedores externos.
-- Aplicamos **Row Level Security (RLS)** con **JWT** para que cada usuario solo pueda acceder a sus propios datos, garantizando un control estricto y personalizado de acceso.
+   - Usamos **OAuth** para autenticar usuarios con proveedores externos.
+   - Aplicamos **Row Level Security (RLS)** con **JWT** para que cada usuario solo pueda acceder a sus propios datos, garantizando un control estricto y personalizado de acceso.
 
-## Derechos y transparencia
+- **Derechos y transparencia:**
 
-- Informamos a los usuarios sobre el tratamiento de sus datos en nuestra Política de Privacidad.
-- Los usuarios pueden acceder, modificar o eliminar sus datos en cualquier momento.
-- Conservamos los datos solo mientras la cuenta esté activa, garantizando su eliminación al cierre.
+   - Informamos a los usuarios sobre el tratamiento de sus datos en nuestra Política de Privacidad.
+   - Los usuarios pueden acceder, modificar o eliminar sus datos en cualquier momento.
+   - Conservamos los datos solo mientras la cuenta esté activa, garantizando su eliminación al cierre.
 
 Con esta implementación aseguramos el cumplimiento efectivo del GDPR, protegiendo la privacidad y seguridad de los datos personales de todos los usuarios.
