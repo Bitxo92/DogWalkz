@@ -17,10 +17,55 @@
 * Xestión de usuarios.
 * Xestión seguridade.
 
-### Información relativa ó matemento do sistema
+### Información relativa al matenimiento del sistema
+El mantenimiento de la aplicación se sustentará en un sistema automatizado orientado a la detección proactiva de errores, su análisis en tiempo real y la ejecución controlada de despliegues correctivos. 
+Se utilizarán herramientas como Sentry para el monitoreo continuo y la trazabilidad de fallos, junto con GitHub Actions para la automatización de flujos CI/CD.
 
-* Especifica o sistema para mellorar e corrixir os erros detectados.
-* Xestión de incidencias: como se atenderán e resolverán. Indica como poderán os usuarios comunicar as incidencias.
+Sentry estará integrado de forma nativa en nuestra aplicación, permitiendo la captura automática(*en tiempo real*) de errores y excepciones que ocurren durante la ejecución. Esta integración registra de manera precisa toda la información relevante asociada a cada incidencia, incluyendo: 
+
+- la traza completa de la pila (stack trace)
+- la versión exacta de la aplicación en la que ocurrió el error
+- detalles específicos del dispositivo afectado (modelo, sistema operativo, configuración)
+- métricas sobre la frecuencia del error (p.ej:número de usuarios impactados).
+
+Una vez identificado un error, se abre una incidencia (issue) en el repositorio de GitHub. Desde allí, el equipo de desarrollo puede gestionar su corrección creando una rama específica donde se realiza la solución. 
+Estas ramas se integran posteriormente a la rama principal mediante una solicitud de extracción (pull request), que activa automáticamente los flujos de trabajo (*pipelines*) definidos en GitHub Actions.
+
+GitHub Actions se encarga de ejecutar automáticamente una serie de tareas definidas en un archivo de configuración YAML. Estas tareas incluyen: 
+- análisis estático del código (*linting*) 
+- ejecución de pruebas automatizadas 
+- generación de builds para Android e iOS. 
+
+En el caso de Android, se genera un archivo `.aab` (Android App Bundle) que está listo para ser subido a Google Play. 
+
+En iOS, se genera un archivo `.ipa` firmado, utilizando certificados previamente configurados, que se sube mediante la herramienta fastlane.
+
+El proceso de actualización para Android se realiza a través de la Google Play Console, utilizando la API de publicación. Según la configuración, se puede automatizar la subida a canales específicos (*Alfa, Beta o Producción*). 
+
+Para iOS, el despliegue se realiza mediante App Store Connect, con fastlane gestionando el envío automático de builds a TestFlight. Tras una validación manual, se aprueba su publicación en la App Store.
+
+``` mermaid
+%%{init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#ffdfd3', 'primaryBorderColor': '#d291bc', 'primaryTextColor': '#000000'}}}%%
+timeline
+   
+    
+    section Gestión de Incidencias
+    Issue creada en GitHub : Error detectado por Sentry
+    Asignación a desarrollador : Creación de rama (fix/error-id)
+    
+    section Desarrollo
+    Implementación de solución : Commit en rama específica
+    Pull Request (PR) : Revisión de código
+    
+    section CI/CD Automatizado
+    GitHub Actions triggered : Linting Pruebas unitarias : Build Android (.aab) : Build iOS (.ipa)
+    Validación exitosa : Merge a rama principal
+    
+    section Despliegue
+    Android :  Subida automática a Google Play : Distribución en canal Beta
+    iOS : Fastlane sube a TestFlight : Validación manual requerida
+    Publicación : Android(Rollout progresivo): iOS(Release en App Store)
+```
 
 # Manual de usuario
 
@@ -96,7 +141,6 @@ Después del registro, completa tu perfil según tu rol:
      - **¿Pertenece a una raza potencialmente peligrosa?** (Sí/No)
      - **Instrucciones especiales**: aquí puedes detallar necesidades específicas del perro, como alergias, comportamiento con otros animales, medicamentos, etc.
 
-> Puedes repetir este proceso para registrar todos los perros que desees. Cada uno quedará guardado en tu perfil para futuras solicitudes de paseo.
 
 
 #### Paseadores:
@@ -117,7 +161,7 @@ Después del registro, completa tu perfil según tu rol:
 1. Accede a la sección **"Monedero"** desde el menú inferior de la aplicación.
 2. Pulsa el botón **"Depositar"** para añadir fondos a tu cuenta.
 3. Introduce la **cantidad** deseada.
-4. Selecciona el **método de pago** (⚠️ *No disponible durante la fase beta cerrada*):
+4. Selecciona el **método de pago** (*No disponible durante la fase beta cerrada*):
    - Tarjeta de crédito o débito
    - PayPal
    - Stripe
@@ -321,4 +365,5 @@ En DogWalkz gestionamos datos personales y sensibles cumpliendo con el Reglament
    - Los usuarios pueden acceder, modificar o eliminar sus datos en cualquier momento.
    - Conservamos los datos solo mientras la cuenta esté activa, garantizando su eliminación al cierre.
 
-Con esta implementación aseguramos el cumplimiento efectivo del GDPR, protegiendo la privacidad y seguridad de los datos personales de todos los usuarios.
+> [!NOTE]
+> Con esta implementación aseguramos el cumplimiento efectivo del GDPR, protegiendo la privacidad y seguridad de los datos personales de todos los usuarios.
