@@ -29,8 +29,7 @@
 Nuestra aplicación ha sido **diseñada y desarrollada con enfoque UI/UX**, garantizando una experiencia fluida, accesible e intuitiva para todo tipo de usuarios. Se han rediseñado cuidadosamente todas las pantallas y flujos presentes en este apartado, con el objetivo de eliminar cualquier fricción en la navegación.
 
 Además, al acceder por primera vez desde un dispositivo, se activará un **tutorial interactivo (Coach)** que guiará paso a paso por las principales secciones de la app, facilitando la comprensión de cada funcionalidad.
-
-> Gracias a esta experiencia guiada, no se requiere formación adicional para comenzar a usar la aplicación con soltura.
+Gracias a esta experiencia guiada, no se requiere formación adicional para comenzar a usar la aplicación con soltura.
 
 
 ## Instrucións iniciais
@@ -74,7 +73,7 @@ A continuación, te guiamos paso a paso para comenzar a utilizar la app según t
 
 Después del registro, completa tu perfil según tu rol:
 
-#### 👤 Clientes:
+#### Clientes:
 
 1. Accede a la sección **"Perfil"** desde el menú inferior.
 
@@ -100,7 +99,7 @@ Después del registro, completa tu perfil según tu rol:
 > Puedes repetir este proceso para registrar todos los perros que desees. Cada uno quedará guardado en tu perfil para futuras solicitudes de paseo.
 
 
-#### 🐾 Paseadores:
+#### Paseadores:
 1. Tras completar tu perfil básico, selecciona la opción **"Modo Paseador"**.
 2. Rellena información adicional:
    - Tamaños de perro que aceptas (pequeño/mediano/grande)
@@ -113,7 +112,7 @@ Después del registro, completa tu perfil según tu rol:
 
 ### 4. Uso del Monedero Virtual
 
-#### 👤 Clientes:
+#### Clientes:
 
 1. Accede a la sección **"Monedero"** desde el menú inferior de la aplicación.
 2. Pulsa el botón **"Depositar"** para añadir fondos a tu cuenta.
@@ -125,7 +124,7 @@ Después del registro, completa tu perfil según tu rol:
    - Transferencia bancaria
 5. Una vez finalizado el proceso, tu saldo se actualizará y estará disponible para poder solicitar un paseo.
 
-##### 📄 Historial de Transacciones:
+##### Historial de Transacciones:
 - Puedes consultar todos tus movimientos desde la pestaña **"Historial"** dentro del Monedero.
 - Cada transacción incluye:
   - **Fecha**
@@ -133,16 +132,15 @@ Después del registro, completa tu perfil según tu rol:
   - **Tipo de transacción**
   - **ID de transacción** (puede copiarse al portapapeles para enviarlo a Soporte en caso de incidencias)
 
-##### 🔎 Filtro de historial:
+##### Filtro de historial:
 - Puedes filtrar tus transacciones por:
   - **Esta semana**
   - **Este mes**
   - **Últimos 6 meses**
   - **Todo**
 
----
 
-#### 🐾 Paseadores:
+#### Paseadores:
 
 1. Dirígete a la sección **"Monedero"** desde el menú inferior.
 2. Consulta tu **saldo disponible**, correspondiente a los servicios ya completados y validados.
@@ -151,14 +149,14 @@ Después del registro, completa tu perfil según tu rol:
    - Introduce los datos bancarios
    - Confirma la operación
 
-##### 📄 Historial de ingresos:
+##### Historial de ingresos:
 - Desde la pestaña **"Historial"** puedes ver todos los pagos recibidos.
 - Cada entrada incluye:
   - **Fecha del servicio**
   - **Monto abonado**
   - **ID de transacción** (puede copiarse al portapapeles)
 
-##### 🔎 Filtro de historial:
+##### Filtro de historial:
 - Usa los filtros para revisar movimientos por:
   - **Semana actual**
   - **Mes actual**
@@ -210,7 +208,7 @@ Después del registro, completa tu perfil según tu rol:
 
 ### 7. Durante el Paseo
 
-#### 👤 Cliente:
+#### Cliente:
 - Recibirás una notificación automática cuando el paseador inicie el paseo.
 - Podrás seguir el recorrido en tiempo real:
   1. Entra a la sección **"Mis Paseos"** y selecciona el paseo activo.
@@ -218,7 +216,7 @@ Después del registro, completa tu perfil según tu rol:
      - Esta barra mostrará un **indicador visual dinámico** (ícono GPS animado) para señalar que el paseo está en curso y que el seguimiento está disponible.
   3. Se abrirá un **mapa interactivo** con la ruta que sigue el paseador.
 
-#### 🐾 Paseador:
+#### Paseador:
 - Una vez estés listo para comenzar, accede al detalle del paseo y pulsa el botón **"Iniciar Paseo"**.
 - La aplicación activará automáticamente el **seguimiento por GPS** y registrará la ruta en segundo plano.
 
