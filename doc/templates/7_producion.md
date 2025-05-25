@@ -10,12 +10,19 @@
 * Se fora o caso, explica o proceso de carga inicial de datos na base de datos ou migración de datos xa existentes noutros formatos.
 * Alta de usuarios dos sistemas necesarios.
 
-### Información relativa á administración do sistema, é dicir, tarefas que se deberán realizar unha vez que o sistema estea funcionando, como por exemplo
+### Información relativa a la administración del sistema
 
-* Copias de seguridade do sistema.
-* Copias de seguridade da base de datos.
-* Xestión de usuarios.
-* Xestión seguridade.
+Una vez que el sistema está en funcionamiento, se establece una estrategia clara de administración para garantizar su estabilidad y continuidad operativa. 
+Se realizan respaldos manuales periódicos de la configuración crítica del proyecto, incluyendo el esquema de la base de datos, funciones (SQL y Edge Functions), políticas de seguridad (RLS) y configuración de autenticación. 
+Estas exportaciones se llevan a cabo desde el panel de Supabase o mediante herramientas como `pg_dump` para asegurar una copia actualizada del estado del sistema.
+
+Las copias de seguridad de la base de datos se gestionarán mediante los backups automáticos diarios proporcionados por Supabase Pro(*Plan de Pago*). Adicionalmente, se realizarán copias manuales utilizando una conexión directa a PostgreSQL, mediante comandos `pg_dump` o desde el panel de administración en la sección  **Database > Backups**. Este proceso también estará automatizado con scripts externos e integraciones CI/CD que mantienen versiones periódicas de los datos críticos.
+
+La gestión de usuarios se realizará a través del panel administrador de supabase. Desde este panel, en la sección **Authentication --> Users** podemos: crear, supervisar o eliminar usuarios según sea necesario. También nos permite configurar los métodos de autenticación que deseamos incorporar como son: email/password, OAuth o magic links, además de aplicar políticas como la verificación obligatoria de correo electrónico y/o expiración de sesiones.Por último, mencionar que se realizará una revisión periódica de cuentas inactivas o sospechosas para mantener la integridad del sistema.
+
+En cuánto a la gestión de la seguridad, se asegura activando y configurando políticas RLS(*Row Level Security*) en todas las tablas, con especial atención en aquellas que contienen datos sensibles, restringiendo el acceso según los roles de usuario. Las claves API se mantienen protegidas limitando el uso de la `anon key` exclusivamente al frontend(protegido en el .env) y reservando la `service_role` key para procesos seguros en backend. Se revisarán regularmente las políticas de seguridad, se aplicará autenticación robusta y se utilizarán herramientas de monitoreo(**Sentry**) para detectar y responder a posibles amenazas.
+
+
 
 ### Información relativa al matenimiento del sistema
 El mantenimiento de la aplicación se sustentará en un sistema automatizado orientado a la detección proactiva de errores, su análisis en tiempo real y la ejecución controlada de despliegues correctivos. 
