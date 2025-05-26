@@ -10,7 +10,7 @@
 ## Descripción
 
 **DogWalkz** es una aplicación móvil que conecta a dueños de perros con paseadores profesionales de manera segura, sencilla e intuitiva. Ofrece un registro fácil, seguimiento de paseos en tiempo real, un sistema de pagos seguro y una comunidad basada en reseñas para garantizar un servicio de alta calidad. Diseñada para dueños de mascotas ocupados y paseadores profesionales, DogWalkz simplifica el proceso de gestionar paseos de perros de forma segura y transparente.  
-Construida con tecnologías modernas como Flutter, Supabase y OAuth, la app es multiplataforma y multilingüe, lo que la hace accesible para una audiencia global.  
+Construida con un stack tecnológico Flutter + Supabase, además de incorporar tecnologías modernas como OAuth2.0 para la autenticación por redes sociales, la app es multiplataforma y multilingüe, lo que la hace accesible para una audiencia global.  
 DogWalkz no solo resuelve una necesidad real, sino que también abre oportunidades para un negocio escalable a través de comisiones y servicios premium.
 
 
@@ -111,10 +111,11 @@ flutter doctor
 Resuelve cualquier problema pendiente si es necesario.
 
 > [!TIP]
-> Si surgen algún problema con algúna libreria tras clonar el repositorio,ejecute el siguiente comando en la terminal:
+> En caso de error en la libreria de internalización(*Applocalizations*) ejecute en terminal:
  > ``` bash
- > flutter build
+ > flutter gen-l10n
  > ```
+ > Este comando genera las clases y métodos *getter* para poder acceder a las cadenas localizadas
 
 
 
