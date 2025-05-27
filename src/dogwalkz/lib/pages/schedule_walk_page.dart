@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../models/dog.dart';
 import '../models/walker.dart';
 import '../repositories/walk_repository.dart';
@@ -54,6 +55,8 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   void initState() {
     super.initState();
     _loadInitialData();
+    final now = DateTime.now();
+    _startDateTime ??= DateTime(now.year, now.month, now.day);
   }
 
   Future<void> _loadInitialData() async {
@@ -102,22 +105,27 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     final TimeOfDay? time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
+      initialEntryMode: TimePickerEntryMode.input,
       builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.brown,
-              onPrimary: Colors.white,
-              onSurface: Colors.brown,
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: Colors.brown,
+                onPrimary: Colors.white,
+                onSurface: Colors.brown,
+              ),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(foregroundColor: Colors.brown),
+              ),
             ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(foregroundColor: Colors.brown),
-            ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );
+
     if (time == null) return;
 
     setState(() {
@@ -164,22 +172,27 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     final TimeOfDay? time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_startDateTime!),
+      initialEntryMode: TimePickerEntryMode.input,
       builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.brown,
-              onPrimary: Colors.white,
-              onSurface: Colors.brown,
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: Colors.brown,
+                onPrimary: Colors.white,
+                onSurface: Colors.brown,
+              ),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(foregroundColor: Colors.brown),
+              ),
             ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(foregroundColor: Colors.brown),
-            ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );
+
     if (time == null) return;
 
     final endDateTime = DateTime(
@@ -212,8 +225,8 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     double baseRate = _selectedWalker?.baseRatePerHour ?? 15.0;
     double total = baseRate * durationInHours * selectedDogsCount;
 
-    if (_hasLargeDogs()) total *= 1.2;
-    if (_hasDangerousBreeds()) total *= 1.3;
+    //if (_hasLargeDogs()) total *= 1.2;
+    //if (_hasDangerousBreeds()) total *= 1.3;
 
     final platformCommission = total * WalkRepository.platformCommissionRate;
     final walkerEarnings = total - platformCommission;
@@ -235,6 +248,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   );
 
   Future<void> _loadAvailableWalkers() async {
+    final currentUser = Supabase.instance.client.auth.currentUser;
     if (_cityController.text.isEmpty) {
       _showError(AppLocalizations.of(context)!.enterLocation);
       return;
@@ -256,31 +270,13 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
         endTime: _endDateTime!,
         needsLargeDogWalker: _hasLargeDogs(),
         needsDangerousBreedCertification: _hasDangerousBreeds(),
+        excludeUserId: currentUser?.id,
       );
 
       setState(() {
         _availableWalkers = walkers;
         _isLoadingWalkers = false;
       });
-
-      if (walkers.isEmpty) {
-        showDialog(
-          context: context,
-          builder:
-              (context) => AlertDialog(
-                title: Text(AppLocalizations.of(context)!.noWalkersAvailable),
-                content: Text(
-                  AppLocalizations.of(context)!.noWalkersAvailableMessage,
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(AppLocalizations.of(context)!.ok),
-                  ),
-                ],
-              ),
-        );
-      }
     } catch (e) {
       setState(() => _isLoadingWalkers = false);
       _showError('Failed to load walkers: $e');
@@ -362,6 +358,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     if (mounted) {
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder:
             (context) => AlertDialog(
               title: Text(AppLocalizations.of(context)!.success),
@@ -428,7 +425,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            height: 60,
+            height: 30,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -442,7 +439,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
                 Positioned(
                   left: 20,
                   right: 20,
-                  top: 30,
+                  top: 15,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final progress = (_currentStep / (_steps.length - 1))
@@ -574,12 +571,24 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
             fontStyle: FontStyle.italic,
           ),
         ),
+        Container(
+          padding: EdgeInsets.all(10),
+          child: Center(
+            child: SizedBox(
+              width: 200,
+              height: 200,
+              //Attribution:https://www.vecteezy.com/free-png/pet-ownerPet Owner PNGs by Vecteezy
+              child: Image.asset('assets/dogwalker.png', fit: BoxFit.contain),
+            ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildTimeStep() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           AppLocalizations.of(context)!.walkTime,
@@ -588,34 +597,303 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 24),
-        _buildDateTimePicker(
-          label:
-              _startDateTime == null
-                  ? AppLocalizations.of(context)!.selectStart
-                  : "${AppLocalizations.of(context)!.starts} ${DateFormat('MMM dd, hh:mm a').format(_startDateTime!)}",
-          onTap: _selectStartDateTime,
-        ),
         const SizedBox(height: 16),
-        _buildDateTimePicker(
-          label:
-              _endDateTime == null
-                  ? AppLocalizations.of(context)!.selectEnd
-                  : "${AppLocalizations.of(context)!.ends} ${DateFormat('MMM dd, hh:mm a').format(_endDateTime!)}",
-          onTap: _selectEndDateTime,
-        ),
-        const SizedBox(height: 16),
-        if (_totalPrice > 0)
-          Text(
-            "${AppLocalizations.of(context)!.estimate} \$${_totalPrice.toStringAsFixed(2)}",
-            style: const TextStyle(
-              color: Colors.green,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+
+        // Swipeable-animated calendar
+        SizedBox(
+          height: 300,
+          child: GestureDetector(
+            onHorizontalDragEnd: (details) {
+              setState(() {
+                if (details.primaryVelocity != null) {
+                  final currentDate = _startDateTime ?? DateTime.now();
+
+                  if (details.primaryVelocity! < 0) {
+                    var nextMonth = currentDate.month + 1;
+                    var nextYear = currentDate.year;
+                    if (nextMonth > 12) {
+                      nextMonth = 1;
+                      nextYear++;
+                    }
+                    final lastDayOfNextMonth =
+                        DateTime(nextYear, nextMonth + 1, 0).day;
+                    final newDay =
+                        currentDate.day <= lastDayOfNextMonth
+                            ? currentDate.day
+                            : lastDayOfNextMonth;
+                    _startDateTime = DateTime(
+                      nextYear,
+                      nextMonth,
+                      newDay,
+                      currentDate.hour,
+                      currentDate.minute,
+                    );
+                  } else if (details.primaryVelocity! > 0) {
+                    var prevMonth = currentDate.month - 1;
+                    var prevYear = currentDate.year;
+                    if (prevMonth < 1) {
+                      prevMonth = 12;
+                      prevYear--;
+                    }
+                    final lastDayOfPrevMonth =
+                        DateTime(prevYear, prevMonth + 1, 0).day;
+                    final newDay =
+                        currentDate.day <= lastDayOfPrevMonth
+                            ? currentDate.day
+                            : lastDayOfPrevMonth;
+                    _startDateTime = DateTime(
+                      prevYear,
+                      prevMonth,
+                      newDay,
+                      currentDate.hour,
+                      currentDate.minute,
+                    );
+                  }
+
+                  _endDateTime = null;
+                  _calculatePrice();
+                }
+              });
+            },
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+              child: Column(
+                key: ValueKey<String>(
+                  DateFormat(
+                    'yyyy-MM',
+                  ).format(_startDateTime ?? DateTime.now()),
+                ),
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.brown,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        DateFormat(
+                          'MMMM',
+                          AppLocalizations.of(context)!.localeName,
+                        ).format(_startDateTime ?? DateTime.now()),
+
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Weekday-headers
+                  Row(
+                    children:
+                        ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+                            .map(
+                              (day) => Expanded(
+                                child: Center(
+                                  child: Text(
+                                    day,
+                                    style: const TextStyle(
+                                      color: Colors.brown,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Days-grid
+                  Flexible(
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 7,
+                            childAspectRatio: 1.2,
+                          ),
+                      itemCount:
+                          _getDaysInMonthDisplay(
+                            _startDateTime ?? DateTime.now(),
+                          ).length,
+                      itemBuilder: (context, index) {
+                        final day =
+                            _getDaysInMonthDisplay(
+                              _startDateTime ?? DateTime.now(),
+                            )[index];
+                        final isSelected = isSameDay(
+                          day,
+                          _startDateTime ?? DateTime.now(),
+                        );
+                        final isToday = isSameDay(day, DateTime.now());
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _startDateTime = DateTime(
+                                day.year,
+                                day.month,
+                                day.day,
+                                _startDateTime?.hour ?? 0,
+                                _startDateTime?.minute ?? 0,
+                              );
+                              _endDateTime = null;
+                              _calculatePrice();
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? Colors.brown
+                                      : isToday
+                                      ? Colors.brown.shade100
+                                      : null,
+                              shape: BoxShape.circle,
+                              border:
+                                  isToday && !isSelected
+                                      ? Border.all(color: Colors.brown)
+                                      : null,
+                            ),
+                            child: Center(
+                              child: Text(
+                                day.day.toString(),
+                                style: TextStyle(
+                                  color:
+                                      isSelected ? Colors.white : Colors.brown,
+                                  fontWeight:
+                                      isSelected || isToday
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Time period selection
+        SizedBox(
+          height: 60,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: List.generate(17, (index) {
+              final startHour = 6 + index;
+              final endHour = startHour + 1;
+              final start = TimeOfDay(hour: startHour, minute: 0);
+              final end = TimeOfDay(hour: endHour, minute: 0);
+              final period =
+                  '${start.format(context)} - ${end.format(context)}';
+
+              final isSelected =
+                  _startDateTime != null &&
+                  _endDateTime != null &&
+                  _startDateTime!.hour == startHour &&
+                  _endDateTime!.hour == endHour;
+
+              return GestureDetector(
+                onTap: () {
+                  if (_startDateTime == null) return;
+
+                  setState(() {
+                    _startDateTime = DateTime(
+                      _startDateTime!.year,
+                      _startDateTime!.month,
+                      _startDateTime!.day,
+                      startHour,
+                      0,
+                    );
+                    _endDateTime = DateTime(
+                      _startDateTime!.year,
+                      _startDateTime!.month,
+                      _startDateTime!.day,
+                      endHour,
+                      0,
+                    );
+                    _calculatePrice();
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.brown : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? Colors.white : Colors.brown,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      period,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.brown,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 8),
       ],
     );
+  }
+
+  List<DateTime> _getDaysInMonthDisplay(DateTime date) {
+    final firstDayOfMonth = DateTime(date.year, date.month, 1);
+    final lastDayOfMonth = DateTime(date.year, date.month + 1, 0);
+    final daysInMonth = lastDayOfMonth.day;
+
+    final firstWeekday = firstDayOfMonth.weekday % 7;
+
+    final lastWeekday = lastDayOfMonth.weekday % 7;
+
+    final days = <DateTime>[];
+
+    for (var i = 0; i < firstWeekday; i++) {
+      days.add(firstDayOfMonth.subtract(Duration(days: firstWeekday - i)));
+    }
+
+    for (var i = 0; i < daysInMonth; i++) {
+      days.add(DateTime(date.year, date.month, i + 1));
+    }
+
+    for (var i = lastWeekday; i < 6; i++) {
+      days.add(lastDayOfMonth.add(Duration(days: i - lastWeekday + 1)));
+    }
+
+    return days;
   }
 
   Widget _buildDateTimePicker({
@@ -629,7 +907,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.brown),
-          color: Colors.brown.shade50,
+          color: Colors.transparent,
         ),
         child: Row(
           children: [
@@ -645,8 +923,69 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   }
 
   Widget _buildDogsStep() {
+    if (_userDogs.isEmpty) {
+      return Center(
+        child: Column(
+          children: [
+            Text(
+              AppLocalizations.of(context)!.join,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.brown,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+
+              child: Column(
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.noDogsAccount,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await Navigator.pushNamed(context, '/dogs');
+
+                      final userId =
+                          Supabase.instance.client.auth.currentUser?.id;
+                      if (userId != null) {
+                        final dogs = await _walkRepository.getUserDogs(userId);
+                        setState(() {
+                          _userDogs = dogs;
+                          _selectedDogs = List.generate(
+                            dogs.length,
+                            (_) => false,
+                          );
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 2,
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.brown,
+                      padding: EdgeInsets.all(16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.addFurryFriend,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           AppLocalizations.of(context)!.join,
@@ -751,21 +1090,23 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
               color: Colors.brown,
               fontWeight: FontWeight.bold,
             ),
+            textAlign: TextAlign.center,
           ),
         ),
         const SizedBox(height: 33),
 
-        if (_availableWalkers.isEmpty && !_isLoadingWalkers)
-          GestureDetector(
-            onTap: _loadAvailableWalkers,
-            child: const Center(
-              child: Icon(FontAwesomeIcons.arrowsRotate, size: 100.0),
-            ),
-          ),
         if (_isLoadingWalkers)
           const Center(child: CircularProgressIndicator(color: Colors.brown)),
 
-        if (_availableWalkers.isNotEmpty)
+        if (!_isLoadingWalkers && _availableWalkers.isEmpty)
+          Center(
+            child: Text(
+              AppLocalizations.of(context)!.noWalkersAvailable,
+              style: TextStyle(color: Colors.brown),
+            ),
+          ),
+
+        if (!_isLoadingWalkers && _availableWalkers.isNotEmpty)
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -955,7 +1296,10 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
           if (_currentStep > 0)
             Expanded(
               child: OutlinedButton(
-                onPressed: () => setState(() => _currentStep--),
+                onPressed: () {
+                  setState(() => _currentStep--);
+                  _handleStepChange();
+                },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -1013,22 +1357,36 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     );
   }
 
-  void _handleNextStep() {
+  void _handleStepChange() {
+    if (_currentStep == 3) {
+      _loadAvailableWalkers();
+    }
+  }
+
+  Future<void> _handleNextStep() async {
     if (_currentStep == _steps.length - 1) {
       _submitWalkRequest();
     } else {
-      if (_validateCurrentStep()) {
+      if (await _validateCurrentStep()) {
         setState(() => _currentStep++);
+        _handleStepChange();
       }
     }
   }
 
-  bool _validateCurrentStep() {
+  Future<bool> _validateCurrentStep() async {
     final localizations = AppLocalizations.of(context)!;
     switch (_currentStep) {
       case 0:
         if (_cityController.text.isEmpty) {
           _showError(localizations.enterCity);
+          return false;
+        }
+        final exists = await _walkRepository.checkWalkersExistInCity(
+          _cityController.text.trim(),
+        );
+        if (!exists) {
+          _showError(localizations.noWalkersInCity);
           return false;
         }
         return true;

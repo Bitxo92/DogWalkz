@@ -704,8 +704,8 @@ class WalkDetailsPage extends StatelessWidget {
                     child: Text(
                       AppLocalizations.of(context)!.confirm,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.green,
-                        fontSize: 32,
+                        color: Colors.white,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -716,10 +716,11 @@ class WalkDetailsPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _declineWalk(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.brown,
+                      backgroundColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      side: BorderSide(color: Colors.brown),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -728,8 +729,8 @@ class WalkDetailsPage extends StatelessWidget {
                     child: Text(
                       AppLocalizations.of(context)!.decline,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.red,
-                        fontSize: 32,
+                        color: Colors.brown,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -756,8 +757,8 @@ class WalkDetailsPage extends StatelessWidget {
                     child: Text(
                       AppLocalizations.of(context)!.cancel,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.red,
-                        fontSize: 32,
+                        color: Colors.white,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -784,8 +785,8 @@ class WalkDetailsPage extends StatelessWidget {
                     child: Text(
                       AppLocalizations.of(context)!.startWalk,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.green,
-                        fontSize: 32,
+                        color: Colors.white,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -796,10 +797,11 @@ class WalkDetailsPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _cancelWalk(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.brown,
+                      backgroundColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      side: BorderSide(color: Colors.brown),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -808,8 +810,8 @@ class WalkDetailsPage extends StatelessWidget {
                     child: Text(
                       AppLocalizations.of(context)!.cancel,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.red,
-                        fontSize: 32,
+                        color: Colors.brown,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -836,8 +838,8 @@ class WalkDetailsPage extends StatelessWidget {
                     child: Text(
                       AppLocalizations.of(context)!.cancel,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.red,
-                        fontSize: 32,
+                        color: Colors.white,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -865,8 +867,8 @@ class WalkDetailsPage extends StatelessWidget {
                     child: Text(
                       AppLocalizations.of(context)!.finishWalk,
                       style: GoogleFonts.comicNeue(
-                        color: Colors.green,
-                        fontSize: 32,
+                        color: Colors.white,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -980,14 +982,17 @@ class WalkDetailsPage extends StatelessWidget {
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
     try {
-      await _handleWalkCancellation(refundCustomer: true);
+      bool wasCancelled = await _handleWalkCancellation(
+        context: context,
+        refundCustomer: true,
+      );
       Navigator.pop(context, true);
+      if (wasCancelled == true) {
+        Navigator.pop(context, true);
+        Navigator.popUntil(context, ModalRoute.withName('/home'));
+      }
     } catch (e) {
       debugPrint('Failed to decline walk: $e');
-    } finally {
-      // Close loading dialog
-      Navigator.pop(context, true);
-      Navigator.popUntil(context, ModalRoute.withName('/home'));
     }
   }
 
@@ -1003,16 +1008,18 @@ class WalkDetailsPage extends StatelessWidget {
           ),
     );
     try {
-      await _handleWalkCancellation(
+      bool wasCancelled = await _handleWalkCancellation(
+        context: context,
         refundCustomer: true,
         withdrawWalkerEarnings: true,
       );
       Navigator.pop(context, true);
+      if (wasCancelled == true) {
+        Navigator.pop(context, true);
+        Navigator.popUntil(context, ModalRoute.withName('/home'));
+      }
     } catch (e) {
       debugPrint('Failed to cancel walk: $e');
-    } finally {
-      // Close loading dialog
-      Navigator.pop(context);
     }
   }
 
@@ -1025,10 +1032,36 @@ class WalkDetailsPage extends StatelessWidget {
   ///
   /// The method will also delete the walk record.
   ///
-  Future<void> _handleWalkCancellation({
+  Future<bool> _handleWalkCancellation({
+    required BuildContext context,
+    bool wasCancelled = false,
     bool refundCustomer = false,
     bool withdrawWalkerEarnings = false,
   }) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.confirmCancel),
+          content: Text(AppLocalizations.of(context)!.confirmCancelMessage),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                AppLocalizations.of(context)!.no,
+                style: TextStyle(color: Colors.red.shade500),
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+            ),
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.yesCancel),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirm == false) return wasCancelled = false;
     final walletRepo = WalletRepository();
 
     //Refund customer if needed
@@ -1057,6 +1090,7 @@ class WalkDetailsPage extends StatelessWidget {
     //Delete the walk and related records
     await _supabase.from('walks').delete().eq('id', walk.id);
     await _supabase.from('walk_dogs').delete().eq('walk_id', walk.id);
+    return (wasCancelled = true);
   }
 
   /// Formats the given DateTime object to a string in 'HH:mm' format.
@@ -1271,7 +1305,7 @@ class WalkDetailsPage extends StatelessWidget {
                 _buildDialogDetailRow(
                   icon: Ionicons.location_outline,
                   title: AppLocalizations.of(context)!.location,
-                  value: walk.walker?.city ?? 'not available',
+                  value: walk.city ?? 'not available',
                 ),
               ],
             ),

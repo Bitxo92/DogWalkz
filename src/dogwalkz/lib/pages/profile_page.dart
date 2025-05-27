@@ -501,6 +501,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           )!.firstName,
                                       prefixIcon: const Icon(
                                         Ionicons.person_outline,
+                                        color: Colors.brown,
                                       ),
                                     ),
                                     validator:
@@ -539,7 +540,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               controller: _emailController,
                               decoration: InputDecoration(
                                 labelText: AppLocalizations.of(context)!.email,
-                                prefixIcon: const Icon(Ionicons.mail_outline),
+                                prefixIcon: const Icon(
+                                  Ionicons.mail_outline,
+                                  color: Colors.brown,
+                                ),
                               ),
                               keyboardType: TextInputType.emailAddress,
                               validator: (value) {
@@ -557,7 +561,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               controller: _phoneController,
                               decoration: InputDecoration(
                                 labelText: AppLocalizations.of(context)!.phone,
-                                prefixIcon: Icon(Ionicons.call_outline),
+                                prefixIcon: Icon(
+                                  Ionicons.call_outline,
+                                  color: Colors.brown,
+                                ),
                               ),
                               keyboardType: TextInputType.phone,
                               validator:
@@ -575,6 +582,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 labelText: AppLocalizations.of(context)!.dob,
                                 prefixIcon: const Icon(
                                   Ionicons.calendar_outline,
+                                  color: Colors.brown,
                                 ),
                               ),
                               readOnly: true,
@@ -604,7 +612,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               controller: _streetController,
                               decoration: InputDecoration(
                                 labelText: AppLocalizations.of(context)!.street,
-                                prefixIcon: Icon(Ionicons.home_outline),
+                                prefixIcon: Icon(
+                                  Ionicons.home_outline,
+                                  color: Colors.brown,
+                                ),
                               ),
                               validator:
                                   (value) =>
@@ -626,6 +637,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           AppLocalizations.of(context)!.city,
                                       prefixIcon: Icon(
                                         Ionicons.business_outline,
+                                        color: Colors.brown,
                                       ),
                                     ),
                                     validator:
@@ -650,7 +662,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                     decoration: InputDecoration(
                                       labelText:
                                           AppLocalizations.of(context)!.state,
-                                      prefixIcon: Icon(Ionicons.map_outline),
+                                      prefixIcon: Icon(
+                                        Ionicons.map_outline,
+                                        color: Colors.brown,
+                                      ),
                                     ),
                                     validator:
                                         (value) =>
@@ -675,7 +690,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                           AppLocalizations.of(
                                             context,
                                           )!.postalCode,
-                                      prefixIcon: Icon(Ionicons.code_outline),
+                                      prefixIcon: Icon(
+                                        Ionicons.code_outline,
+                                        color: Colors.brown,
+                                      ),
                                     ),
                                     validator:
                                         (value) =>
@@ -694,7 +712,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                     decoration: InputDecoration(
                                       labelText:
                                           AppLocalizations.of(context)!.country,
-                                      prefixIcon: Icon(Ionicons.earth_outline),
+                                      prefixIcon: Icon(
+                                        Ionicons.earth_outline,
+                                        color: Colors.brown,
+                                      ),
                                     ),
                                     validator:
                                         (value) =>
@@ -727,11 +748,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                 AppLocalizations.of(context)!.registerWalker,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.brown,
+                                  color: Colors.black,
                                 ),
                               ),
-                              activeColor: Colors.green,
-                              secondary: const Icon(Ionicons.paw_outline),
+                              activeColor: Colors.brown,
+                              secondary: const Icon(
+                                Ionicons.paw_outline,
+                                color: Colors.brown,
+                              ),
                               value: _profileData['is_walker'] ?? false,
                               onChanged:
                                   (value) => setState(() {
@@ -750,6 +774,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   labelText: AppLocalizations.of(context)!.bio,
                                   prefixIcon: Icon(
                                     Ionicons.document_text_outline,
+                                    color: Colors.brown,
                                   ),
                                 ),
                                 maxLines: 3,
@@ -767,7 +792,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 decoration: InputDecoration(
                                   labelText:
                                       AppLocalizations.of(context)!.experience,
-                                  prefixIcon: Icon(Ionicons.time_outline),
+                                  prefixIcon: Icon(
+                                    Ionicons.time_outline,
+                                    color: Colors.brown,
+                                  ),
                                 ),
                                 keyboardType: TextInputType.number,
                                 validator: (value) {
@@ -786,7 +814,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 controller: _docIdController,
                                 decoration: InputDecoration(
                                   labelText: AppLocalizations.of(context)!.nie,
-                                  prefixIcon: Icon(Ionicons.card_outline),
+                                  prefixIcon: Icon(
+                                    Ionicons.card_outline,
+                                    color: Colors.brown,
+                                  ),
                                 ),
                                 validator:
                                     (value) =>
@@ -803,9 +834,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 secondary: const Icon(
                                   Ionicons.paw_outline,
+                                  color: Colors.brown,
                                   size: 20,
                                 ),
-                                activeColor: Colors.green,
+                                activeColor: Colors.brown,
                                 value:
                                     _walkerProfileData['can_walk_small'] ??
                                     true,
@@ -821,9 +853,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 secondary: const Icon(
                                   Ionicons.paw_outline,
+                                  color: Colors.brown,
                                   size: 20,
                                 ),
-                                activeColor: Colors.green,
+                                activeColor: Colors.brown,
                                 value:
                                     _walkerProfileData['can_walk_medium'] ??
                                     true,
@@ -839,9 +872,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 secondary: const Icon(
                                   Ionicons.paw_outline,
+                                  color: Colors.brown,
                                   size: 20,
                                 ),
-                                activeColor: Colors.green,
+                                activeColor: Colors.brown,
                                 value:
                                     _walkerProfileData['can_walk_large'] ??
                                     false,
@@ -855,8 +889,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                 title: Text(
                                   AppLocalizations.of(context)!.dangerousBreed,
                                 ),
-                                secondary: const Icon(Ionicons.warning_outline),
-                                activeColor: Colors.green,
+                                secondary: const Icon(
+                                  Ionicons.warning_outline,
+                                  color: Colors.brown,
+                                ),
+                                activeColor: Colors.brown,
                                 value:
                                     _walkerProfileData['has_dangerous_breed_certification'] ??
                                     false,
@@ -876,7 +913,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                         AppLocalizations.of(
                                           context,
                                         )!.certificationNumber,
-                                    prefixIcon: Icon(Ionicons.ribbon_outline),
+                                    prefixIcon: Icon(
+                                      Ionicons.ribbon_outline,
+                                      color: Colors.brown,
+                                    ),
                                   ),
                                   validator:
                                       (value) =>
@@ -922,9 +962,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ? AppLocalizations.of(context)!.english
                                     : AppLocalizations.of(context)!.spanish,
                               ),
-                              leading: const Icon(Ionicons.language_outline),
+                              leading: const Icon(
+                                Ionicons.language_outline,
+                                color: Colors.brown,
+                              ),
                               trailing: const Icon(
                                 Ionicons.chevron_forward_outline,
+                                color: Colors.brown,
                               ),
                               onTap: () => _showLanguageDialog(context),
                             ),
@@ -932,7 +976,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               title: Text(
                                 AppLocalizations.of(context)!.notifications,
                               ),
-                              activeColor: Colors.green,
+                              activeColor: Colors.brown,
                               subtitle: Text(
                                 AppLocalizations.of(
                                   context,
@@ -940,6 +984,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               secondary: const Icon(
                                 Ionicons.notifications_outline,
+                                color: Colors.brown,
                               ),
                               value: _notificationsEnabled,
                               onChanged: (value) {

@@ -241,7 +241,11 @@ class _WalletPageState extends State<WalletPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.brown),
+                              borderSide: BorderSide(
+                                color: Colors.brown,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
@@ -323,14 +327,14 @@ class _WalletPageState extends State<WalletPage> {
                               AppLocalizations.of(context)!.withdraw,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.brown.shade700,
+                                color: Colors.brown,
                                 fontSize: 20,
                               ),
                             ),
                             Padding(padding: const EdgeInsets.only(left: 8)),
                             Icon(
                               FontAwesomeIcons.moneyBillTransfer,
-                              color: Colors.brown.shade700,
+                              color: Colors.brown,
                               size: 20,
                             ),
                           ],
@@ -786,6 +790,7 @@ class _WalletPageState extends State<WalletPage> {
         ],
       ),
       child: ListView.separated(
+        padding: EdgeInsets.zero,
         shrinkWrap: false,
         physics: AlwaysScrollableScrollPhysics(),
         itemCount: _filteredTransactions.length,

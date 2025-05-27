@@ -59,6 +59,9 @@ dependencies:
   geolocator: ^14.0.0
   permission_handler: ^12.0.0+1
   app_links: ^6.4.0
+  google_sign_in: ^6.3.0
+  flutter_facebook_auth: ^7.1.2
+  showcaseview: ^4.0.1
 
 
 dev_dependencies:
@@ -70,7 +73,9 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/DogWalkzLogo.png"
+  image_path: "assets/dogwalkz_logo.png"
+  adaptive_icon_background: "#ffffff"  
+  adaptive_icon_foreground: "assets/dogwalkz_adaptive_logo.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -87,6 +92,8 @@ flutter:
   assets:
     - .env
     - assets/terms_and_conditions.txt
+    - assets/dogwalker.png
+    - assets/dog.png
   generate: true
  
 

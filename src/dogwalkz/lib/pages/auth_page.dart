@@ -1,5 +1,12 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
+import 'package:dogwalkz/constants/supabase.dart';
+import 'package:dogwalkz/pages/password_reset_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,17 +36,29 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-
+  bool _handledResetPasswordLink = false;
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   bool _rememberMe = false;
   bool _acceptTerms = false;
   bool _isLogin = true;
+  late final StreamSubscription<Uri> _sub;
 
   /// Initializes the state of the widget.
   @override
   void initState() {
     super.initState();
+    final appLinks = AppLinks();
+    // Listen for new deep links while the app is running
+    _sub = appLinks.uriLinkStream.listen((uri) {
+      if (!_handledResetPasswordLink && uri.host == 'reset-password') {
+        _handledResetPasswordLink = true;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PasswordResetPage()),
+        );
+      }
+    });
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange); // Add this line
     _animationController = AnimationController(
@@ -98,6 +117,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     _passwordController.dispose();
     _nameController.dispose();
     _phoneController.dispose();
+    _sub.cancel();
     super.dispose();
   }
 
@@ -152,7 +172,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
       final response = await _supabase.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        emailRedirectTo: 'https://fanciful-brioche-0801c9.netlify.app/',
+        emailRedirectTo: 'https://symphonious-macaron-f46ddc.netlify.app/',
         data: {'name': _nameController.text.trim()},
       );
 
@@ -203,7 +223,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
 
     setState(() => _isLoading = true);
     try {
-      await _supabase.auth.resetPasswordForEmail(email);
+      await _supabase.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'dogwalkz://reset-password',
+      );
       if (!mounted) return;
 
       // Show success dialog
@@ -361,17 +384,20 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildOAuthIconButton(Ionicons.logo_google, () {
-                      // Handle Google login
-                    }),
+                    _buildOAuthIconButton(
+                      Ionicons.logo_google,
+                      _signInWithGoogle,
+                    ),
                     const SizedBox(width: 20),
-                    _buildOAuthIconButton(Ionicons.logo_facebook, () {
-                      // Handle Facebook login
-                    }),
+                    _buildOAuthIconButton(
+                      Ionicons.logo_facebook,
+                      _signInWithFacebook,
+                    ),
                     const SizedBox(width: 20),
-                    _buildOAuthIconButton(Ionicons.logo_instagram, () {
-                      // Handle Instagram login
-                    }),
+                    _buildOAuthIconButton(
+                      Ionicons.logo_instagram,
+                      _signInWithFacebook,
+                    ),
                   ],
                 ),
               ),
@@ -656,5 +682,74 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
             ],
           ),
     );
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId: SupabaseCredentials.googleClientId,
+      );
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw Exception('Google sign in was cancelled');
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final response = await _supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: googleAuth.idToken!,
+        accessToken: googleAuth.accessToken,
+      );
+
+      if (response.user == null) {
+        throw Exception('Authentication failed');
+      }
+
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/home');
+    } on AuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google sign in failed: ${e.message}')),
+      );
+    } on PlatformException catch (e) {
+      String errorMessage = 'Google sign in failed';
+      if (e.code == 'sign_in_failed') {
+        errorMessage = 'Sign in failed. Please try again.';
+      } else if (e.code == 'sign_in_canceled') {
+        errorMessage = 'Sign in was canceled';
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithFacebook() async {
+    setState(() => _isLoading = true);
+
+    try {
+      await _supabase.auth.signInWithOAuth(OAuthProvider.facebook);
+    } on AuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Facebook sign-in failed: ${e.message}')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unexpected error: $e')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }

@@ -166,27 +166,33 @@ class _DogsPageState extends State<DogsPage> {
                       child: Row(
                         children: [
                           if (dog.photoUrl != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                dog.photoUrl!,
-                                width: 80,
-                                height: 80,
-                                fit: BoxFit.cover,
+                            Hero(
+                              tag: 'dog-image-${dog.id}',
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  dog.photoUrl!,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             )
                           else
-                            Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                color: Colors.brown.shade100,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Ionicons.paw_outline,
-                                size: 40,
-                                color: Colors.brown,
+                            Hero(
+                              tag: 'dog-image-${dog.id}',
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.brown.shade100,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Ionicons.paw_outline,
+                                  size: 40,
+                                  color: Colors.brown,
+                                ),
                               ),
                             ),
                           const SizedBox(width: 16),
@@ -213,7 +219,7 @@ class _DogsPageState extends State<DogsPage> {
                                   style: TextStyle(
                                     fontFamily:
                                         GoogleFonts.comicNeue().fontFamily,
-                                    color: Colors.brown.shade600,
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
                                 if (dog.age != null)
@@ -222,7 +228,7 @@ class _DogsPageState extends State<DogsPage> {
                                     style: TextStyle(
                                       fontFamily:
                                           GoogleFonts.comicNeue().fontFamily,
-                                      color: Colors.brown.shade600,
+                                      color: Colors.grey.shade600,
                                     ),
                                   ),
                               ],
@@ -262,7 +268,14 @@ class _DogsPageState extends State<DogsPage> {
   void _navigateToEditDog(Dog dog) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddEditDogPage(dog: dog)),
+      PageRouteBuilder(
+        pageBuilder:
+            (context, animation, secondaryAnimation) =>
+                AddEditDogPage(dog: dog),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return child;
+        },
+      ),
     ).then((_) => _loadDogs());
   }
 }

@@ -18,15 +18,18 @@ class WalkRepository {
     required DateTime endTime,
     required bool needsLargeDogWalker,
     required bool needsDangerousBreedCertification,
+    String? excludeUserId,
   }) async {
     try {
-      final response = await _supabase
+      final query = _supabase
           .from('users')
           .select('*, walker_profiles(*), address')
           .eq('is_walker', true)
           .eq('is_verified', true)
+          .neq('id', excludeUserId ?? '')
           .textSearch('address->>city', city);
 
+      final response = await query;
       List<Walker> walkers =
           (response as List)
               .where((json) {
@@ -203,6 +206,7 @@ class WalkRepository {
                 'walker_earnings': walkerEarnings,
                 'status': 'requested',
                 'payment_status': 'pending',
+                'city': city,
               })
               .select('id')
               .single();
@@ -285,5 +289,19 @@ class WalkRepository {
     } catch (e) {
       throw Exception('Failed to get walker location: $e');
     }
+  }
+
+  Future<bool> checkWalkersExistInCity(String city) async {
+    final response =
+        await Supabase.instance.client
+            .from('users')
+            .select('id')
+            .eq('is_walker', true)
+            .eq('is_verified', true)
+            .ilike('address->>city', city)
+            .limit(1)
+            .maybeSingle();
+
+    return response != null;
   }
 }

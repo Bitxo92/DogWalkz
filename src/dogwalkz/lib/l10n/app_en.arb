@@ -20,7 +20,7 @@
   "street": "Street Address",
   "city": "City",
   "state": "State/Province",
-  "postalCode": "Postal Code",
+  "postalCode": "ZIP",
   "country": "Country",
   "registerWalker": "Walker Status",
   "bio": "Bio",
@@ -42,7 +42,7 @@
   "spanish": "Spanish",
 
 
-  "furryFriends": "My Furry Friends 🐾",
+  "furryFriends": "my Furry Friends 🐾",
   "deleteDog": "Delete Dog",
   "deleteDogMessage": "Are you sure you want to delete this dog?",
   "cancel": "Cancel",
@@ -53,9 +53,9 @@
   "small": "small",
   "medium": "medium",
   "large": "large",
-  "addDog": "Dog Profile",
+  "addDog": "my Dog`s Profile",
   "size": "Size",
-  "editDog": "Dog Profile",
+  "editDog": "my Dog`s Profile",
   "dogName": "Name",
   "dogBreed": "Breed",
   "dogAge": "Age",
@@ -85,7 +85,7 @@
   "last6Months": "Last 6 Months",
   "noTransactionsFound": "No transactions found for the selected period",
   
-  "scheduleWalk": "Schedule Walk",
+  "scheduleWalk": "Let`s Schedule a Walk",
   "date": "Date",
   "startTime": "Start Time",
   "endTime": "End Time",
@@ -123,7 +123,7 @@
   "startWalk": "Start",
   "finishWalk": "Finish",
 
-  "myWalks": "My Walks",
+  "myWalks": "my Walks",
   "error": "Alert!",
   "ok": "OK",
   "failedToLoadWalks": "Failed to load walks: {error}",
@@ -235,7 +235,7 @@
   "back": "Back",
   "balance": "Available Balance: ",
   "almost": "Almost there! 🎉",
-  "match": "Your Perfect Match 🦮",
+  "match": "We’ll Help You Choose Right",
   "join": "Who's joining? 🐾",
   "estimate": "Estimated Total: ",
   "selectEnd": "Select End Time: ",
@@ -244,9 +244,17 @@
   "starts": "Starts",
   "walkTime": "When's walk time? ⏰",
   "helpUs": "Help us find the best walkers in your area!",
-  "meet": "Where should we meet? 🗺️",
+  "meet": "Where should we meet? ",
   "selectStartEnd": "Please select start and end times",
-  "selectOneDog": "Please select at least one dog"
+  "selectOneDog": "Please select at least one dog",
+  "scheduledWalks": "Scheduled Walks",
+  "confirmCancel": "Confirm Cancellation",
+  "confirmCancelMessage": "Are you sure you want to cancel this walk? This action cannot be undone.",
+  "no": "No",
+  "noWalkersInCity": "No available walkers for the city you selected.",
+  "addFurryFriend": "Add a Furry Friend",
+  "noDogsAccount": " Currently you have no dogs in your account",
+  "yesCancel": "yes, Cancel"
   
 
  

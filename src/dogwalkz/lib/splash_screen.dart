@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'package:dogwalkz/pages/password_reset_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final Uri? initialUri;
+  const SplashScreen({Key? key, this.initialUri}) : super(key: key);
 
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -29,29 +31,40 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3500), // Total animation duration
-    );
+    if (widget.initialUri?.host == 'reset-password') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PasswordResetPage()),
+        );
+      });
+    } else {
+      _controller = AnimationController(
+        vsync: this,
+        duration: const Duration(
+          milliseconds: 3500,
+        ), // Total animation duration
+      );
 
-    // Animation for app name
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
-      ),
-    );
+      // Animation for app name
+      _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
+        ),
+      );
 
-    // Animation for tagline
-    _taglineOpacityAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.7, 1.0, curve: Curves.easeInOut),
-      ),
-    );
+      // Animation for tagline
+      _taglineOpacityAnimation = Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.7, 1.0, curve: Curves.easeInOut),
+        ),
+      );
 
-    _startTypingAnimation();
-    _navigateToLogin();
+      _startTypingAnimation();
+      _navigateToLogin();
+    }
   }
 
   /// Starts the typing animation for the app name.

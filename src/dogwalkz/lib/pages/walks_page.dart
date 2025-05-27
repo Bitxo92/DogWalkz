@@ -129,7 +129,21 @@ class _WalksPageState extends State<WalksPage> {
                     : Column(
                       children: [
                         _buildCalendar(),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
+                        Text(
+                          AppLocalizations.of(context)!.scheduledWalks,
+
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.brown.shade500.withOpacity(0.8),
+                            fontSize: 24,
+                          ),
+                        ),
+                        Divider(
+                          color: Colors.brown.shade500.withOpacity(0.8),
+                          thickness: 2,
+                        ),
+                        const SizedBox(height: 2),
                         Expanded(child: _buildWalksList()),
                       ],
                     ),
@@ -234,9 +248,7 @@ class _WalksPageState extends State<WalksPage> {
                     height: 20,
                     decoration: BoxDecoration(
                       color:
-                          isPast
-                              ? Colors.grey
-                              : const Color.fromARGB(255, 237, 4, 4),
+                          isPast ? Colors.grey.shade400 : Colors.red.shade300,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -269,7 +281,7 @@ class _WalksPageState extends State<WalksPage> {
         children: [
           Text(
             AppLocalizations.of(context)!.morningWalk,
-            style: TextStyle(fontWeight: FontWeight.w500),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown),
           ),
           SizedBox(width: 6),
           Icon(Ionicons.sunny_outline, color: Colors.orange, size: 20),
@@ -280,7 +292,7 @@ class _WalksPageState extends State<WalksPage> {
         children: [
           Text(
             AppLocalizations.of(context)!.afternoonWalk,
-            style: TextStyle(fontWeight: FontWeight.w500),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown),
           ),
           SizedBox(width: 6),
           Icon(Ionicons.partly_sunny_outline, color: Colors.amber, size: 20),
@@ -291,7 +303,7 @@ class _WalksPageState extends State<WalksPage> {
         children: [
           Text(
             AppLocalizations.of(context)!.eveningWalk,
-            style: TextStyle(fontWeight: FontWeight.w500),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown),
           ),
           SizedBox(width: 6),
           Icon(Ionicons.moon_outline, color: Colors.indigo, size: 20),
@@ -352,8 +364,8 @@ class _WalksPageState extends State<WalksPage> {
                   '${walk.scheduledStart.hour.toString().padLeft(2, '0')}:${walk.scheduledStart.minute.toString().padLeft(2, '0')} - '
                   '${walk.scheduledEnd.hour.toString().padLeft(2, '0')}:${walk.scheduledEnd.minute.toString().padLeft(2, '0')}',
                   style: TextStyle(
-                    color: Colors.brown,
-                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
                     fontSize: 14,
                   ),
                 ),

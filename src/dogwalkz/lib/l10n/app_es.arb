@@ -16,7 +16,7 @@
   "street": "Dirección",
   "city": "Ciudad",
   "state": "Estado/Provincia",
-  "postalCode": "Código postal",
+  "postalCode": "C.P.",
   "country": "País",
   "registerWalker": "Estado Paseador",
   "bio": "Biografía",
@@ -37,7 +37,7 @@
   "english": "Inglés",
   "spanish": "Español",
 
-  "furryFriends": "Mis Amigos Peludos 🐾",
+  "furryFriends": "mis Amigos Peludos 🐾",
   "deleteDog": "Borrar Perro",
   "deleteDogMessage": "Estás seguro que quieres borrar este Perro?",
   "cancel": "Cancelar",
@@ -48,9 +48,9 @@
   "small": "pequeño",
   "medium": "mediano",
   "large": "grande",
-  "addDog": "Perfil del Perro",
+  "addDog": "mi Peludo",
   "size": "Tamaño",
-  "editDog": "Perfil del Perro",
+  "editDog": "mi Peludo",
   "dogName": "Nombre",
   "dogBreed": "Raza",
   "dogAge": "Edad",
@@ -79,7 +79,7 @@
   "last6Months": "Últimos 6 meses",
   "noTransactionsFound": "No existen transacciones para el periodo seleccionado",
 
-  "scheduleWalk": "Programar Paseo",
+  "scheduleWalk": "¡Hagamos un Paseo!",
   "date": "Fecha",
   "startTime": "Hora de Inicio",
   "endTime": "Hora de Fin",
@@ -117,7 +117,7 @@
   "startWalk": "Comenzar",
   "finishWalk": "Finalizar",
 
-  "myWalks": "Mis Paseos",
+  "myWalks": "mis Paseos",
   "error": "¡Aviso!",
   "ok": "Aceptar",
   "failedToLoadWalks": "Error al cargar los paseos: {error}",
@@ -222,13 +222,13 @@
   "reviewComment": "Reseña",
   "rating": "Calificación",
   "save": "Guardar",
-  "callSupport": "Llamanos",
+  "callSupport": "Llámanos",
     "submit": "¡Enviar!",
   "next": "Siguiente",
   "back": "Atrás",
   "balance": "Saldo disponible: ",
   "almost": "¡Casi listo! 🎉",
-  "match": "Tu pareja perfecta 🦮",
+  "match": "Te Ayudamos a Elegir con Confianza",
   "join": "¿Quién se une? 🐾",
   "estimate": "Total estimado: ",
   "selectEnd": "Selecciona la hora de fin: ",
@@ -237,9 +237,19 @@
   "starts": "Comienza",
   "walkTime": "¿Cuándo es la caminata? ⏰",
   "helpUs": "¡Ayúdanos a encontrar los mejores paseadores en tu zona!",
-  "meet": "¿Dónde Quedamos? 🗺️",
+  "meet": "¿Dónde Quedamos?",
   "selectStartEnd": "Por favor selecciona la hora de inicio y fin",
-  "selectOneDog": "Por favor selecciona al menos un perro"
+  "selectOneDog": "Por favor selecciona al menos un perro",
+  "scheduledWalks": "Paseos Programados",
+  "confirmCancel": "Confirmar Cancelación",
+  "confirmCancelMessage": "¿Estás seguro de que deseas cancelar este paseo? Esta acción no se puede deshacer.",
+  "no": "No",
+  "noWalkersInCity": "No hay paseadores disponibles en esta ciudad.",
+  "addFurryFriend": "Añade tu Amigo Peludo",
+  "noDogsAccount": "Actualmente no tienes perros en tu cuenta",
+   "yesCancel": "si, Cancelar"
+
+
 
 
 }

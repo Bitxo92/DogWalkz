@@ -3,6 +3,8 @@ import 'package:dogwalkz/pages/schedule_walk_page.dart';
 import 'package:dogwalkz/repositories/dogs_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
@@ -30,6 +32,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   bool _isLoadingWalks = true;
   int _unreadNotifications = 0;
   bool _isLoadingNotifications = true;
+  bool _showTutorial = false;
+  final GlobalKey _appBarKey = GlobalKey();
+  final GlobalKey _logoutKey = GlobalKey();
+  final GlobalKey _notificationsKey = GlobalKey();
+  final GlobalKey _walletKey = GlobalKey();
+  final GlobalKey _walksKey = GlobalKey();
+  final GlobalKey _fabKey = GlobalKey();
+  final GlobalKey _bottomNavWalletKey = GlobalKey();
+  final GlobalKey _bottomNavCalendarKey = GlobalKey();
+  final GlobalKey _bottomNavDogsKey = GlobalKey();
+  final GlobalKey _bottomNavProfileKey = GlobalKey();
+  final GlobalKey _HomePageKey = GlobalKey();
 
   /// Initializes the state of the widget.
   @override
@@ -39,6 +53,33 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     _loadWalletBalance();
     _loadUpcomingWalks();
     _loadUnreadNotifications();
+    _checkFirstLaunch();
+  }
+
+  Future<void> _checkFirstLaunch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
+
+    if (isFirstLaunch) {
+      await prefs.setBool('isFirstLaunch', true);
+      //!IMPORTANT--> Wait for widgets to be rendered before showing tutorial
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ShowCaseWidget.of(context).startShowCase([
+            _HomePageKey,
+            _logoutKey,
+            _notificationsKey,
+            _walletKey,
+            _walksKey,
+            _fabKey,
+            _bottomNavWalletKey,
+            _bottomNavCalendarKey,
+            _bottomNavDogsKey,
+            _bottomNavProfileKey,
+          ]);
+        }
+      });
+    }
   }
 
   /// Loads the user's wallet balance from the WalletRepository.
@@ -75,305 +116,428 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final user = Supabase.instance.client.auth.currentUser;
     final userName = user?.userMetadata?['name'] ?? 'Pet Lover';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5E9D9),
-      appBar: AppBar(
-        leading: Stack(
-          children: [
-            IconButton(
-              icon: const Icon(Ionicons.notifications_outline),
-              onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationsPage(),
-                  ),
-                );
-                _loadUnreadNotifications();
-              },
-            ),
-            if (_unreadNotifications > 0)
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    '$_unreadNotifications',
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
-                    textAlign: TextAlign.center,
-                  ),
+    return Showcase(
+      key: _HomePageKey,
+      title: 'Welcome to Dogwalkz',
+      description:
+          'This is your home page. Here you can schedule walks, view your wallet, and much more.',
+      descriptionPadding: EdgeInsets.all(16),
+      titleTextAlign: TextAlign.center,
+      descriptionTextAlign: TextAlign.center,
+      tooltipBackgroundColor: Colors.brown,
+      textColor: Colors.white,
+
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5E9D9),
+        appBar: AppBar(
+          leading: Stack(
+            children: [
+              Showcase(
+                key: _notificationsKey,
+                tooltipBackgroundColor: Colors.brown,
+                textColor: Colors.white,
+                descriptionTextAlign: TextAlign.center,
+                title: 'Notifications',
+                description: 'Tap here to see your notifications.',
+                targetPadding: EdgeInsets.all(2),
+                targetShapeBorder: CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(Ionicons.notifications_outline),
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationsPage(),
+                      ),
+                    );
+                    _loadUnreadNotifications();
+                  },
                 ),
               ),
+              if (_unreadNotifications > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$_unreadNotifications',
+                      style: const TextStyle(color: Colors.white, fontSize: 10),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          centerTitle: true,
+          title: Text(
+            'DogWalkz 🐾',
+            style: TextStyle(
+              fontFamily: GoogleFonts.comicNeue().fontFamily,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          backgroundColor: Colors.brown,
+          foregroundColor: Colors.white,
+          actions: [
+            Showcase(
+              key: _logoutKey,
+              descriptionTextAlign: TextAlign.center,
+              tooltipBackgroundColor: Colors.brown,
+              textColor: Colors.white,
+              title: 'Logout',
+              description: 'Tap here to sign out of your account.',
+              targetShapeBorder: CircleBorder(),
+              child: IconButton(
+                icon: const Icon(Ionicons.log_out_outline),
+                color: Colors.white,
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/auth');
+                },
+              ),
+            ),
           ],
         ),
-        centerTitle: true,
-        title: Text(
-          'DogWalkz 🐾',
-          style: TextStyle(
-            fontFamily: GoogleFonts.comicNeue().fontFamily,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.brown,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Ionicons.log_out_outline),
-            color: Colors.white,
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/auth');
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.welcomeBack,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontFamily: GoogleFonts.comicNeue().fontFamily,
-                              color: Colors.brown.shade700,
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                          Text(
-                            userName,
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown,
-                              fontFamily: GoogleFonts.comicNeue().fontFamily,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 80,
-                      height: 80,
-                      child: Lottie.network(
-                        'https://lottie.host/4410b37a-0f15-4bbc-be66-ab2a92a6fb2e/D5q35grkIb.json',
-                        fit: BoxFit.contain,
-                        animate: true,
-                        repeat: true,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.brown.withOpacity(0.1),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Row(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Ionicons.wallet_outline,
-                        size: 40,
-                        color: Colors.brown,
-                      ),
-                      const SizedBox(width: 15),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.walletBalance,
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                          Text(
-                            '\$${_walletBalance.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown.shade700,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.welcomeBack,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontFamily: GoogleFonts.comicNeue().fontFamily,
+                                color: Colors.brown.shade700,
+                                fontWeight: FontWeight.w300,
+                              ),
                             ),
-                          ),
-                        ],
+                            Text(
+                              userName,
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.brown,
+                                fontFamily: GoogleFonts.comicNeue().fontFamily,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/wallet').then((_) {
-                            _loadWalletBalance();
-                          });
-                        },
-                        child: Text(
-                          AppLocalizations.of(context)!.manageWallet,
-                          style: TextStyle(color: Colors.brown),
+                      SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: Lottie.network(
+                          'https://lottie.host/4410b37a-0f15-4bbc-be66-ab2a92a6fb2e/D5q35grkIb.json',
+                          fit: BoxFit.contain,
+                          animate: true,
+                          repeat: true,
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 30),
+                  const SizedBox(height: 20),
 
-                Text(
-                  AppLocalizations.of(context)!.upcomingWalks,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.brown,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.brown.withOpacity(0.1),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child:
-                      _isLoadingWalks
-                          ? const Center(
-                            child: CircularProgressIndicator(
+                  Showcase(
+                    key: _walletKey,
+                    descriptionTextAlign: TextAlign.center,
+                    tooltipBackgroundColor: Colors.brown,
+                    textColor: Colors.white,
+                    title: 'Wallet Balance',
+                    description:
+                        'Your current balance. Tap to add funds or view transaction history.',
+                    targetPadding: const EdgeInsets.all(8),
+                    targetShapeBorder: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/wallet').then((_) {
+                          _loadWalletBalance();
+                        });
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.brown.withOpacity(0.1),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Ionicons.wallet_outline,
+                              size: 40,
                               color: Colors.brown,
                             ),
-                          )
-                          : _upcomingWalks.isEmpty
-                          ? Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              AppLocalizations.of(context)!.noUpcomingWalks,
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
+                            const SizedBox(width: 15),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(context)!.walletBalance,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                Text(
+                                  '\$${_walletBalance.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.brown.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+
+                            Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Text(
+                                AppLocalizations.of(context)!.manageWallet,
+                                style: TextStyle(color: Colors.brown),
                               ),
                             ),
-                          )
-                          : Column(
-                            children: [
-                              for (
-                                var i = 0;
-                                i < _upcomingWalks.length && i < 2;
-                                i++
-                              )
-                                Column(
-                                  children: [
-                                    if (i > 0) const Divider(),
-                                    ListTile(
-                                      leading: const Icon(
-                                        Ionicons.paw_outline,
-                                        color: Colors.brown,
-                                      ),
-                                      title: Text(
-                                        '${_getWalkPeriod(_upcomingWalks[i].scheduledStart)}',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.brown.shade700,
-                                        ),
-                                      ),
-                                      subtitle: Text(
-                                        _formatWalkDate(_upcomingWalks[i]),
-                                        style: TextStyle(
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                      trailing: Icon(
-                                        Ionicons.chevron_forward_outline,
-                                        color: Colors.brown.shade700,
-                                      ),
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (context) => WalkDetailsPage(
-                                                  walk: _upcomingWalks[i],
-                                                ),
-                                          ),
-                                        ).then((_) {
-                                          _loadUpcomingWalks();
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  Text(
+                    AppLocalizations.of(context)!.upcomingWalks,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Showcase(
+                    key: _walksKey,
+                    title: 'Upcoming Walks',
+                    descriptionTextAlign: TextAlign.center,
+                    tooltipBackgroundColor: Colors.brown,
+                    textColor: Colors.white,
+                    description:
+                        'Your scheduled walks. Tap one to see its details.',
+                    targetPadding: const EdgeInsets.all(8),
+                    targetShapeBorder: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.brown.withOpacity(0.1),
+                            blurRadius: 10,
+                            spreadRadius: 2,
                           ),
-                ),
-                const SizedBox(height: 30),
-              ],
+                        ],
+                      ),
+                      child:
+                          _isLoadingWalks
+                              ? const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.brown,
+                                ),
+                              )
+                              : _upcomingWalks.isEmpty
+                              ? Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  AppLocalizations.of(context)!.noUpcomingWalks,
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              )
+                              : Column(
+                                children: [
+                                  for (
+                                    var i = 0;
+                                    i < _upcomingWalks.length && i < 2;
+                                    i++
+                                  )
+                                    Column(
+                                      children: [
+                                        if (i > 0) const Divider(),
+                                        ListTile(
+                                          leading: const Icon(
+                                            Ionicons.paw_outline,
+                                            color: Colors.brown,
+                                          ),
+                                          title: Text(
+                                            '${_getWalkPeriod(_upcomingWalks[i].scheduledStart)}',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.brown.shade700,
+                                            ),
+                                          ),
+                                          subtitle: Text(
+                                            _formatWalkDate(_upcomingWalks[i]),
+                                            style: TextStyle(
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                          trailing: Icon(
+                                            Ionicons.chevron_forward_outline,
+                                            color: Colors.brown.shade700,
+                                          ),
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) =>
+                                                        WalkDetailsPage(
+                                                          walk:
+                                                              _upcomingWalks[i],
+                                                        ),
+                                              ),
+                                            ).then((_) {
+                                              _loadUpcomingWalks();
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _handleFabPressed,
-        backgroundColor: Colors.brown,
-        child: const Icon(Ionicons.add_outline, color: Colors.white),
-        shape: const CircleBorder(),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        color: Colors.brown,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: const Icon(Ionicons.wallet_outline, color: Colors.white),
-              onPressed: () {
-                Navigator.pushNamed(context, '/wallet').then((_) {
-                  _loadWalletBalance();
-                });
-              },
-            ),
-            IconButton(
-              icon: const Icon(Ionicons.calendar_outline, color: Colors.white),
-              onPressed: () => Navigator.pushNamed(context, '/walks'),
-            ),
-            const SizedBox(width: 40),
-            IconButton(
-              icon: const Icon(Ionicons.paw_outline, color: Colors.white),
-              onPressed: () => Navigator.pushNamed(context, '/dogs'),
-            ),
-            IconButton(
-              icon: const Icon(Ionicons.person_outline, color: Colors.white),
-              onPressed: () => Navigator.pushNamed(context, '/profile'),
-            ),
-          ],
+        floatingActionButton: Showcase(
+          key: _fabKey,
+          descriptionTextAlign: TextAlign.center,
+          title: 'Schedule Walk',
+          description: 'Tap here to book a new walk for your dog.',
+          tooltipBackgroundColor: Colors.brown,
+          textColor: Colors.white,
+          targetShapeBorder: CircleBorder(),
+          targetPadding: const EdgeInsets.all(8),
+          child: FloatingActionButton(
+            onPressed: _handleFabPressed,
+            backgroundColor: Colors.brown,
+            child: const Icon(Ionicons.add_outline, color: Colors.white),
+            shape: const CircleBorder(),
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          color: Colors.brown,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Showcase(
+                key: _bottomNavWalletKey,
+                descriptionTextAlign: TextAlign.center,
+                title: 'Wallet',
+                description: 'Access your wallet and transaction history',
+                tooltipBackgroundColor: Colors.brown,
+                textColor: Colors.white,
+                targetShapeBorder: CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(
+                    Ionicons.wallet_outline,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/wallet').then((_) {
+                      _loadWalletBalance();
+                    });
+                  },
+                ),
+              ),
+              Showcase(
+                key: _bottomNavCalendarKey,
+                descriptionTextAlign: TextAlign.center,
+                title: 'Calendar',
+                description: 'View your scheduled walks and their details',
+                tooltipBackgroundColor: Colors.brown,
+                textColor: Colors.white,
+                targetShapeBorder: CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(
+                    Ionicons.calendar_outline,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => Navigator.pushNamed(context, '/walks'),
+                ),
+              ),
+              const SizedBox(width: 40),
+              Showcase(
+                key: _bottomNavDogsKey,
+                descriptionTextAlign: TextAlign.center,
+                tooltipBackgroundColor: Colors.brown,
+                textColor: Colors.white,
+                title: 'Dogs',
+                description: 'Add your dogs, fill in / update their details',
+                targetShapeBorder: CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(Ionicons.paw_outline, color: Colors.white),
+                  onPressed: () => Navigator.pushNamed(context, '/dogs'),
+                ),
+              ),
+              Showcase(
+                key: _bottomNavProfileKey,
+                descriptionTextAlign: TextAlign.center,
+                tooltipBackgroundColor: Colors.brown,
+                textColor: Colors.white,
+                title: 'Profile',
+                description:
+                    'View and edit your account information, become a walker or change the apps language',
+                targetShapeBorder: CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(
+                    Ionicons.person_outline,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => Navigator.pushNamed(context, '/profile'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

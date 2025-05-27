@@ -260,12 +260,12 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
                       ),
                       secondary: Icon(
                         Ionicons.warning_outline,
-                        color: _isDangerousBreed ? Colors.red : Colors.brown,
+                        color: _isDangerousBreed ? Colors.brown : Colors.grey,
                       ),
                       value: _isDangerousBreed,
                       onChanged:
                           (value) => setState(() => _isDangerousBreed = value),
-                      activeColor: Colors.red,
+                      activeColor: Colors.brown,
                     ),
                     SwitchListTile(
                       title: Text(
@@ -276,11 +276,11 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
                       ),
                       secondary: Icon(
                         Ionicons.people_outline,
-                        color: _isSociable ? Colors.green : Colors.brown,
+                        color: _isSociable ? Colors.brown : Colors.grey,
                       ),
                       value: _isSociable,
                       onChanged: (value) => setState(() => _isSociable = value),
-                      activeColor: Colors.green,
+                      activeColor: Colors.brown,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -331,23 +331,27 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
                         ),
                       ],
                     ),
-                    child: CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.brown.shade100,
-                      backgroundImage:
-                          _selectedImage != null
-                              ? FileImage(_selectedImage!)
-                              : widget.dog?.photoUrl != null
-                              ? NetworkImage(widget.dog!.photoUrl!)
-                              : null,
-                      child:
-                          _selectedImage == null && widget.dog?.photoUrl == null
-                              ? const Icon(
-                                Ionicons.camera_outline,
-                                size: 40,
-                                color: Colors.white,
-                              )
-                              : null,
+                    child: Hero(
+                      tag: 'dog-image-${widget.dog?.id ?? 'new'}',
+                      child: CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.brown.shade100,
+                        backgroundImage:
+                            _selectedImage != null
+                                ? FileImage(_selectedImage!)
+                                : widget.dog?.photoUrl != null
+                                ? NetworkImage(widget.dog!.photoUrl!)
+                                : null,
+                        child:
+                            _selectedImage == null &&
+                                    widget.dog?.photoUrl == null
+                                ? const Icon(
+                                  Ionicons.camera_outline,
+                                  size: 40,
+                                  color: Colors.white,
+                                )
+                                : null,
+                      ),
                     ),
                   ),
                   if (_selectedImage == null)
