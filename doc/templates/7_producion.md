@@ -1,16 +1,112 @@
-# Fase de produción
+# Fase de producción
 
 # Manual técnico e de administración
 
-### Información relativa á instalación ou despregamento:
+## Información relativa a la instalación o despliegue
 
-* Se precisas dun servicio, como unha base de datos, servidor, servicios na nube... indica os pasos a seguir para poder despregar/instalar o teu sistema.
-* Especifica o software necesario e a súa posta a punto (SO, servidores, etc).
-* Configuración inicial seguridade: devasa, control usuarios, rede.
-* Se fora o caso, explica o proceso de carga inicial de datos na base de datos ou migración de datos xa existentes noutros formatos.
-* Alta de usuarios dos sistemas necesarios.
+Este apartado describe el proceso necesario para desplegar la aplicación móvil **DogWalkz**, en las dos principales plataformas: **Google Play Store** y **Apple App Store**.
 
-### Información relativa a la administración del sistema
+---
+
+### Publicación en Google Play Store (Android)
+
+#### 1. Preparación del proyecto
+
+- Configurar correctamente el archivo `android/app/build.gradle`:
+  - `applicationId`
+  - `versionCode`
+  - `versionName`
+  - `minSdkVersion` (mínimo 21)
+- Añadir íconos y pantalla de inicio con [flutter_launcher_icons](https://pub.dev/packages/flutter_launcher_icons) y [flutter_native_splash](https://pub.dev/packages/flutter_native_splash).
+
+#### 2. Generar APK o AAB
+
+- Generar un **Android App Bundle (.aab)** para la Play Store con el comando:
+  ```bash
+  flutter build appbundle
+  ```
+- El archivo generado se encontrará en `build/app/outputs/bundle/release/app-release.aab`
+
+#### 3.Crear cuenta de Google Play
+
+- Registrar una cuenta de desarrollador en: https://play.google.com/console 
+
+> [!CAUTION]
+> Se requiere un pago único de **$25 USD** para el registro de la cuenta de desarrollador.
+
+#### 4. Crear la aplicación en Google Play Console:
+
+- Añadir nombre de la app, idioma principal y tipo.
+- Completar la ficha de la aplicación (descripción corta, larga, capturas, icono, etc.).
+- Rellenar el cuestionario de clasificación de contenido y política de privacidad.
+- Subir el archivo .aab en **"Releases" --> "Production"**.
+
+#### 5. Publicación
+- mandar a revisión de Google (1-7 días aprox).
+- Una vez aprobada, la app estará disponible en Google Play Store.
+
+### Publicación en Apple App Store (iOS)
+
+#### 1. Requisitos previos
+
+- Tener una cuenta de desarrollador Apple activa:  
+  [Apple Developer Program](https://developer.apple.com/programs/)  
+> [!CAUTION]
+> El programa de desarrolladores de Apple exige un pago anual de **$99 USD**
+
+- Mac con Xcode instalado 
+- Certificados y perfiles de aprovisionamiento configurados:
+  - Certificado de distribución iOS
+  - Perfil de aprovisionamiento para producción
+
+#### 2. Preparación del proyecto Flutter
+
+- Configurar `ios/Runner.xcodeproj`:
+  - Establecer `Bundle Identifier` único (ejemplo: `com.tuempresa.dogwalkz`)
+  - Ajustar versión (`CFBundleShortVersionString`) y build (`CFBundleVersion`)
+- Añadir iconos y splash screen para iOS (puedes usar paquetes como `flutter_launcher_icons` y `flutter_native_splash`).
+
+#### 3. Generar archivo IPA
+
+- Desde la terminal, dentro del proyecto Flutter:
+  ```bash
+  flutter build ios --release --no-codesign
+  ```
+- Abre el proyecto en Xcode (ios/Runner.xcworkspace):
+   - Selecciona el target Runner
+   - Firma el proyecto con tu equipo de desarrollo y certificado de distribución
+   - Archiva el proyecto(Menú: Product --> Archive)
+- Desde el *Organizer* de Xcode, exporta el archivo `.ipa` para App Store.
+
+#### 4. Subir a App Store Connect
+
+- Ingresa a [AppStore Connect](https://appstoreconnect.apple.com/login)
+- Crea una nueva aplicación y rellena su ficha (Nombre, idioma, bundle ID, categoría, etc.).
+- Sube el archivo `.ipa`, existen 2 formas de realizar este paso:
+   - En Xcode desplazate a **Organizer --> Upload**
+   - La herramienta **Transporter** (disponible en Mac App Store)
+
+#### 5. Configurar la aplicación en App Store Connect
+
+- Introduce los metadatos(descripción, capturas de pantalla, clasificación de contenido y políticas de privacidad).
+- Configura precios y disponibilidad.
+
+#### 6. Enviar para revisión y publicación.
+
+- Enviar a apple para revisión(tarda entre 1-7 días aprox.).
+- Una vez aprobada, ya estará disponible en la tienda de App Store.
+
+> [!NOTE]
+> Apple recomienda automatizar la generación y despliegue con herramientas como **Fastlane** para facilitar actualizaciones y gestionar certificados, builds y publicaciones de forma segura y repetible.
+
+
+
+
+
+
+
+
+## Información relativa a la administración del sistema
 
 Una vez que el sistema está en funcionamiento, se establece una estrategia clara de administración para garantizar su estabilidad y continuidad operativa. 
 Se realizan respaldos manuales periódicos de la configuración crítica del proyecto, incluyendo el esquema de la base de datos, funciones (SQL y Edge Functions), políticas de seguridad (RLS) y configuración de autenticación. 
@@ -24,7 +120,7 @@ En cuánto a la gestión de la seguridad, se asegura activando y configurando po
 
 
 
-### Información relativa al matenimiento del sistema
+## Información relativa al matenimiento del sistema
 El mantenimiento de la aplicación se sustentará en un sistema automatizado orientado a la detección proactiva de errores, su análisis en tiempo real y la ejecución controlada de despliegues correctivos. 
 Se utilizarán herramientas como Sentry para el monitoreo continuo y la trazabilidad de fallos, junto con GitHub Actions para la automatización de flujos CI/CD.
 
