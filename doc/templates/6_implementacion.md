@@ -46,50 +46,10 @@ sequenceDiagram
 - `Supabase.initialize()` establece la conexión con el backend.
 
 ### Login
-Para la gestión de todo el flujo de inicio de sesión de un usuario en la aplicación, utilizamos el método `_login()`:
 
+El método `_login()` se encarga de gestionar todo el flujo de inicio de sesión de un usuario en la aplicación. 
+Primero, valida el formulario utilizando `_loginFormKey` para asegurarse de que tanto el correo como la contraseña sean válidos; si alguno de los campos es incorrecto, el proceso se detiene. Luego, mediante `setState`, se activa un indicador de carga que informa al usuario que el inicio de sesión está en curso. Durante este proceso, se realiza una petición asíncrona a `supabase.auth.signInWithPassword()` pasando el correo y la contraseña como parámetros. Esta llamada verifica las credenciales en Supabase, y si la autenticación es exitosa, se recibe un objeto `user`, en caso contrario nos devolverá `null`, lanzandose entonces una excepción (`AuthException`) indicando al usuario que sus credenciales son incorrectas. En caso de que el usuario haya seleccionado la opción "Remember me", se almacenan las credenciales en `SharedPreferences` mediante el método `_saveCredentials()`. Si el inicio de sesión es exitoso, la aplicación redirige automáticamente a la pantalla principal usando `Navigator.pushReplacementNamed('/home')`. Finalmente, cualquier error durante el proceso es manejado adecuadamente: si se trata de un error de autenticación (`AuthException`), se muestra un mensaje específico; para otros errores generales, se informa al usuario mediante un `SnackBar`.
 
-- **Validación del formulario de inicio de sesión:**
-
-  - Se valida el formulario mediante `_loginFormKey`. Si alguno de los campos (correo o contraseña) es inválido, se detiene el proceso.  
-    Esta verificación evita que se intenten enviar datos incompletos o con formato incorrecto al sistema de autenticación.
-
-
-- **Activación del indicador de carga:**
-
-  - Se actualiza el estado de la interfaz (`setState`) para mostrar un indicador visual que informe al usuario que el proceso de inicio de sesión está en curso.
-
-
-- **Solicitud de inicio de sesión a Supabase:**
-
-  - Se realiza una llamada asíncrona a `supabase.auth.signInWithPassword()`, pasando como parámetros:
-
-    - El **correo electrónico** (`email`)
-    - La **contraseña** (`password`)
-
-  - Supabase verifica esas credenciales y responde con un objeto de tipo `user` si la autenticación fue exitosa.
-
-
-- **Verificación de la respuesta:**
-
-  - Si el objeto `user` es `null`, se lanza una excepción indicando que el usuario no fue encontrado, lo que evita continuar con una sesión inválida.
-
-
-- **Almacenamiento de credenciales si se selecciona “Recordar sesión”:**
-
-  - Si el usuario activó la opción del checkbox `RememberMe`, se llama al método `_saveCredentials()` para guardar el email y la contraseña mediante `SharedPreferences`.
-
-
-- **Redirección tras el inicio de sesión exitoso:**
-
-  - Si todo fue exitoso, se navega automáticamente a la pantalla principal de la aplicación (`/home`) usando `Navigator.pushReplacementNamed()`.
-
-
-- **Manejo de errores de autenticación:**
-
-  - En caso de error, se capturan dos tipos:
-    - **Errores de Supabase** (`AuthException`) que muestran mensajes específicos (por ejemplo, contraseña incorrecta).
-    - **Errores generales** (excepciones no controladas) que también se notifican al usuario mediante un `SnackBar`.
 
 ``` dart
   /// Handles the login functionality using Supabase.
@@ -125,23 +85,24 @@ Para la gestión de todo el flujo de inicio de sesión de un usuario en la aplic
   }
 ```
 ### SharedPreferences
-- El método `_saveCredentials()` decide si persiste o elimina las credenciales del usuario según la opción marcada en el checkbox `Remember me`.
+El método `_saveCredentials()` decide si persiste o elimina las credenciales del usuario según la opción marcada en el checkbox `Remember me`.
   Para ello, utiliza la librería `SharedPreferences` para almacenar los credenciales de forma persistente en el dispositivo en formato **clave-valor**.
 
-- Este proceso conlleva una serie de pasos:
-    1. **Instancia de `SharedPreferences`**  
-        - `SharedPreferences.getInstance()` abre el almacén clave‑valor persistente del dispositivo.
+Este proceso conlleva una serie de pasos:
 
-    2. **Cuando “Recordar sesión” está activado (`_rememberMe == true`)**  
-        - Guarda:
-            - `'rememberMe' = true` (booleano)
-            - `'email' = <correo>` (string)
-            - `'password' = <contraseña>` (string)  
+  1. **Instancia de `SharedPreferences`**  
+      - `SharedPreferences.getInstance()` abre el almacén clave‑valor persistente del dispositivo.
 
-        - Estos datos permanecen tras cerrar la app.
+  2. **Cuando “Recordar sesión” está activado (`_rememberMe == true`)**  
+      - Guarda:
+        - `'rememberMe' = true` (booleano)
+        - `'email' = <correo>` (string)
+        - `'password' = <contraseña>` (string)  
 
-    3. **Cuando está desactivado**  
-        - Elimina las claves `'rememberMe'`, `'email'` y `'password'` para no conservar información de la sesión.
+      - Estos datos permanecen tras cerrar la app.
+
+  3. **Cuando está desactivado**  
+      - Elimina las claves `'rememberMe'`, `'email'` y `'password'` para no conservar información de la sesión.
 ``` dart
   Future<void> _saveCredentials() async {
     final prefs = await SharedPreferences.getInstance();
@@ -159,48 +120,8 @@ Para la gestión de todo el flujo de inicio de sesión de un usuario en la aplic
 
 ### Registro
 
-Para  la gestión de todo el flujo de registro de un nuevo usuario en la aplicación utilizamos el método `_register()`. 
+El método `_register()` maneja todo el proceso de registro de un nuevo usuario en la aplicación. Primero, valida el formulario mediante `_registerFormKey` para asegurarse de que todos los campos requeridos (nombre, correo y contraseña) sean válidos; si alguno es incorrecto, el proceso se detiene. Luego, verifica si el usuario ha aceptado los términos y condiciones a través de la casilla `_acceptTerms`; si no está marcada, se muestra un mensaje con `SnackBar` y se interrumpe el flujo, por razones legales y de cumplimiento. A continuación, se realiza una **petición asíncrona** a `supabase.auth.signUp()`, enviando el correo electrónico, la contraseña, una URL de redirección (`emailRedirectTo`) y datos adicionales como el nombre, que se almacenan en el perfil del usuario. Supabase crea el nuevo usuario y envía automáticamente un correo de verificación. Si la respuesta no contiene un objeto `user`, se lanza una excepción para indicar que el registro falló. En caso de éxito, se muestra un `SnackBar` solicitando al usuario que revise su correo para confirmar la cuenta, se limpian los campos del formulario y se cambia a la pestaña de inicio de sesión.
 
-
-
-
- - **Validación del formulario de registro:**
-
-    - Se valida el formulario usando `_registerFormKey`. Si algún campo (nombre, correo, o contraseña) es inválido, se detiene el proceso inmediatamente. 
-      Esto asegura que no se envíen datos incompletos o erróneos al backend.
-
-
-
-- **Verificación de aceptación de términos:**
-
-    - Se comprueba si el usuario ha marcado la casilla de aceptación de los términos y condiciones (`_acceptTerms`). Si no lo ha hecho, se muestra un mensaje mediante un `SnackBar` y se interrumpe el registro. Esto es de importancia debido a razones legales y de cumplimiento de políticas.
-
-
-
-
-
-- **Solicitud de registro a Supabase:**
-
-    - Se realiza una llamada asíncrona a `supabase.auth.signUp()`, enviando:
-
-      - El **correo electrónico** (`email`)
-      - La **contraseña**
-      - Un **redirect URL** (`emailRedirectTo`) que será usado en el email de verificación
-      - Datos adicionales como el **nombre** y el **teléfono**, almacenados en el perfil del usuario
-
-    - Esto crea un nuevo usuario en la base de datos, desde donde Supabase envíará un correo de confirmación de e-mail de forma automática al correo del usuario.
-
-
-
-- **Verificación de la respuesta:**
-
-    - Si la respuesta no contiene un objeto `user`, se considera que el registro falló y se lanza una excepción. Esto previene errores silenciosos si el registro fue técnicamente procesado pero sin éxito.
-
-
-
-- **Notificación de éxito y limpieza del formulario:**
-
-    - Si el registro fue exitoso, se muestra un `SnackBar` indicando al usuario que revise su correo para verificar la cuenta. Luego, se limpian todos los campos del formulario y se cambia la pestaña activa al formulario de inicio de sesión (`_tabController.animateTo(0)`).
 
 
 
@@ -271,33 +192,8 @@ Para  la gestión de todo el flujo de registro de un nuevo usuario en la aplicac
 
 ### Restablecer contraseña
 
-Para permitir que el usuario recupere el acceso a su cuenta en caso de olvidar la contraseña, se utiliza el método `_resetPassword()`.  
-Este método envía un correo con un enlace de restablecimiento de contraseña utilizando los servicios de autenticación de Supabase.  
+El método `_resetPassword()` permite al usuario recuperar el acceso a su cuenta en caso de haber olvidado la contraseña. Primero, se valida que el campo de correo electrónico no esté vacío y que contenga un símbolo `@`; si no cumple con estos requisitos, se interrumpe el proceso y se muestra un `SnackBar` indicando que se debe ingresar un correo válido. A continuación, se realiza una **petición asíncrona** a `supabase.auth.resetPasswordForEmail(email)`, que solicita a Supabase el envío de un correo con el enlace de restablecimiento de contraseña. Si la operación es exitosa y el widget está montado, se muestra un `AlertDialog` informando al usuario que revise su correo. En caso de error, se manejan dos escenarios: si se trata de una excepción de tipo `AuthException` lanzada por Supabase, se muestra un mensaje específico mediante un `SnackBar`; si ocurre cualquier otro error inesperado, como problemas de red, también se captura y se notifica al usuario con un mensaje genérico.
 
-
-
-- **Validación del correo electrónico ingresado:**
-
-  - Se verifica que el campo `email` no esté vacío y contenga un símbolo `@`.  
-    Si no cumple con estos requisitos, se muestra un `SnackBar` advirtiendo que se debe ingresar un correo válido, y se interrumpe el proceso.
-
-
-
-- **Solicitud de envío de enlace de recuperación a Supabase:**
-
-  - Se llama al método `supabase.auth.resetPasswordForEmail(email)`, el cual solicita al backend de Supabase que envíe un correo de restablecimiento de contraseña al email proporcionado.
-
-
-- **Confirmación de éxito al usuario:**
-
-  - Si el correo se envía correctamente y el widget está montado, se muestra un `AlertDialog` con un mensaje informativo.  
-   
-
-- **Manejo de errores de autenticación:**
-
-  - Si Supabase lanza una excepción de tipo (`AuthException`), se captura y se muestra un mensaje descriptivo del error mediante un `SnackBar`.
-
-  - Si ocurre cualquier otro error inesperado (por ejemplo, problemas de red), también se captura y se muestra un mensaje genérico al usuario.
 
 
 
@@ -350,9 +246,8 @@ Future<void> _resetPassword(String email) async {
   }
 ```
 
-- Una vez que el usuario toca el enlace recibido por correo, la app se encarga de capturarlo mediante *deep linking* y lo redirige a la pantalla para cambiar su contraseña.
+Una vez que el usuario toca el enlace de restablecimiento recibido por correo, la aplicación lo captura mediante *deep linking* y lo redirige automáticamente a la pantalla para cambiar su contraseña. Para lograr esto, se utiliza la librería `app_links`, la cual permite detectar e interceptar los *deep links* entrantes y manejar su navegación de forma controlada dentro de la aplicación.
 
-- Para ello utilizamos la libreria `app_links` para detectar los *deep links* entrantes
 
 ``` dart
 @override
@@ -400,7 +295,7 @@ void _handleDeepLink(Uri uri) {
 >
 > ```
 
-- Una vez redirigido, el usuario verá un formulario para ingresar su nueva contraseña. Al confirmarla, se llama a `supabase.auth.updateUser()` para aplicar el cambio en la tabla `auth_users`.
+Al ser redirigido, el usuario verá un formulario donde debe ingresar su nueva contraseña. Al confirmar el cambio, se realiza una **petición asíncrona** a `supabase.auth.updateUser()` para actualizar la contraseña del usuario en la tabla `auth_users`.
 
 
 ```dart
