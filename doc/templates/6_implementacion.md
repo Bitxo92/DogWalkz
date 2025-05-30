@@ -9,6 +9,7 @@
   - [Flutter Localizations: Soporte Multilingue](#flutter-localizations-soporte-multilingue)
     - [Persistencia del Idioma Seleccionado](#persistencia-del-idioma-seleccionado)
   - [Geolocalización: Sistema de Rastreo del Paseador](#geolocalización-sistema-de-rastreo-del-paseador)
+  - [Pasarela de Pago por Stripe](#pasarela-de-pago-por-stripe)
 
 
 ## Proceso de Autenticación
@@ -717,6 +718,139 @@ Future<void> trackWalkerLocation(String walkId, Position position) async {
     ),      
   }
 ```
+
+## Pasarela de Pago por Stripe
+
+Esta sección describe el flujo completo de integración con Stripe para habilitar depósitos de fondos en el monedero del usuario dentro de la aplicación. La implementación se basa en el uso del paquete flutter_stripe junto con la integración de los endpoints de la API de Stripe.
+
+``` mermaid
+sequenceDiagram
+    participant User
+    participant UI as Wallet Page
+    participant Repo as Wallet Repository
+    participant StripeSDK
+    participant StripeAPI
+    participant DB as Supabase DB
+
+    User->>UI: Clicks "Add Funds"
+    UI->>UI: Show amount input dialog
+    User->>UI: Enters amount & confirms
+    UI->>Repo: processStripePayment(amount)
+    
+    Repo->>StripeAPI: POST payment_intents<br>(amount*100, currency)
+    StripeAPI-->>Repo: Returns paymentIntent<br>(with client_secret)
+    
+    Repo->>StripeSDK: initPaymentSheet(client_secret)
+    Repo->>StripeSDK: presentPaymentSheet()
+    StripeSDK->>User: Shows payment UI
+    User->>StripeSDK: Completes payment
+    
+    alt Payment Success
+        StripeSDK-->>Repo: Payment confirmed
+        Repo->>DB: addFunds(amount)<br>Update balance
+        Repo->>DB: Record transaction
+        Repo-->>UI: Success
+        UI->>DB: Reload wallet data
+        UI->>User: Show success dialog
+    else Payment Failed
+        StripeSDK-->>Repo: Error
+        Repo-->>UI: Exception
+        UI->>User: Show error dialog
+    end
+
+```
+El flujo de pago se estructura en torno a dos métodos principales: 
+- `_createPaymentIntent()`
+- `processStripePayment()`
+
+Cuando el usuario selecciona la opción de  **Depositar**, se despliega diálogo que le permite ingresar la cantidad deseada para depositar. Una vez que el usuario confirma la cantidad, se ejecuta `processStripePayment`, responsable de orquestar todo el procedimiento de pago.
+
+Este método invoca `_createPaymentIntent`, el cual realiza una solicitud HTTP POST al endpoint de Stripe para generar una intención de pago(*payout*). La intención de pago representa la cantidad que el usuario desea abonar y debe especificarse en la unidad mínima aceptada por Stripe (centavos). Para ello, el método recibe como parámetros la cantidad y la moneda (en este caso, USD ya que estamos en modo TEST), y utiliza la clave secreta de Stripe para autenticar la solicitud(protegida en el .env).
+
+Si la creación de la intención es exitosa, se recibe un objeto de tipo Map<String, dynamic> que contiene los detalles de la intención, incluyendo el `client_secret`, necesarioa para continuar con el proceso de autorización y confirmación del pago.
+
+``` dart
+  Future<Map<String, dynamic>> _createPaymentIntent(
+    double amount,
+    String currency,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.stripe.com/v1/payment_intents'),
+        headers: {
+          'Authorization': 'Bearer $_stripeSecretKey',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'amount': (amount * 100).toStringAsFixed(0), // Amount in cents
+          'currency': currency.toLowerCase(),
+        },
+      );
+
+      return Map<String, dynamic>.from(json.decode(response.body));
+    } catch (e) {
+      throw Exception('Failed to create payment intent: $e');
+    }
+  }
+```
+
+Una vez que se obtiene la intención de pago(*payout*), `processStripePayment` continúa el flujo inicializando la hoja de pago de Stripe (**Payment Sheet**) con los parámetros requeridos, incluyendo el `client_secret`, el nombre del comercio, y el tema visual. Luego presenta la hoja de pago al usuario para que pueda completar el pago mediante su tarjeta u otro método habilitado. Si la transacción se completa correctamente, el método llama a addFunds para registrar el depósito en el monedero del usuario con una breve descripción. En caso contario, ya sea específico de Stripe o general, se lanzaría una excepción mostrando al usuario un dialogo de pago fallido.
+
+``` dart
+/// Processes a Stripe payment and adds funds to the wallet
+  Future<void> processStripePayment({
+    required String userId,
+    required String walletId,
+    required double amount,
+    required BuildContext context,
+  }) async {
+    try {
+      // 1. Create payment intent on Stripe
+      final paymentIntent = await _createPaymentIntent(amount, 'USD');
+
+      // 2. Initialize payment sheet
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent['client_secret'],
+          merchantDisplayName: 'DogWalkz',
+          style: ThemeMode.light,
+        ),
+      );
+
+      // 3. Display payment sheet
+      await Stripe.instance.presentPaymentSheet();
+
+      // 4. If payment is successful, add funds to wallet
+      await addFunds(
+        userId: userId,
+        walletId: walletId,
+        amount: amount,
+        description: 'Stripe deposit',
+      );
+    } on StripeException catch (e) {
+      throw Exception('Payment failed: ${e.error.localizedMessage}');
+    } catch (e) {
+      throw Exception('Payment failed: $e');
+    }
+  }
+```
+
+> [!IMPORTANT]
+> Para integrar correctamente la pasarela de pago con Stripe, es necesario agregar la dependencia `flutter_stripe` en el archivo `pubspec.yaml` de tu proyecto:
+>
+> ```bash
+> flutter pub add flutter_stripe
+> ```
+>
+> Además, se deben aplicar ciertas configuraciones adicionales en los archivos específicos de cada plataforma:
+>
+> - **Android:** `build.gradle.kts` y `settings.gradle.kts`  
+> - **iOS:** `Podfile`
+>
+> Para más detalles sobre estas configuraciones, consulta la documentación oficial del paquete en [https://pub.dev/packages/flutter_stripe](https://pub.dev/packages/flutter_stripe).
+
+
+
 
 
 
