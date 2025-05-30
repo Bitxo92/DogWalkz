@@ -208,6 +208,14 @@ Para más detalles, consulta el archivo [LICENSE](LICENSE).
   - **Desarrollo IOS (solo macOS)**
 
     - [ Instalación de Xcode](https://developer.apple.com/xcode/) — IDE para el desarrollo de apps IOS.
+  
+  - **OAuth2.0**
+
+    - [OAuth Docs](https://datatracker.ietf.org/doc/html/rfc6749) — Documentación necesaria para la implementación del protocolo OAuth2.0.
+
+  - **Stripe**
+
+    - [Stripe Docs](https://docs.stripe.com/)  — Documentación de Stripe, necesario para implementar las pasarelas y configurar la conexión con la API.
 
 
 
