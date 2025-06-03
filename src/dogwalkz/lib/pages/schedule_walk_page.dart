@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:dogwalkz/repositories/dogs_repository.dart';
 import 'package:dogwalkz/services/notifications_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +15,7 @@ import '../models/dog.dart';
 import '../models/walker.dart';
 import '../repositories/walk_repository.dart';
 import 'walker_selection_page.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class ScheduleWalkPage extends StatefulWidget {
   const ScheduleWalkPage({super.key});
@@ -41,6 +45,14 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   double _walkerEarnings = 0.0;
   List<Walker> _availableWalkers = [];
   bool _isLoadingWalkers = false;
+  double _baseRate = 0.0;
+  double _durationHours = 0.0;
+  int _selectedDogCount = 0;
+  double _largeDogSurcharge = 0.0;
+  double _dangerousBreedSurcharge = 0.0;
+  double _subtotalBeforeSurcharges = 0.0;
+  Map<String, String> _municipalityMap = {};
+  List<String> _galicianMunicipalities = [];
 
   int _currentStep = 0;
   final List<StepItem> _steps = [
@@ -55,6 +67,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   void initState() {
     super.initState();
     _loadInitialData();
+    _loadGalicianMunicipalities();
     final now = DateTime.now();
     _startDateTime ??= DateTime(now.year, now.month, now.day);
   }
@@ -218,16 +231,28 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
     if (_startDateTime == null || _endDateTime == null) return;
     if (_selectedDogs.every((selected) => !selected)) return;
 
-    final durationInHours =
-        _endDateTime!.difference(_startDateTime!).inMinutes / 60;
-    final selectedDogsCount =
-        _selectedDogs.where((selected) => selected).length;
-    double baseRate = _selectedWalker?.baseRatePerHour ?? 15.0;
-    double total = baseRate * durationInHours * selectedDogsCount;
+    _durationHours = _endDateTime!.difference(_startDateTime!).inMinutes / 60;
+    _selectedDogCount = _selectedDogs.where((selected) => selected).length;
+    _baseRate = _selectedWalker?.baseRatePerHour ?? 15.0;
 
-    //if (_hasLargeDogs()) total *= 1.2;
-    //if (_hasDangerousBreeds()) total *= 1.3;
+    _subtotalBeforeSurcharges = _baseRate * _durationHours * _selectedDogCount;
 
+    // Calculate surcharges
+    double surchargeMultiplier = 1.0;
+    _largeDogSurcharge = 0.0;
+    _dangerousBreedSurcharge = 0.0;
+
+    if (_hasLargeDogs()) {
+      surchargeMultiplier += 0.2;
+      _largeDogSurcharge = _subtotalBeforeSurcharges * 0.2;
+    }
+
+    if (_hasDangerousBreeds()) {
+      surchargeMultiplier += 0.3;
+      _dangerousBreedSurcharge = _subtotalBeforeSurcharges * 0.3;
+    }
+
+    final total = _subtotalBeforeSurcharges * surchargeMultiplier;
     final platformCommission = total * WalkRepository.platformCommissionRate;
     final walkerEarnings = total - platformCommission;
 
@@ -235,7 +260,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
       _totalPrice = total;
       _platformCommission = platformCommission;
       _walkerEarnings = walkerEarnings;
-      _pricePerDog = baseRate * durationInHours;
+      _pricePerDog = (_baseRate * _durationHours) * surchargeMultiplier;
     });
   }
 
@@ -342,8 +367,30 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.error),
-            content: Text(message),
+            title: Text(
+              AppLocalizations.of(context)!.error,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: Image(
+                    image: AssetImage('assets/alert.png'),
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -361,8 +408,33 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
         barrierDismissible: false,
         builder:
             (context) => AlertDialog(
-              title: Text(AppLocalizations.of(context)!.success),
-              content: Text(message),
+              title: Text(
+                AppLocalizations.of(context)!.success,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: Image(
+                      image: AssetImage('assets/success.png'),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
               actions: [
                 TextButton(
                   onPressed:
@@ -381,7 +453,9 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -395,51 +469,66 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
         ),
         backgroundColor: Colors.brown,
       ),
-      body:
-          _isLoading
-              ? const Center(
-                child: CircularProgressIndicator(color: Colors.brown),
-              )
-              : Column(
-                children: [
-                  _buildStepperHeader(),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: NeverScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Form(key: _formKey, child: _buildStepContent()),
+      body: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
+
+          // Foreground content
+          Positioned.fill(
+            child:
+                _isLoading
+                    ? const Center(
+                      child: CircularProgressIndicator(color: Colors.brown),
+                    )
+                    : Column(
+                      children: [
+                        _buildStepperHeader(),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            physics: NeverScrollableScrollPhysics(
+                              parent: BouncingScrollPhysics(),
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Form(
+                              key: _formKey,
+                              child: _buildStepContent(),
+                            ),
+                          ),
+                        ),
+                        _buildNavigationControls(),
+                      ],
                     ),
-                  ),
-                  _buildNavigationControls(),
-                ],
-              ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildStepperHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            height: 30,
+            height: 40,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 Positioned(
                   left: 20,
                   right: 20,
-                  top: 30,
+
                   child: Container(height: 2, color: Colors.grey.shade300),
                 ),
 
                 Positioned(
                   left: 20,
                   right: 20,
-                  top: 15,
+
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final progress = (_currentStep / (_steps.length - 1))
@@ -492,7 +581,6 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
             ),
           ),
 
-          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children:
@@ -540,29 +628,60 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
           ),
         ),
         const SizedBox(height: 24),
-        TextFormField(
-          controller: _cityController,
-          decoration: InputDecoration(
-            labelText: AppLocalizations.of(context)!.city,
-            prefixIcon: const Icon(
-              Ionicons.location_outline,
-              color: Colors.brown,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.brown),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.brown, width: 2),
+        TypeAheadFormField<String>(
+          textFieldConfiguration: TextFieldConfiguration(
+            controller: _cityController,
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.city,
+              prefixIcon: const Icon(
+                Ionicons.location_outline,
+                color: Colors.brown,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.brown),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.brown, width: 2),
+              ),
             ),
           ),
-          validator:
-              (value) =>
-                  value?.isEmpty ?? true
-                      ? AppLocalizations.of(context)!.required
-                      : null,
+          suggestionsCallback: (pattern) {
+            return _galicianMunicipalities
+                .where(
+                  (municipality) => municipality.toLowerCase().contains(
+                    pattern.toLowerCase(),
+                  ),
+                )
+                .toList();
+          },
+          itemBuilder: (context, String suggestion) {
+            return Card(
+              margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: ListTile(
+                leading: Icon(Icons.location_city, color: Colors.brown),
+                title: Text(
+                  suggestion,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            );
+          },
+          onSuggestionSelected: (String suggestion) {
+            // Normalize to official name using the mapping
+            final normalized =
+                _municipalityMap[suggestion.toLowerCase()] ?? suggestion;
+            _cityController.text = normalized;
+          },
+          suggestionsBoxDecoration: SuggestionsBoxDecoration(
+            color: const Color(0xFFF5E9D9),
+            elevation: 4.0,
+            borderRadius: BorderRadius.circular(12),
+            constraints: BoxConstraints(maxHeight: 200),
+          ),
         ),
+
         const SizedBox(height: 16),
         Text(
           AppLocalizations.of(context)!.helpUs,
@@ -995,85 +1114,88 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
           ),
         ),
         const SizedBox(height: 16),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _userDogs.length,
-          itemBuilder: (context, index) {
-            final dog = _userDogs[index];
-            final isSelected = _selectedDogs[index];
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: ListView.builder(
+            shrinkWrap: false,
+            physics: AlwaysScrollableScrollPhysics(),
+            itemCount: _userDogs.length,
+            itemBuilder: (context, index) {
+              final dog = _userDogs[index];
+              final isSelected = _selectedDogs[index];
 
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedDogs[index] = !isSelected;
-                  _calculatePrice();
-                });
-              },
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: isSelected ? Colors.green : Colors.brown,
-                    width: 2,
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedDogs[index] = !isSelected;
+                    _calculatePrice();
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isSelected ? Colors.green : Colors.brown,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child:
-                          dog.photoUrl != null
-                              ? Image.network(
-                                dog.photoUrl!,
-                                width: 64,
-                                height: 64,
-                                fit: BoxFit.cover,
-                              )
-                              : Container(
-                                width: 64,
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  color: Colors.brown.shade100,
-                                  borderRadius: BorderRadius.circular(12),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child:
+                            dog.photoUrl != null
+                                ? Image.network(
+                                  dog.photoUrl!,
+                                  width: 64,
+                                  height: 64,
+                                  fit: BoxFit.cover,
+                                )
+                                : Container(
+                                  width: 64,
+                                  height: 64,
+                                  decoration: BoxDecoration(
+                                    color: Colors.brown.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Ionicons.paw_outline,
+                                    size: 40,
+                                    color: Colors.brown,
+                                  ),
                                 ),
-                                child: Icon(
-                                  Ionicons.paw_outline,
-                                  size: 40,
-                                  color: Colors.brown,
-                                ),
-                              ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            dog.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            _dogsRepository.getLocalizedBreedName(
-                              dog.breed,
-                              context,
-                            ),
-                          ),
-                        ],
                       ),
-                    ),
-                    if (isSelected)
-                      const Icon(Icons.check_circle, color: Colors.green),
-                  ],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              dog.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              _dogsRepository.getLocalizedBreedName(
+                                dog.breed,
+                                context,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isSelected)
+                        const Icon(Icons.check_circle, color: Colors.green),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ],
     );
@@ -1107,89 +1229,95 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
           ),
 
         if (!_isLoadingWalkers && _availableWalkers.isNotEmpty)
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _availableWalkers.length,
-            itemBuilder: (context, index) {
-              final walker = _availableWalkers[index];
-              final isSelected = _selectedWalker?.userId == walker.userId;
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: ListView.builder(
+              shrinkWrap: false,
+              physics: AlwaysScrollableScrollPhysics(),
+              itemCount: _availableWalkers.length,
+              itemBuilder: (context, index) {
+                final walker = _availableWalkers[index];
+                final isSelected = _selectedWalker?.userId == walker.userId;
 
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedWalker = isSelected ? null : walker;
-                    _calculatePrice();
-                  });
-                },
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: isSelected ? Colors.green : Colors.brown,
-                      width: 2,
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedWalker = isSelected ? null : walker;
+                      _calculatePrice();
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isSelected ? Colors.green : Colors.brown,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundImage:
-                            walker.profilePictureUrl != null
-                                ? NetworkImage(walker.profilePictureUrl!)
-                                : null,
-                        child:
-                            walker.profilePictureUrl == null
-                                ? const Icon(Ionicons.person_outline, size: 30)
-                                : null,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              walker.fullName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            Row(
-                              children: List.generate(5, (starIndex) {
-                                return Icon(
-                                  starIndex < walker.rating.floor()
-                                      ? Ionicons.star
-                                      : starIndex == walker.rating.floor() &&
-                                          walker.rating % 1 >= 0.5
-                                      ? Ionicons.star_half
-                                      : Ionicons.star_outline,
-                                  size: 16,
-                                  color: Colors.amber,
-                                );
-                              }),
-                            ),
-                            if (walker.experienceYears != null)
-                              Text('${walker.experienceYears} years'),
-                            Text(
-                              '\$${walker.baseRatePerHour.toStringAsFixed(2)}/hr',
-                              style: TextStyle(
-                                color: Colors.brown.shade700,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundImage:
+                              walker.profilePictureUrl != null
+                                  ? NetworkImage(walker.profilePictureUrl!)
+                                  : null,
+                          child:
+                              walker.profilePictureUrl == null
+                                  ? const Icon(
+                                    Ionicons.person_outline,
+                                    size: 30,
+                                  )
+                                  : null,
                         ),
-                      ),
-                      if (isSelected)
-                        const Icon(Icons.check_circle, color: Colors.green),
-                    ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                walker.fullName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Row(
+                                children: List.generate(5, (starIndex) {
+                                  return Icon(
+                                    starIndex < walker.rating.floor()
+                                        ? Ionicons.star
+                                        : starIndex == walker.rating.floor() &&
+                                            walker.rating % 1 >= 0.5
+                                        ? Ionicons.star_half
+                                        : Ionicons.star_outline,
+                                    size: 16,
+                                    color: Colors.amber,
+                                  );
+                                }),
+                              ),
+                              if (walker.experienceYears != null)
+                                Text('${walker.experienceYears} years'),
+                              Text(
+                                '\$${walker.baseRatePerHour.toStringAsFixed(2)}/hr',
+                                style: TextStyle(
+                                  color: Colors.brown.shade700,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isSelected)
+                          const Icon(Icons.check_circle, color: Colors.green),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
       ],
     );
@@ -1198,92 +1326,140 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
   Widget _buildConfirmationStep() {
     return Column(
       children: [
-        Text(
-          AppLocalizations.of(context)!.almost,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: Colors.brown,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 24),
-        if (_totalPrice > 0)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.paymentDetails,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.detailedBilling,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppLocalizations.of(context)!.totalPrice),
-                      Text(
-                        '\$${_totalPrice.toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                ),
+                const Divider(height: 24),
+
+                // Base Rate
+                _buildBillingRow(
+                  label: AppLocalizations.of(context)!.baseRate,
+                  value: '\$${_baseRate.toStringAsFixed(2)}/hr',
+                ),
+
+                // Duration
+                _buildBillingRow(
+                  label: AppLocalizations.of(context)!.duration,
+                  value: '${_durationHours.toStringAsFixed(0)} hrs',
+                ),
+
+                // Dogs Count
+                _buildBillingRow(
+                  label: AppLocalizations.of(context)!.dogsCount,
+                  value: '×$_selectedDogCount',
+                ),
+
+                const Divider(height: 24),
+
+                // Subtotal
+                _buildBillingRow(
+                  label: AppLocalizations.of(context)!.subtotal,
+                  value: '\$${_subtotalBeforeSurcharges.toStringAsFixed(2)}',
+                  isBold: true,
+                ),
+
+                // Surcharges
+                if (_largeDogSurcharge > 0)
+                  _buildBillingRow(
+                    label:
+                        '  ${AppLocalizations.of(context)!.largeDogSurcharge}',
+                    value: '+\$${_largeDogSurcharge.toStringAsFixed(2)}',
+                    color: Colors.orange,
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppLocalizations.of(context)!.pricePerDog),
-                      Text(
-                        '\$${_pricePerDog.toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
+
+                if (_dangerousBreedSurcharge > 0)
+                  _buildBillingRow(
+                    label:
+                        '  ${AppLocalizations.of(context)!.dangerousBreedSurcharge}',
+                    value: '+\$${_dangerousBreedSurcharge.toStringAsFixed(2)}',
+                    color: Colors.red,
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppLocalizations.of(context)!.platformCommission),
-                      Text(
-                        '\$${_platformCommission.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppLocalizations.of(context)!.walkerEarnings),
-                      Text(
-                        '\$${_walkerEarnings.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+
+                const Divider(height: 24),
+
+                // Total Before Commission
+                _buildBillingRow(
+                  label: AppLocalizations.of(context)!.totalBeforeCommission,
+                  value:
+                      '\$${(_subtotalBeforeSurcharges + _largeDogSurcharge + _dangerousBreedSurcharge).toStringAsFixed(2)}',
+                  isBold: true,
+                ),
+
+                // Platform Commission
+                _buildBillingRow(
+                  label: AppLocalizations.of(context)!.platformCommission,
+                  value: '-\$${_platformCommission.toStringAsFixed(2)}',
+                  color: Colors.red,
+                ),
+
+                const Divider(height: 24),
+
+                // Final Total
+                _buildBillingRow(
+                  label: AppLocalizations.of(context)!.totalPrice,
+                  value: '\$${_totalPrice.toStringAsFixed(2)}',
+                  isBold: true,
+                  fontSize: 18,
+                ),
+
+                const SizedBox(height: 16),
+
+                // Walker Earnings
+                _buildBillingRow(
+                  label: AppLocalizations.of(context)!.walkerEarnings,
+                  value: '\$${_walkerEarnings.toStringAsFixed(2)}',
+                  color: Colors.green,
+                  isBold: true,
+                ),
+              ],
             ),
-          ),
-        const SizedBox(height: 24),
-        Text(
-          "${AppLocalizations.of(context)!.balance} \$${_walletBalance.toStringAsFixed(2)}",
-          style: TextStyle(
-            color: _walletBalance >= _totalPrice ? Colors.green : Colors.red,
-            fontWeight: FontWeight.bold,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBillingRow({
+    required String label,
+    required String value,
+    Color color = Colors.black,
+    bool isBold = false,
+    double fontSize = 14,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: fontSize,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: fontSize,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1313,7 +1489,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
                 ),
                 child: Text(
                   AppLocalizations.of(context)!.back,
-                  style: TextStyle(fontSize: 24),
+                  style: TextStyle(fontSize: 21),
                 ),
               ),
             ),
@@ -1346,7 +1522,7 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
                             ? AppLocalizations.of(context)!.submit
                             : AppLocalizations.of(context)!.next,
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 21,
                           color: Colors.white,
                         ),
                       ),
@@ -1410,6 +1586,43 @@ class _ScheduleWalkPageState extends State<ScheduleWalkPage> {
         return true;
       default:
         return true;
+    }
+  }
+
+  /// Loads all Galician municipalities from a JSON file and stores them in
+  /// [_galicianMunicipalities].
+  ///
+  Future<void> _loadGalicianMunicipalities() async {
+    try {
+      final data = await rootBundle.loadString(
+        'assets/galician_municipalities.json',
+      );
+      final Map<String, dynamic> jsonMap = json.decode(data);
+      List<String> allNames = [];
+      _municipalityMap = {};
+
+      jsonMap.forEach((province, municipalities) {
+        for (var mun in municipalities) {
+          final officialName = mun['municipio'];
+          final variations = List<String>.from(mun['variaciones'] ?? []);
+
+          //Municipality official name
+          allNames.add(officialName);
+          _municipalityMap[officialName.toLowerCase()] = officialName;
+
+          // Municipality name variations
+          for (var variation in variations) {
+            allNames.add(variation);
+            _municipalityMap[variation.toLowerCase()] = officialName;
+          }
+        }
+      });
+
+      setState(() {
+        _galicianMunicipalities = allNames;
+      });
+    } catch (e) {
+      print('Error loading municipalities: $e');
     }
   }
 

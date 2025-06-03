@@ -49,7 +49,7 @@ class Walker {
       canWalkLarge: json['can_walk_large'] as bool? ?? false,
       hasDangerousBreedCertification:
           json['has_dangerous_breed_certification'] as bool? ?? false,
-      baseRatePerHour: (json['base_rate_per_hour'] as num?)?.toDouble() ?? 15.0,
+      baseRatePerHour: (json['base_rate_per_hour'] as num?)?.toDouble() ?? 8.0,
       city: address?['city'] ?? '',
       phone: json['phone'],
     );

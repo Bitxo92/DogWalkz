@@ -1,0 +1,1381 @@
+{
+  "A Coruña": [
+    {
+      "municipio": "Abegondo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ames",
+      "variaciones": []
+    },
+    {
+      "municipio": "Aranga",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ares",
+      "variaciones": []
+    },
+    {
+      "municipio": "Arteixo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Arzúa",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Baña",
+      "variaciones": [
+        "Baña"
+      ]
+    },
+    {
+      "municipio": "Bergondo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Betanzos",
+      "variaciones": []
+    },
+    {
+      "municipio": "Boimorto",
+      "variaciones": []
+    },
+    {
+      "municipio": "Boiro",
+      "variaciones": []
+    },
+    {
+      "municipio": "Boqueixón",
+      "variaciones": []
+    },
+    {
+      "municipio": "Brión",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cabana de Bergantiños",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cabanas",
+      "variaciones": []
+    },
+    {
+      "municipio": "Camariñas",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cambre",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Capela",
+      "variaciones": [
+        "Capela"
+      ]
+    },
+    {
+      "municipio": "Carballo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cariño",
+      "variaciones": []
+    },
+    {
+      "municipio": "Carnota",
+      "variaciones": []
+    },
+    {
+      "municipio": "Carral",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cedeira",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cee",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cerceda",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cerdido",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cesuras",
+      "variaciones": []
+    },
+    {
+      "municipio": "Coirós",
+      "variaciones": []
+    },
+    {
+      "municipio": "Corcubión",
+      "variaciones": []
+    },
+    {
+      "municipio": "Coristanco",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Coruña",
+      "variaciones": [
+        "La Coruña",
+        "Coruña"
+      ]
+    },
+    {
+      "municipio": "Culleredo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Curtis",
+      "variaciones": []
+    },
+    {
+      "municipio": "Dodro",
+      "variaciones": []
+    },
+    {
+      "municipio": "Dumbría",
+      "variaciones": []
+    },
+    {
+      "municipio": "Fene",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ferrol",
+      "variaciones": [
+        "El Ferrol"
+      ]
+    },
+    {
+      "municipio": "Fisterra",
+      "variaciones": [
+        "Finisterre"
+      ]
+    },
+    {
+      "municipio": "Frades",
+      "variaciones": []
+    },
+    {
+      "municipio": "Irixoa",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Laracha",
+      "variaciones": [
+        "Laracha"
+      ]
+    },
+    {
+      "municipio": "Laxe",
+      "variaciones": []
+    },
+    {
+      "municipio": "Lousame",
+      "variaciones": []
+    },
+    {
+      "municipio": "Malpica de Bergantiños",
+      "variaciones": []
+    },
+    {
+      "municipio": "Mañón",
+      "variaciones": []
+    },
+    {
+      "municipio": "Mazaricos",
+      "variaciones": []
+    },
+    {
+      "municipio": "Melide",
+      "variaciones": []
+    },
+    {
+      "municipio": "Mesía",
+      "variaciones": []
+    },
+    {
+      "municipio": "Miño",
+      "variaciones": []
+    },
+    {
+      "municipio": "Moeche",
+      "variaciones": []
+    },
+    {
+      "municipio": "Monfero",
+      "variaciones": []
+    },
+    {
+      "municipio": "Mugardos",
+      "variaciones": []
+    },
+    {
+      "municipio": "Muros",
+      "variaciones": []
+    },
+    {
+      "municipio": "Muxía",
+      "variaciones": [
+        "Mugía"
+      ]
+    },
+    {
+      "municipio": "Narón",
+      "variaciones": []
+    },
+    {
+      "municipio": "Neda",
+      "variaciones": []
+    },
+    {
+      "municipio": "Negreira",
+      "variaciones": []
+    },
+    {
+      "municipio": "Noia",
+      "variaciones": [
+        "Noya"
+      ]
+    },
+    {
+      "municipio": "Oleiros",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ordes",
+      "variaciones": []
+    },
+    {
+      "municipio": "Oroso",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ortigueira",
+      "variaciones": []
+    },
+    {
+      "municipio": "Outes",
+      "variaciones": []
+    },
+    {
+      "municipio": "Oza dos Ríos",
+      "variaciones": []
+    },
+    {
+      "municipio": "Oza-Cesuras",
+      "variaciones": []
+    },
+    {
+      "municipio": "Paderne",
+      "variaciones": []
+    },
+    {
+      "municipio": "Padrón",
+      "variaciones": []
+    },
+    {
+      "municipio": "O Pino",
+      "variaciones": [
+        "Pino"
+      ]
+    },
+    {
+      "municipio": "A Pobra do Caramiñal",
+      "variaciones": [
+        "Pobra do Caramiñal",
+        "Pobra",
+        "Puebla del Caramiñal",
+        "Puebla"
+      ]
+    },
+    {
+      "municipio": "Ponteceso",
+      "variaciones": []
+    },
+    {
+      "municipio": "Pontedeume",
+      "variaciones": []
+    },
+    {
+      "municipio": "As Pontes de García Rodríguez",
+      "variaciones": [
+        "Pontes de García Rodríguez"
+      ]
+    },
+    {
+      "municipio": "Porto do Son",
+      "variaciones": []
+    },
+    {
+      "municipio": "Rianxo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ribeira",
+      "variaciones": [
+        "Riveira"
+      ]
+    },
+    {
+      "municipio": "Rois",
+      "variaciones": []
+    },
+    {
+      "municipio": "Sada",
+      "variaciones": []
+    },
+    {
+      "municipio": "San Sadurniño",
+      "variaciones": []
+    },
+    {
+      "municipio": "Santa Comba",
+      "variaciones": []
+    },
+    {
+      "municipio": "Santiago de Compostela",
+      "variaciones": [
+        "Santiago",
+        "Compostela"
+      ]
+    },
+    {
+      "municipio": "Santiso",
+      "variaciones": []
+    },
+    {
+      "municipio": "Sobrado",
+      "variaciones": []
+    },
+    {
+      "municipio": "As Somozas",
+      "variaciones": [
+        "Somozas"
+      ]
+    },
+    {
+      "municipio": "Teo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Toques",
+      "variaciones": []
+    },
+    {
+      "municipio": "Tordoia",
+      "variaciones": []
+    },
+    {
+      "municipio": "Touro",
+      "variaciones": []
+    },
+    {
+      "municipio": "Trazo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Val do Dubra",
+      "variaciones": []
+    },
+    {
+      "municipio": "Valdoviño",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vedra",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilarmaior",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilasantar",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vimianzo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Zas",
+      "variaciones": []
+    }
+  ],
+  "Lugo": [
+    {
+      "municipio": "Abadín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Alfoz",
+      "variaciones": []
+    },
+    {
+      "municipio": "Antas de Ulla",
+      "variaciones": []
+    },
+    {
+      "municipio": "Baleira",
+      "variaciones": []
+    },
+    {
+      "municipio": "Barreiros",
+      "variaciones": []
+    },
+    {
+      "municipio": "Becerreá",
+      "variaciones": []
+    },
+    {
+      "municipio": "Begonte",
+      "variaciones": []
+    },
+    {
+      "municipio": "Bóveda",
+      "variaciones": []
+    },
+    {
+      "municipio": "Carballedo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Castro de Rei",
+      "variaciones": []
+    },
+    {
+      "municipio": "Castroverde",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cervantes",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cervo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Chantada",
+      "variaciones": []
+    },
+    {
+      "municipio": "O Corgo",
+      "variaciones": [
+        "Corgo"
+      ]
+    },
+    {
+      "municipio": "Cospeito",
+      "variaciones": []
+    },
+    {
+      "municipio": "Folgoso do Courel",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Fonsagrada",
+      "variaciones": [
+        "Fonsagrada"
+      ]
+    },
+    {
+      "municipio": "Foz",
+      "variaciones": []
+    },
+    {
+      "municipio": "Friol",
+      "variaciones": []
+    },
+    {
+      "municipio": "Xermade",
+      "variaciones": []
+    },
+    {
+      "municipio": "Guitiriz",
+      "variaciones": []
+    },
+    {
+      "municipio": "Guntín",
+      "variaciones": []
+    },
+    {
+      "municipio": "O Incio",
+      "variaciones": [
+        "Incio"
+      ]
+    },
+    {
+      "municipio": "Láncara",
+      "variaciones": []
+    },
+    {
+      "municipio": "Lourenzá",
+      "variaciones": []
+    },
+    {
+      "municipio": "Lugo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Meira",
+      "variaciones": []
+    },
+    {
+      "municipio": "Mondoñedo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Monforte de Lemos",
+      "variaciones": []
+    },
+    {
+      "municipio": "Monterroso",
+      "variaciones": []
+    },
+    {
+      "municipio": "Muras",
+      "variaciones": []
+    },
+    {
+      "municipio": "Navia de Suarna",
+      "variaciones": []
+    },
+    {
+      "municipio": "Negueira de Muñiz",
+      "variaciones": []
+    },
+    {
+      "municipio": "As Nogais",
+      "variaciones": [
+        "Nogais"
+      ]
+    },
+    {
+      "municipio": "Ourol",
+      "variaciones": []
+    },
+    {
+      "municipio": "Outeiro de Rei",
+      "variaciones": []
+    },
+    {
+      "municipio": "Palas de Rei",
+      "variaciones": []
+    },
+    {
+      "municipio": "Pantón",
+      "variaciones": []
+    },
+    {
+      "municipio": "Paradela",
+      "variaciones": []
+    },
+    {
+      "municipio": "O Páramo",
+      "variaciones": [
+        "Páramo"
+      ]
+    },
+    {
+      "municipio": "A Pastoriza",
+      "variaciones": [
+        "Pastoriza"
+      ]
+    },
+    {
+      "municipio": "Pedrafita do Cebreiro",
+      "variaciones": [
+        "Piedrafita"
+      ]
+    },
+    {
+      "municipio": "A Pobra do Brollón",
+      "variaciones": [
+        "Pobra do Brollón"
+      ]
+    },
+    {
+      "municipio": "Pol",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Pontenova",
+      "variaciones": [
+        "Pontenova",
+        "O Pontenova"
+      ]
+    },
+    {
+      "municipio": "Portomarín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Quiroga",
+      "variaciones": []
+    },
+    {
+      "municipio": "Rábade",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ribadeo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ribas de Sil",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ribeira de Piquín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Riotorto",
+      "variaciones": []
+    },
+    {
+      "municipio": "Samos",
+      "variaciones": []
+    },
+    {
+      "municipio": "Sarria",
+      "variaciones": []
+    },
+    {
+      "municipio": "O Saviñao",
+      "variaciones": [
+        "Saviñao"
+      ]
+    },
+    {
+      "municipio": "Sober",
+      "variaciones": []
+    },
+    {
+      "municipio": "Taboada",
+      "variaciones": []
+    },
+    {
+      "municipio": "Trabada",
+      "variaciones": []
+    },
+    {
+      "municipio": "Triacastela",
+      "variaciones": []
+    },
+    {
+      "municipio": "O Valadouro",
+      "variaciones": [
+        "Valadouro"
+      ]
+    },
+    {
+      "municipio": "O Vicedo",
+      "variaciones": [
+        "Vicedo"
+      ]
+    },
+    {
+      "municipio": "Vilalba",
+      "variaciones": []
+    },
+    {
+      "municipio": "Viveiro",
+      "variaciones": []
+    },
+    {
+      "municipio": "Xove",
+      "variaciones": []
+    }
+  ],
+  "Ourense": [
+    {
+      "municipio": "Allariz",
+      "variaciones": []
+    },
+    {
+      "municipio": "Amoeiro",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Arnoia",
+      "variaciones": [
+        "Arnoia"
+      ]
+    },
+    {
+      "municipio": "Avión",
+      "variaciones": []
+    },
+    {
+      "municipio": "Baltar",
+      "variaciones": []
+    },
+    {
+      "municipio": "Bande",
+      "variaciones": []
+    },
+    {
+      "municipio": "Baños de Molgas",
+      "variaciones": []
+    },
+    {
+      "municipio": "Barbadás",
+      "variaciones": []
+    },
+    {
+      "municipio": "Barco de Valdeorras, O",
+      "variaciones": [
+        "O Barco de Valdeorras"
+      ]
+    },
+    {
+      "municipio": "Beade",
+      "variaciones": []
+    },
+    {
+      "municipio": "Beariz",
+      "variaciones": []
+    },
+    {
+      "municipio": "Blancos, Os",
+      "variaciones": [
+        "Os Blancos"
+      ]
+    },
+    {
+      "municipio": "Boborás",
+      "variaciones": []
+    },
+    {
+      "municipio": "Bola, A",
+      "variaciones": [
+        "A Bola"
+      ]
+    },
+    {
+      "municipio": "Bolo, O",
+      "variaciones": [
+        "O Bolo"
+      ]
+    },
+    {
+      "municipio": "Calvos de Randín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Carballeda de Avia",
+      "variaciones": []
+    },
+    {
+      "municipio": "Carballeda de Valdeorras",
+      "variaciones": []
+    },
+    {
+      "municipio": "Carballiño, O",
+      "variaciones": [
+        "O Carballiño"
+      ]
+    },
+    {
+      "municipio": "Cartelle",
+      "variaciones": []
+    },
+    {
+      "municipio": "Castrelo de Miño",
+      "variaciones": []
+    },
+    {
+      "municipio": "Castrelo do Val",
+      "variaciones": []
+    },
+    {
+      "municipio": "Castro Caldelas",
+      "variaciones": []
+    },
+    {
+      "municipio": "Celanova",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cenlle",
+      "variaciones": []
+    },
+    {
+      "municipio": "Chandrexa de Queixa",
+      "variaciones": [
+        "Chandreja de Queija"
+      ]
+    },
+    {
+      "municipio": "Coles",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cortegada",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cualedro",
+      "variaciones": []
+    },
+    {
+      "municipio": "Entrimo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Esgos",
+      "variaciones": []
+    },
+    {
+      "municipio": "Gomesende",
+      "variaciones": []
+    },
+    {
+      "municipio": "Gudiña, A",
+      "variaciones": [
+        "A Gudiña"
+      ]
+    },
+    {
+      "municipio": "Irixo, O",
+      "variaciones": [
+        "O Irixo"
+      ]
+    },
+    {
+      "municipio": "Xunqueira de Ambía",
+      "variaciones": []
+    },
+    {
+      "municipio": "Xunqueira de Espadanedo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Laza",
+      "variaciones": []
+    },
+    {
+      "municipio": "Leiro",
+      "variaciones": []
+    },
+    {
+      "municipio": "Lobeira",
+      "variaciones": []
+    },
+    {
+      "municipio": "Lobios",
+      "variaciones": []
+    },
+    {
+      "municipio": "Maceda",
+      "variaciones": []
+    },
+    {
+      "municipio": "Manzaneda",
+      "variaciones": []
+    },
+    {
+      "municipio": "Maside",
+      "variaciones": []
+    },
+    {
+      "municipio": "Melón",
+      "variaciones": []
+    },
+    {
+      "municipio": "Merca, A",
+      "variaciones": [
+        "A Merca"
+      ]
+    },
+    {
+      "municipio": "Mezquita, A",
+      "variaciones": [
+        "A Mezquita"
+      ]
+    },
+    {
+      "municipio": "Montederramo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Monterrei",
+      "variaciones": [
+        "Monterrey"
+      ]
+    },
+    {
+      "municipio": "Muíños",
+      "variaciones": []
+    },
+    {
+      "municipio": "Nogueira de Ramuín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Oímbra",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ourense",
+      "variaciones": [
+        "Orense"
+      ]
+    },
+    {
+      "municipio": "Paderne de Allariz",
+      "variaciones": []
+    },
+    {
+      "municipio": "Padrenda",
+      "variaciones": []
+    },
+    {
+      "municipio": "Parada de Sil",
+      "variaciones": []
+    },
+    {
+      "municipio": "Pereiro de Aguiar, O",
+      "variaciones": [
+        "O Pereiro de Aguiar"
+      ]
+    },
+    {
+      "municipio": "Peroxa, A",
+      "variaciones": [
+        "A Peroxa"
+      ]
+    },
+    {
+      "municipio": "Petín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Piñor",
+      "variaciones": []
+    },
+    {
+      "municipio": "Pobra de Trives, A",
+      "variaciones": [
+        "A Pobra de Trives"
+      ]
+    },
+    {
+      "municipio": "Pontedeva",
+      "variaciones": []
+    },
+    {
+      "municipio": "Porqueira",
+      "variaciones": []
+    },
+    {
+      "municipio": "Punxín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Quintela de Leirado",
+      "variaciones": []
+    },
+    {
+      "municipio": "Rairiz de Veiga",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ramirás",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ribadavia",
+      "variaciones": []
+    },
+    {
+      "municipio": "Riós",
+      "variaciones": []
+    },
+    {
+      "municipio": "Rúa, A",
+      "variaciones": [
+        "A Rúa"
+      ]
+    },
+    {
+      "municipio": "Rubiá",
+      "variaciones": []
+    },
+    {
+      "municipio": "San Amaro",
+      "variaciones": []
+    },
+    {
+      "municipio": "San Cibrao das Viñas",
+      "variaciones": [
+        "San Ciprián das Viñas"
+      ]
+    },
+    {
+      "municipio": "San Cristovo de Cea",
+      "variaciones": [
+        "San Cristóbal de Cea"
+      ]
+    },
+    {
+      "municipio": "San Xoán de Río",
+      "variaciones": []
+    },
+    {
+      "municipio": "Sandiás",
+      "variaciones": []
+    },
+    {
+      "municipio": "Sarreaus",
+      "variaciones": []
+    },
+    {
+      "municipio": "Taboadela",
+      "variaciones": []
+    },
+    {
+      "municipio": "Toén",
+      "variaciones": []
+    },
+    {
+      "municipio": "Trasmiras",
+      "variaciones": []
+    },
+    {
+      "municipio": "Veiga, A",
+      "variaciones": [
+        "A Veiga"
+      ]
+    },
+    {
+      "municipio": "Verea",
+      "variaciones": []
+    },
+    {
+      "municipio": "Verín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Viana do Bolo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilamarín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilamartín de Valdeorras",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilar de Barrio",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilar de Santos",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilardevós",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilariño de Conso",
+      "variaciones": []
+    },
+    {
+      "municipio": "Xinzo de Limia",
+      "variaciones": [
+        "Ginzo de Limia"
+      ]
+    },
+    {
+      "municipio": "Xunqueira de Ambía",
+      "variaciones": []
+    }
+  ],
+  "Pontevedra": [
+    {
+      "municipio": "Agolada",
+      "variaciones": []
+    },
+    {
+      "municipio": "Arbo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Baiona",
+      "variaciones": [
+        "Bayona"
+      ]
+    },
+    {
+      "municipio": "Barro",
+      "variaciones": []
+    },
+    {
+      "municipio": "Bueu",
+      "variaciones": []
+    },
+    {
+      "municipio": "Caldas de Reis",
+      "variaciones": [
+        "Caldas"
+      ]
+    },
+    {
+      "municipio": "Cambados",
+      "variaciones": []
+    },
+    {
+      "municipio": "Campo Lameiro",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cangas",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Cañiza",
+      "variaciones": [
+        "Cañiza"
+      ]
+    },
+    {
+      "municipio": "Catoira",
+      "variaciones": []
+    },
+    {
+      "municipio": "Cerdedo-Cotobade",
+      "variaciones": [
+        "Cerdedo",
+        "Cotobade"
+      ]
+    },
+    {
+      "municipio": "Cotobade",
+      "variaciones": [
+        "Cerdedo"
+      ]
+    },
+    {
+      "municipio": "Covelo",
+      "variaciones": [
+        "O Covelo"
+      ]
+    },
+    {
+      "municipio": "Cuntis",
+      "variaciones": []
+    },
+    {
+      "municipio": "Dozón",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Estrada",
+      "variaciones": [
+        "Estrada"
+      ]
+    },
+    {
+      "municipio": "Forcarei",
+      "variaciones": []
+    },
+    {
+      "municipio": "Fornelos de Montes",
+      "variaciones": []
+    },
+    {
+      "municipio": "Gondomar",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Guarda",
+      "variaciones": [
+        "Guarda"
+      ]
+    },
+    {
+      "municipio": "Lalín",
+      "variaciones": []
+    },
+    {
+      "municipio": "A Lama",
+      "variaciones": [
+        "Lama"
+      ]
+    },
+    {
+      "municipio": "Marín",
+      "variaciones": []
+    },
+    {
+      "municipio": "Meaño",
+      "variaciones": []
+    },
+    {
+      "municipio": "Meis",
+      "variaciones": []
+    },
+    {
+      "municipio": "Moaña",
+      "variaciones": []
+    },
+    {
+      "municipio": "Mondariz",
+      "variaciones": []
+    },
+    {
+      "municipio": "Mondariz-Balneario",
+      "variaciones": []
+    },
+    {
+      "municipio": "Moraña",
+      "variaciones": []
+    },
+    {
+      "municipio": "Mos",
+      "variaciones": []
+    },
+    {
+      "municipio": "As Neves",
+      "variaciones": [
+        "Neves"
+      ]
+    },
+    {
+      "municipio": "Nigrán",
+      "variaciones": []
+    },
+    {
+      "municipio": "Oia",
+      "variaciones": []
+    },
+    {
+      "municipio": "Pazos de Borbén",
+      "variaciones": []
+    },
+    {
+      "municipio": "Poio",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ponte Caldelas",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ponteareas",
+      "variaciones": []
+    },
+    {
+      "municipio": "Pontecesures",
+      "variaciones": []
+    },
+    {
+      "municipio": "Pontevedra",
+      "variaciones": []
+    },
+    {
+      "municipio": "O Porriño",
+      "variaciones": [
+        "Porriño"
+      ]
+    },
+    {
+      "municipio": "Portas",
+      "variaciones": []
+    },
+    {
+      "municipio": "Redondela",
+      "variaciones": []
+    },
+    {
+      "municipio": "Ribadumia",
+      "variaciones": []
+    },
+    {
+      "municipio": "Rodeiro",
+      "variaciones": []
+    },
+    {
+      "municipio": "O Rosal",
+      "variaciones": [
+        "Rosal"
+      ]
+    },
+    {
+      "municipio": "Salceda de Caselas",
+      "variaciones": []
+    },
+    {
+      "municipio": "Salvaterra de Miño",
+      "variaciones": []
+    },
+    {
+      "municipio": "Sanxenxo",
+      "variaciones": [
+        "Sangenjo"
+      ]
+    },
+    {
+      "municipio": "Silleda",
+      "variaciones": []
+    },
+    {
+      "municipio": "Soutomaior",
+      "variaciones": []
+    },
+    {
+      "municipio": "Tomiño",
+      "variaciones": []
+    },
+    {
+      "municipio": "Tui",
+      "variaciones": [
+        "Tuy"
+      ]
+    },
+    {
+      "municipio": "Valga",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vigo",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilaboa",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vila de Cruces",
+      "variaciones": []
+    },
+    {
+      "municipio": "Vilagarcía de Arousa",
+      "variaciones": [
+        "Villagarcía de Arosa"
+      ]
+    },
+    {
+      "municipio": "Vilanova de Arousa",
+      "variaciones": []
+    }
+  ]
+}

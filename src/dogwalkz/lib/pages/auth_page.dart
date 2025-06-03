@@ -301,109 +301,121 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5E9D9),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Section
-              SizedBox(
-                height: 140,
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 24, right: 24),
-                        child: Text(
-                          _isLogin
-                              ? 'Welcome Back to the Pack! 🐾'
-                              : 'Where Pets & Walkers Connect! 🐾',
-                          style: GoogleFonts.comicNeue(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.brown[800],
+      resizeToAvoidBottomInset: false,
+      body: Stack(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: NeverScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Section
+                  SizedBox(
+                    height: 140,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 24, right: 24),
+                            child: Text(
+                              _isLogin
+                                  ? 'Welcome Back to the Pack! 🐾'
+                                  : 'Where Pets & Walkers Connect! 🐾',
+                              style: GoogleFonts.comicNeue(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.brown[800],
+                              ),
+                            ),
                           ),
+                        ),
+                        SizedBox(
+                          width: 140,
+                          height: 140,
+                          child: Lottie.network(
+                            'https://lottie.host/22aeebc6-fcf5-460e-ac08-91cdedf3dc55/hdaZK2C6hn.json',
+                            controller: _animationController,
+                            fit: BoxFit.contain,
+                            errorBuilder:
+                                (context, error, stackTrace) => const Icon(
+                                  Ionicons.paw_outline,
+                                  size: 100,
+                                  color: Colors.brown,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Auth Forms
+                  _isLogin ? _buildLoginForm() : _buildRegisterForm(),
+
+                  const SizedBox(height: 20),
+
+                  // Toggle Login/Register
+                  Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isLogin = !_isLogin;
+                        });
+                      },
+                      child: Text(
+                        _isLogin
+                            ? "Don't have an account? Sign up"
+                            : "Already have an account? Log in",
+                        style: TextStyle(
+                          color: Colors.brown[700],
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
-                    SizedBox(
-                      width: 140,
-                      height: 140,
-                      child: Lottie.network(
-                        'https://lottie.host/22aeebc6-fcf5-460e-ac08-91cdedf3dc55/hdaZK2C6hn.json',
-                        controller: _animationController,
-                        fit: BoxFit.contain,
-                        errorBuilder:
-                            (context, error, stackTrace) => const Icon(
-                              Ionicons.paw_outline,
-                              size: 100,
-                              color: Colors.brown,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
 
-              const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
-              // Auth Forms
-              _isLogin ? _buildLoginForm() : _buildRegisterForm(),
-
-              const SizedBox(height: 20),
-
-              // Toggle Login/Register
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isLogin = !_isLogin;
-                    });
-                  },
-                  child: Text(
-                    _isLogin
-                        ? "Don't have an account? Sign up"
-                        : "Already have an account? Log in",
-                    style: TextStyle(
-                      color: Colors.brown[700],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
+                  // OAuth Icons Row
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildOAuthIconButton(
+                          Ionicons.logo_google,
+                          _signInWithGoogle,
+                        ),
+                        const SizedBox(width: 20),
+                        _buildOAuthIconButton(
+                          Ionicons.logo_facebook,
+                          _signInWithFacebook,
+                        ),
+                        const SizedBox(width: 20),
+                        _buildOAuthIconButton(
+                          Ionicons.logo_instagram,
+                          _signInWithFacebook,
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                ],
               ),
-
-              const SizedBox(height: 30),
-
-              // OAuth Icons Row
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildOAuthIconButton(
-                      Ionicons.logo_google,
-                      _signInWithGoogle,
-                    ),
-                    const SizedBox(width: 20),
-                    _buildOAuthIconButton(
-                      Ionicons.logo_facebook,
-                      _signInWithFacebook,
-                    ),
-                    const SizedBox(width: 20),
-                    _buildOAuthIconButton(
-                      Ionicons.logo_instagram,
-                      _signInWithFacebook,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -416,9 +428,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
         minimumSize: const Size(double.infinity, 50),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      onPressed: () {
-        // Implement actual OAuth login logic here
-      },
+      onPressed: () {},
       icon: Icon(icon, size: 24),
       label: Text(label, style: const TextStyle(fontSize: 16)),
     );

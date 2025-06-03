@@ -96,6 +96,9 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
 
       body: Stack(
         children: [
+          Positioned.fill(
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
           Container(
             height: screenHeight * 0.16,
             child: ClipRRect(

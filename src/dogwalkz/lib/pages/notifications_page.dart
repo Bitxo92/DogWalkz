@@ -130,7 +130,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
         backgroundColor: Colors.brown,
         foregroundColor: Colors.white,
       ),
-      body:
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _notifications.isEmpty
@@ -187,6 +191,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   );
                 },
               ),
+        ],
+      ),
     );
   }
 

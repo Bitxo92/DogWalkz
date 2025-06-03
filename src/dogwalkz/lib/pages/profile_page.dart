@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:dogwalkz/main.dart';
 import 'package:dogwalkz/services/language_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -29,6 +33,10 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isSaving = false;
   bool _isEnglish = true;
   bool _notificationsEnabled = true;
+  List<String> _allMunicipalities = [];
+  List<String> _provinces = [];
+  Map<String, String> _municipalityToProvince = {};
+  Map<String, String> _variationToOfficialName = {};
 
   // Controllers
   final _firstNameController = TextEditingController();
@@ -53,6 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _loadLanguagePreference();
     _loadProfile();
+    _loadGalicianMunicipalities();
   }
 
   /// Loads the user's profile data from the Supabase database.
@@ -432,6 +441,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
       body: Stack(
         children: [
+          Positioned.fill(
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
           Container(
             height: screenHeight * 0.16,
             child: ClipRRect(
@@ -630,23 +642,75 @@ class _ProfilePageState extends State<ProfilePage> {
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: TextFormField(
-                                    controller: _cityController,
-                                    decoration: InputDecoration(
-                                      labelText:
-                                          AppLocalizations.of(context)!.city,
-                                      prefixIcon: Icon(
-                                        Ionicons.business_outline,
-                                        color: Colors.brown,
-                                      ),
-                                    ),
-                                    validator:
-                                        (value) =>
-                                            value?.isEmpty ?? true
-                                                ? AppLocalizations.of(
+                                  child: TypeAheadFormField<String>(
+                                    textFieldConfiguration:
+                                        TextFieldConfiguration(
+                                          controller: _cityController,
+                                          decoration: InputDecoration(
+                                            labelText:
+                                                AppLocalizations.of(
                                                   context,
-                                                )!.required
-                                                : null,
+                                                )!.city,
+                                            prefixIcon: Icon(
+                                              Ionicons.business_outline,
+                                              color: Colors.brown,
+                                            ),
+                                          ),
+                                        ),
+                                    suggestionsCallback: (pattern) {
+                                      return _allMunicipalities
+                                          .where(
+                                            (municipality) => municipality
+                                                .toLowerCase()
+                                                .contains(
+                                                  pattern.toLowerCase(),
+                                                ),
+                                          )
+                                          .toList();
+                                    },
+                                    itemBuilder: (context, String suggestion) {
+                                      return Card(
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        child: ListTile(
+                                          leading: Icon(
+                                            Icons.location_city,
+                                            color: Colors.brown,
+                                          ),
+                                          title: Text(
+                                            suggestion,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    onSuggestionSelected: (String suggestion) {
+                                      final normalized =
+                                          _variationToOfficialName[suggestion
+                                              .toLowerCase()] ??
+                                          suggestion;
+                                      _cityController.text = normalized;
+
+                                      final province =
+                                          _municipalityToProvince[suggestion
+                                              .toLowerCase()];
+                                      if (province != null) {
+                                        _stateController.text = province;
+                                      }
+                                    },
+                                    suggestionsBoxDecoration:
+                                        SuggestionsBoxDecoration(
+                                          color: const Color(0xFFF5E9D9),
+                                          elevation: 4.0,
+
+                                          constraints: BoxConstraints(
+                                            maxHeight: 200,
+                                          ),
+                                        ),
                                   ),
                                 ),
                               ],
@@ -657,23 +721,65 @@ class _ProfilePageState extends State<ProfilePage> {
                               children: [
                                 Expanded(
                                   flex: 2,
-                                  child: TextFormField(
-                                    controller: _stateController,
-                                    decoration: InputDecoration(
-                                      labelText:
-                                          AppLocalizations.of(context)!.state,
-                                      prefixIcon: Icon(
-                                        Ionicons.map_outline,
-                                        color: Colors.brown,
-                                      ),
-                                    ),
-                                    validator:
-                                        (value) =>
-                                            value?.isEmpty ?? true
-                                                ? AppLocalizations.of(
+                                  child: TypeAheadFormField<String>(
+                                    textFieldConfiguration:
+                                        TextFieldConfiguration(
+                                          controller: _stateController,
+                                          decoration: InputDecoration(
+                                            labelText:
+                                                AppLocalizations.of(
                                                   context,
-                                                )!.required
-                                                : null,
+                                                )!.state,
+                                            prefixIcon: Icon(
+                                              Ionicons.map_outline,
+                                              color: Colors.brown,
+                                            ),
+                                          ),
+                                        ),
+                                    suggestionsCallback: (pattern) {
+                                      return _provinces
+                                          .where(
+                                            (province) =>
+                                                province.toLowerCase().contains(
+                                                  pattern.toLowerCase(),
+                                                ),
+                                          )
+                                          .toList();
+                                    },
+                                    itemBuilder: (context, String suggestion) {
+                                      return Card(
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        child: ListTile(
+                                          leading: Icon(
+                                            Icons.map,
+                                            color: Colors.brown,
+                                          ),
+                                          title: Text(
+                                            suggestion,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    onSuggestionSelected: (String suggestion) {
+                                      _stateController.text = suggestion;
+                                    },
+                                    suggestionsBoxDecoration:
+                                        SuggestionsBoxDecoration(
+                                          color: const Color(0xFFF5E9D9),
+                                          elevation: 4.0,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          constraints: BoxConstraints(
+                                            maxHeight: 200,
+                                          ),
+                                        ),
                                   ),
                                 ),
                               ],
@@ -1096,6 +1202,41 @@ class _ProfilePageState extends State<ProfilePage> {
     final locale = isEnglish ? const Locale('en') : const Locale('es');
     MyApp.of(context)?.setLocale(locale);
     await LanguageService.saveLanguage(isEnglish ? 'en' : 'es');
+  }
+
+  Future<void> _loadGalicianMunicipalities() async {
+    try {
+      final data = await rootBundle.loadString(
+        'assets/galician_municipalities.json',
+      );
+      final Map<String, dynamic> jsonMap = json.decode(data);
+
+      _provinces = jsonMap.keys.toList();
+      _allMunicipalities = [];
+      _municipalityToProvince = {};
+      _variationToOfficialName = {};
+      jsonMap.forEach((province, municipalities) {
+        for (var mun in municipalities) {
+          final officialName = mun['municipio'];
+          final variations = List<String>.from(mun['variaciones'] ?? []);
+
+          // Add official name
+          _allMunicipalities.add(officialName);
+          _municipalityToProvince[officialName.toLowerCase()] = province;
+          _variationToOfficialName[officialName.toLowerCase()] = officialName;
+
+          // Add variations
+          for (var variation in variations) {
+            _allMunicipalities.add(variation);
+            _municipalityToProvince[variation.toLowerCase()] = province;
+            _variationToOfficialName[variation.toLowerCase()] =
+                officialName; // Map variation to official name
+          }
+        }
+      });
+    } catch (e) {
+      debugPrint('Error loading municipalities: $e');
+    }
   }
 
   /// Disposes of the controllers to free up resources.

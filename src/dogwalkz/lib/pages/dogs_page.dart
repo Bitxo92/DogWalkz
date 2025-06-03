@@ -89,164 +89,172 @@ class _DogsPageState extends State<DogsPage> {
         centerTitle: true,
         backgroundColor: Colors.brown,
       ),
-      body: FutureBuilder<List<Dog>>(
-        future: _dogsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: Lottie.network(
-                'https://lottie.host/4410b37a-0f15-4bbc-be66-ab2a92a6fb2e/D5q35grkIb.json',
-                width: 200,
-                height: 200,
-              ),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final dogs = snapshot.data ?? [];
-
-          if (dogs.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Lottie.network(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
+          FutureBuilder<List<Dog>>(
+            future: _dogsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: Lottie.network(
                     'https://lottie.host/4410b37a-0f15-4bbc-be66-ab2a92a6fb2e/D5q35grkIb.json',
                     width: 200,
                     height: 200,
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    AppLocalizations.of(context)!.noDogs,
-                    style: TextStyle(
-                      fontFamily: GoogleFonts.comicNeue().fontFamily,
-                      color: Colors.brown,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
+                );
+              }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: dogs.length,
-            itemBuilder: (context, index) {
-              final dog = dogs[index];
-              return Dismissible(
-                key: Key(dog.id),
-                background: Container(
-                  color: Colors.red,
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
-                  child: const Icon(
-                    Ionicons.trash_outline,
-                    color: Colors.white,
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              final dogs = snapshot.data ?? [];
+
+              if (dogs.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Lottie.network(
+                        'https://lottie.host/4410b37a-0f15-4bbc-be66-ab2a92a6fb2e/D5q35grkIb.json',
+                        width: 200,
+                        height: 200,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        AppLocalizations.of(context)!.noDogs,
+                        style: TextStyle(
+                          fontFamily: GoogleFonts.comicNeue().fontFamily,
+                          color: Colors.brown,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                direction: DismissDirection.endToStart,
-                confirmDismiss: (direction) async {
-                  await _deleteDog(dog.id);
-                  return false;
-                },
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15),
-                    onTap: () => _navigateToEditDog(dog),
-                    onLongPress: () => _navigateToEditDog(dog),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          if (dog.photoUrl != null)
-                            Hero(
-                              tag: 'dog-image-${dog.id}',
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  dog.photoUrl!,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            )
-                          else
-                            Hero(
-                              tag: 'dog-image-${dog.id}',
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  color: Colors.brown.shade100,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Ionicons.paw_outline,
-                                  size: 40,
-                                  color: Colors.brown,
-                                ),
-                              ),
-                            ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  dog.name,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily:
-                                        GoogleFonts.comicNeue().fontFamily,
-                                    color: Colors.brown.shade800,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  DogsRepository().getLocalizedBreedName(
-                                    dog.breed,
-                                    context,
-                                  ),
-                                  style: TextStyle(
-                                    fontFamily:
-                                        GoogleFonts.comicNeue().fontFamily,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                                if (dog.age != null)
-                                  Text(
-                                    '${dog.age} ${AppLocalizations.of(context)!.years}',
-                                    style: TextStyle(
-                                      fontFamily:
-                                          GoogleFonts.comicNeue().fontFamily,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Ionicons.chevron_forward_outline,
-                            color: Colors.brown,
-                          ),
-                        ],
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: dogs.length,
+                itemBuilder: (context, index) {
+                  final dog = dogs[index];
+                  return Dismissible(
+                    key: Key(dog.id),
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      child: const Icon(
+                        Ionicons.trash_outline,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
-                ),
+                    direction: DismissDirection.endToStart,
+                    confirmDismiss: (direction) async {
+                      await _deleteDog(dog.id);
+                      return false;
+                    },
+                    child: Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(15),
+                        onTap: () => _navigateToEditDog(dog),
+                        onLongPress: () => _navigateToEditDog(dog),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              if (dog.photoUrl != null)
+                                Hero(
+                                  tag: 'dog-image-${dog.id}',
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      dog.photoUrl!,
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                              else
+                                Hero(
+                                  tag: 'dog-image-${dog.id}',
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      color: Colors.brown.shade100,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      Ionicons.paw_outline,
+                                      size: 40,
+                                      color: Colors.brown,
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      dog.name,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily:
+                                            GoogleFonts.comicNeue().fontFamily,
+                                        color: Colors.brown.shade800,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      DogsRepository().getLocalizedBreedName(
+                                        dog.breed,
+                                        context,
+                                      ),
+                                      style: TextStyle(
+                                        fontFamily:
+                                            GoogleFonts.comicNeue().fontFamily,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                    if (dog.age != null)
+                                      Text(
+                                        '${dog.age} ${AppLocalizations.of(context)!.years}',
+                                        style: TextStyle(
+                                          fontFamily:
+                                              GoogleFonts.comicNeue()
+                                                  .fontFamily,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                Ionicons.chevron_forward_outline,
+                                color: Colors.brown,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddDog,

@@ -55,73 +55,81 @@ class WalkDetailsPage extends StatelessWidget {
         backgroundColor: Colors.brown,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SafeArea(
-        top: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).size.height * 0.1,
-                        ),
-                      ),
-                      // Contact Details Card
-                      (walk.walker != null && walk.walkerId != currentUserId)
-                          ? _buildWalkerCard(context)
-                          : _buildCustomerCard(context),
-
-                      const SizedBox(height: 16),
-                      _buildStatusHeader(context),
-                      const SizedBox(height: 2),
-
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: 1.5,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 4,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
+          SafeArea(
+            top: false,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Column(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildSectionBadge(
-                            context,
-                            icon: Ionicons.time_outline,
-                            title: AppLocalizations.of(context)!.timePlace,
-                            onTap: () => _showTimePlaceDialog(context),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: MediaQuery.of(context).size.height * 0.1,
+                            ),
                           ),
-                          _buildSectionBadge(
-                            context,
-                            icon: Ionicons.paw_outline,
-                            title: AppLocalizations.of(context)!.dogs,
-                            onTap: () => _showDogsDialog(context),
-                          ),
-                          _buildSectionBadge(
-                            context,
-                            icon: Ionicons.wallet_outline,
-                            title: AppLocalizations.of(context)!.billing,
-                            onTap: () => _showBillingDialog(context),
-                          ),
-                          _buildSectionBadge(
-                            context,
-                            icon: Ionicons.help_circle_outline,
-                            title: AppLocalizations.of(context)!.support,
-                            onTap: () => _showSupportOptions(context),
+                          // Contact Details Card
+                          (walk.walker != null &&
+                                  walk.walkerId != currentUserId)
+                              ? _buildWalkerCard(context)
+                              : _buildCustomerCard(context),
+
+                          const SizedBox(height: 16),
+                          _buildStatusHeader(context),
+                          const SizedBox(height: 2),
+
+                          GridView.count(
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            childAspectRatio: 1.5,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 4,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            children: [
+                              _buildSectionBadge(
+                                context,
+                                icon: Ionicons.time_outline,
+                                title: AppLocalizations.of(context)!.timePlace,
+                                onTap: () => _showTimePlaceDialog(context),
+                              ),
+                              _buildSectionBadge(
+                                context,
+                                icon: Ionicons.paw_outline,
+                                title: AppLocalizations.of(context)!.dogs,
+                                onTap: () => _showDogsDialog(context),
+                              ),
+                              _buildSectionBadge(
+                                context,
+                                icon: Ionicons.wallet_outline,
+                                title: AppLocalizations.of(context)!.billing,
+                                onTap: () => _showBillingDialog(context),
+                              ),
+                              _buildSectionBadge(
+                                context,
+                                icon: Ionicons.help_circle_outline,
+                                title: AppLocalizations.of(context)!.support,
+                                onTap: () => _showSupportOptions(context),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                if (walk.walker != null) _buildActionButtons(context),
-              ],
-            );
-          },
-        ),
+                    ),
+                    if (walk.walker != null) _buildActionButtons(context),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1043,8 +1051,27 @@ class WalkDetailsPage extends StatelessWidget {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.confirmCancel),
-          content: Text(AppLocalizations.of(context)!.confirmCancelMessage),
+          title: Text(
+            AppLocalizations.of(context)!.confirmCancel,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/alert.png',
+                width: 200,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+              SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context)!.confirmCancelMessage,
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
           actions: <Widget>[
             TextButton(
               child: Text(
@@ -1053,7 +1080,14 @@ class WalkDetailsPage extends StatelessWidget {
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.brown,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               child: Text(AppLocalizations.of(context)!.yesCancel),
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),

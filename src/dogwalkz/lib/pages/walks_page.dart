@@ -95,6 +95,10 @@ class _WalksPageState extends State<WalksPage> {
       backgroundColor: const Color(0xFFF5E9D9),
       body: Stack(
         children: [
+          Positioned.fill(
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
+
           Container(
             height:
                 Size.fromHeight(

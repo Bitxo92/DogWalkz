@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' hide Card;
 import 'package:ionicons/ionicons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -25,11 +27,20 @@ class _WalletPageState extends State<WalletPage> {
   bool _iswithdrawingFunds = false;
   String? _walletId;
   String _selectedFilter = 'all';
+  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _withdrawFormKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     _loadWalletData();
+    _initializeStripe();
+  }
+
+  Future<void> _initializeStripe() async {
+    await dotenv.load(fileName: '.env');
+    Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? '';
+    await Stripe.instance.applySettings();
   }
 
   /// Loads the user's wallet data and updates the state with the balance and
@@ -119,21 +130,105 @@ class _WalletPageState extends State<WalletPage> {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       debugPrint('Invalid amount: $amount');
-
       return;
     }
 
     setState(() => _isAddingFunds = true);
     try {
-      await _walletRepository.addFunds(
+      await _walletRepository.processStripePayment(
         userId: Supabase.instance.client.auth.currentUser!.id,
         walletId: _walletId!,
         amount: amount,
+        context: context,
       );
 
       await _loadWalletData();
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() => _isAddingFunds = false);
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(
+                AppLocalizations.of(context)!.paymentSuccess,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.green),
+              ),
+
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: Image(
+                      image: AssetImage('assets/payment_success.png'),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    AppLocalizations.of(context)!.paymentSuccessMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(AppLocalizations.of(context)!.ok),
+                ),
+              ],
+            );
+          },
+        );
+      }
     } catch (e) {
       debugPrint('Error adding funds: $e');
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(
+                AppLocalizations.of(context)!.paymentError,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.red),
+              ),
+
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: Image(
+                      image: AssetImage('assets/payment_error.png'),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    AppLocalizations.of(context)!.paymentErrorMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(AppLocalizations.of(context)!.ok),
+                ),
+              ],
+            );
+          },
+        );
+      }
     } finally {
       setState(() => _isAddingFunds = false);
     }
@@ -162,6 +257,48 @@ class _WalletPageState extends State<WalletPage> {
       );
 
       await _loadWalletData();
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() => _iswithdrawingFunds = false);
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(
+                AppLocalizations.of(context)!.transferSuccess,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.green),
+              ),
+
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: Image(
+                      image: AssetImage('assets/bank.png'),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    AppLocalizations.of(context)!.transferSuccessMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(AppLocalizations.of(context)!.ok),
+                ),
+              ],
+            );
+          },
+        );
+      }
     } catch (e) {
       debugPrint('Error withdrawing funds: $e');
     } finally {
@@ -223,33 +360,42 @@ class _WalletPageState extends State<WalletPage> {
                         ),
                       ],
                     ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextFormField(
-                          controller: _amountController,
-                          keyboardType: TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!.amount,
-                            prefixIcon: Icon(
-                              FontAwesomeIcons.dollarSign,
-                              color: Colors.brown,
+                    content: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextFormField(
+                            controller: _amountController,
+                            keyboardType: TextInputType.numberWithOptions(
+                              decimal: true,
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.amount,
+                              prefixIcon: Icon(
+                                FontAwesomeIcons.dollarSign,
                                 color: Colors.brown,
-                                width: 2,
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.brown,
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return AppLocalizations.of(context)!.required;
+                              }
+                              return null;
+                            },
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     actions: [
                       TextButton(
@@ -267,11 +413,11 @@ class _WalletPageState extends State<WalletPage> {
                             _isAddingFunds
                                 ? null
                                 : () async {
-                                  setState(() => _isAddingFunds = true);
-                                  await _addFunds();
-                                  _amountController.clear();
-                                  setState(() => _isAddingFunds = false);
-                                  Navigator.of(context).pop();
+                                  if (_formKey.currentState!.validate()) {
+                                    setState(() => _isAddingFunds = true);
+                                    await _addFunds();
+                                    _amountController.clear();
+                                  }
                                 },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.brown,
@@ -349,34 +495,43 @@ class _WalletPageState extends State<WalletPage> {
                         ),
                       ],
                     ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextFormField(
-                          controller: _amountController,
-                          keyboardType: TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!.amount,
-                            prefixIcon: Icon(
-                              FontAwesomeIcons.dollarSign,
-                              color: Colors.brown,
-                              size: 18,
+                    content: Form(
+                      key: _withdrawFormKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextFormField(
+                            controller: _amountController,
+                            keyboardType: TextInputType.numberWithOptions(
+                              decimal: true,
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.amount,
+                              prefixIcon: Icon(
+                                FontAwesomeIcons.dollarSign,
                                 color: Colors.brown,
-                                width: 2,
+                                size: 18,
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.brown,
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return AppLocalizations.of(context)!.required;
+                              }
+                              return null;
+                            },
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     actions: [
                       TextButton(
@@ -394,11 +549,12 @@ class _WalletPageState extends State<WalletPage> {
                             _iswithdrawingFunds
                                 ? null
                                 : () async {
-                                  setState(() => _iswithdrawingFunds = true);
-                                  await _withdrawFunds();
-                                  _amountController.clear();
-                                  setState(() => _iswithdrawingFunds = false);
-                                  Navigator.of(context).pop();
+                                  if (_withdrawFormKey.currentState!
+                                      .validate()) {
+                                    setState(() => _iswithdrawingFunds = true);
+                                    await _withdrawFunds();
+                                    _amountController.clear();
+                                  }
                                 },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.brown,
@@ -481,6 +637,9 @@ class _WalletPageState extends State<WalletPage> {
       backgroundColor: const Color(0xFFF5E9D9),
       body: Stack(
         children: [
+          Positioned.fill(
+            child: Image.asset('assets/Background.png', fit: BoxFit.cover),
+          ),
           Container(
             height:
                 Size.fromHeight(

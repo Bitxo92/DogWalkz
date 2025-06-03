@@ -86,7 +86,7 @@
   "location": "Ubicación",
   "enterLocation": "Por favor ingrese una ubicación",
   "exampleLocation": "ej. Ribeira, Porto",
-  "selectWalker": "Seleccionar Paseador",
+  "selectWalker": "¡Por favor, seleccione un paseador!",
   "walker": "Paseador",
   "enterLocationFirst": "Por favor ingrese una ubicación primero",
   "failedToLoadWalkers": "Error al cargar paseadores",
@@ -97,7 +97,7 @@
   "userNotLoggedIn": "Usuario no conectado",
   "failedToScheduleWalk": "Error al programar paseo",
   "selectTimeAndLocation": "Selecciona hora y lugar",
-  "enterCity": "Ingresa la ciudad",
+  "enterCity": "Porfavor, ingresa una ciudad",
   "start": "Inicio: ",
   "end": "Fin: ",
   "selectDogs": "Selecciona perros:",
@@ -223,7 +223,7 @@
   "rating": "Calificación",
   "save": "Guardar",
   "callSupport": "Llámanos",
-    "submit": "¡Enviar!",
+    "submit": "¡Confirmar!",
   "next": "Siguiente",
   "back": "Atrás",
   "balance": "Saldo disponible: ",
@@ -247,7 +247,25 @@
   "noWalkersInCity": "No hay paseadores disponibles en esta ciudad.",
   "addFurryFriend": "Añade tu Amigo Peludo",
   "noDogsAccount": "Actualmente no tienes perros en tu cuenta",
-   "yesCancel": "si, Cancelar"
+  "yesCancel": "si, Cancelar",
+  "paymentSuccess": "¡Pago Exitoso!",
+  "paymentError": "¡Pago Fallido!",
+  "paymentErrorMessage": "Ocurrió un error al procesar el pago, \n¡por favor inténtalo de nuevo!",
+  "paymentSuccessMessage": "El pago se completó exitosamente, \n¡gracias!",
+  "detailedBilling": "FACTURA",
+  "baseRate": "Tarifa Base",
+  "duration": "Duración",
+  "dogsCount": "Perros Seleccionados",
+  "subtotal": "Subtotal",
+  "largeDogSurcharge": "Recargo por Perro Grande (20%)",
+  "dangerousBreedSurcharge": "Recargo por Raza Peligrosa (30%)",
+  "totalBeforeCommission": "Total Antes de la Comisión",
+  "totalPrice": "Precio Total",
+  "transferSuccess": "¡Transferencia Bancaria \nExitosa!",
+  "transferSuccessMessage": "Tu transferencia bancaria se completó exitosamente,\n los fondos se reflejarán en tu cuenta en 7-9 días hábiles"
+
+
+
 
 
 

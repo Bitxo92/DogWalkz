@@ -92,7 +92,7 @@
   "location": "Location",
   "enterLocation": "Please enter a location",
   "exampleLocation": "e.g. Ribeira, Porto",
-  "selectWalker": "Select Walker",
+  "selectWalker": "Please select a walker of your choice!",
   "walker": "Walker",
   "enterLocationFirst": "Please enter location first",
   "failedToLoadWalkers": "Failed to load walkers",
@@ -103,7 +103,7 @@
   "userNotLoggedIn": "User not logged in",
   "failedToScheduleWalk": "Failed to schedule walk",
   "selectTimeAndLocation": "Select Time and Place",
-  "enterCity": "Enter City",
+  "enterCity": "Please enter a city",
   "start": "Start: ",
   "end": "End: ",
   "selectDogs": "Select Dogs:",
@@ -254,7 +254,22 @@
   "noWalkersInCity": "No available walkers for the city you selected.",
   "addFurryFriend": "Add a Furry Friend",
   "noDogsAccount": " Currently you have no dogs in your account",
-  "yesCancel": "yes, Cancel"
+  "yesCancel": "yes, Cancel",
+  "paymentSuccess": "Payment Successful!",
+  "paymentError": "Payment Failed!",
+  "paymentErrorMessage": "An error occurred while processing the payment, \nplease try again!",
+  "paymentSuccessMessage": "The payment process completed succesfully, \nThank You!",
+  "detailedBilling": "BILL",
+  "baseRate": "Base Rate",
+  "duration": "Duration",
+  "dogsCount": "Dogs Selected",
+  "subtotal": "Subtotal",
+  "largeDogSurcharge": "Large Dog Surcharge (20%)",
+  "dangerousBreedSurcharge": "Dangerous Breed Surcharge (30%)",
+  "totalBeforeCommission": "Total Before Commission",
+  "totalPrice": "Total Price",
+  "transferSuccess": "Bank Transfer \nSuccessful!",
+  "transferSuccessMessage": "Your Bank Transfer completed succesfully,\n funds will be reflected in your account in 7-9 business days"
   
 
  
