@@ -3,7 +3,10 @@
 
 ![Dog Walkz Promo Banner](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/raw/main/doc/img/DogWalkz_Banner.png)
 
-
+![Flutter](https://img.shields.io/badge/Built_with-Flutter-02569B?logo=flutter)
+![Supabase](https://img.shields.io/badge/Supabase-OAuth2.0-green?logo=supabase)
+![Stripe](https://img.shields.io/badge/Stripe-Payments-blue?logo=stripe)
+![Firebase Messaging](https://img.shields.io/badge/Firebase-Messaging-FFCA28?logo=firebase)
 
 
 ## Descripción
