@@ -4,11 +4,32 @@
 
 ## Información relativa a la instalación o despliegue
 
-Este apartado describe el proceso necesario para desplegar la aplicación móvil **DogWalkz**, en las dos principales plataformas: **Google Play Store** y **Apple App Store**.
+Antes de instalar y utilizar la aplicación **DogWalkz**, es importante que el usuario cuente con un dispositivo móvil que cumpla con los siguientes **requisitos mínimos**:
+
+- **Sistema operativo compatible:**
+  - Android 5.0 (API nivel 21) o superior
+  - iOS 12.0 o superior
+
+- **Memoria RAM:** al menos 4 GB  
+- **Almacenamiento disponible:** mínimo 500 MB libres  
+- **Conectividad:** acceso a internet estable (Wi-Fi o datos móviles)
+
+Estos requerimientos son necesarios debido a las dependencias empleadas en el desarrollo de DogWalkz, las cuales establecen ciertos umbrales técnicos para garantizar un funcionamiento correcto y seguro de la aplicación:
+
+- `flutter_stripe`: integración de la pasarela de pagos mediante **Stripe**  
+- `firebase_messaging`: gestión de notificaciones **push**  
+- `flutter_geolocator`: rastreo de ubicación en tiempo real para la funcionalidad de seguimiento de paseadores
+
+Cumplir con estas especificaciones garantiza una experiencia fluida para los usuarios y una operación eficiente de las funcionalidades críticas de la aplicación.
 
 ---
 
+A continuación, se detalla el proceso necesario para desplegar la aplicación móvil **DogWalkz** en las dos plataformas principales: **Google Play Store** (para dispositivos Android) y **Apple App Store** (para dispositivos iOS), abarcando desde la preparación del proyecto hasta la publicación final.
+
+
+
 ### Publicación en Google Play Store (Android)
+---
 
 #### 1. Preparación del proyecto
 
@@ -46,6 +67,7 @@ Este apartado describe el proceso necesario para desplegar la aplicación móvil
 - Una vez aprobada, la app estará disponible en Google Play Store.
 
 ### Publicación en Apple App Store (iOS)
+---
 
 #### 1. Requisitos previos
 
