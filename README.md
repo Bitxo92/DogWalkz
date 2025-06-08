@@ -1,9 +1,7 @@
 # Proyecto fin de ciclo
 **¡Bienvenido a DogWalkz 🐾 — una plataforma diseñada para programar paseos para tus perros de forma fácil y cómoda!**
 
-<p align="center">
-  <img src="https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/raw/main/doc/img/DogWalkz-Intro.gif" alt="Dog Walkz Intro" style="width: auto; height: 300px;">
-</p>
+
 
 
 
@@ -12,7 +10,9 @@
 **DogWalkz** es una aplicación móvil que conecta a dueños de perros con paseadores profesionales de manera segura, sencilla e intuitiva. Ofrece un registro fácil, seguimiento de paseos en tiempo real, un sistema de pagos seguro y una comunidad basada en reseñas para garantizar un servicio de alta calidad. Diseñada para dueños de mascotas ocupados y paseadores profesionales, DogWalkz simplifica el proceso de gestionar paseos de perros de forma segura y transparente.  
 Construida con un stack tecnológico Flutter + Supabase, además de incorporar tecnologías modernas como OAuth2.0 para la autenticación por redes sociales, la app es multiplataforma y multilingüe, lo que la hace accesible para una audiencia global.  
 DogWalkz no solo resuelve una necesidad real, sino que también abre oportunidades para un negocio escalable a través de comisiones y servicios premium.
-
+<p align="center">
+  <img src="https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/raw/main/doc/img/DogWalkz-Intro.gif" alt="Dog Walkz Intro">
+</p>
 
 ## Instalación / Puesta en marcha
 
