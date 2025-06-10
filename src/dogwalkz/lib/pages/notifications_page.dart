@@ -58,7 +58,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if ((type == 'walk_scheduled' ||
             type == 'walk_completed' ||
             type == 'walk_accepted' ||
-            type == 'walk_started') &&
+            type == 'walk_started' ||
+            type == 'new_message') &&
         entityId != null) {
       _navigateToWalkDetails(entityId);
     } else {
@@ -211,6 +212,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return Ionicons.walk_outline;
       case 'payment':
         return Ionicons.wallet_outline;
+      case 'new_message':
+        return Ionicons.chatbox_outline;
       default:
         return Ionicons.notifications_outline;
     }
@@ -238,6 +241,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return AppLocalizations.of(context)!.walkCompletedTitle;
       case 'payment':
         return AppLocalizations.of(context)!.paymentReceivedTitle;
+      case 'new_message':
+        return AppLocalizations.of(context)!.newMessageTitle;
       default:
         return AppLocalizations.of(context)!.notificationTitle;
     }
@@ -259,6 +264,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return AppLocalizations.of(context)!.walkCompletedText;
       case 'payment':
         return AppLocalizations.of(context)!.paymentReceivedText;
+      case 'new_message':
+        return AppLocalizations.of(context)!.newMessageText;
       default:
         return AppLocalizations.of(context)!.notificationText;
     }

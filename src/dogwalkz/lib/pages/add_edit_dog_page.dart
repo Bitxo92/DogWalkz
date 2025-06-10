@@ -92,11 +92,15 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5E9D9),
+      backgroundColor: Colors.transparent,
+      extendBody: true,
+      resizeToAvoidBottomInset: false,
 
       body: Stack(
         children: [
-          Positioned.fill(
+          Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
             child: Image.asset('assets/Background.png', fit: BoxFit.cover),
           ),
           Container(
@@ -130,7 +134,7 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
           ),
 
           Container(
-            padding: EdgeInsets.only(top: screenHeight * 0.16),
+            padding: EdgeInsets.only(top: screenHeight * 0.16, bottom: 100),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Form(
@@ -305,7 +309,7 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
                       ),
                       maxLines: 3,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 200),
                   ],
                 ),
               ),
@@ -377,7 +381,7 @@ class _AddEditDogPageState extends State<AddEditDogPage> {
         ],
       ),
       bottomNavigationBar: Container(
-        color: const Color(0xFFF5E9D9),
+        color: Colors.transparent,
         height: 100,
         child: Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),

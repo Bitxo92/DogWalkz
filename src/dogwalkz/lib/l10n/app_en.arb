@@ -146,7 +146,7 @@
   "platformFee": "Platform Fee",
   "walkerEarnings": "Walker Earnings",
   "backToWalks": "Back to Walks",
-  "message": "Message",
+  "message": "Chat",
   "call": "Call",
   "dogOwner": "Dog Owner",
   "contactUnavailable": "Contact Unavailable",
@@ -269,7 +269,9 @@
   "totalBeforeCommission": "Total Before Commission",
   "totalPrice": "Total Price",
   "transferSuccess": "Bank Transfer \nSuccessful!",
-  "transferSuccessMessage": "Your Bank Transfer completed succesfully,\n funds will be reflected in your account in 7-9 business days"
+  "transferSuccessMessage": "Your Bank Transfer completed succesfully,\n funds will be reflected in your account in 7-9 business days",
+  "newMessageTitle": "New Message",
+  "newMessageText": "You have a new message!"
   
 
  

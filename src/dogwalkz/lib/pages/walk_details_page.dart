@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dogwalkz/models/walker.dart';
+import 'package:dogwalkz/pages/chat_page.dart';
 import 'package:dogwalkz/repositories/dogs_repository.dart';
 import 'package:dogwalkz/repositories/walk_repository.dart';
 import 'package:dogwalkz/repositories/wallet_repository.dart';
@@ -395,7 +396,7 @@ class WalkDetailsPage extends StatelessWidget {
           child: OutlinedButton.icon(
             icon: const Icon(Ionicons.chatbubble_outline, size: 20),
             label: Text(AppLocalizations.of(context)!.message),
-            onPressed: () => _showCustomerContactDialog(context, true),
+            onPressed: () => _navigateToCustomerChat(context),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
               foregroundColor: Colors.white,
@@ -432,11 +433,11 @@ class WalkDetailsPage extends StatelessWidget {
           child: OutlinedButton.icon(
             icon: const Icon(Ionicons.chatbubble_outline, size: 20),
             label: Text(AppLocalizations.of(context)!.message),
-            onPressed: () => _showContactDialog(context, true),
+            onPressed: () => _navigateToChat(context),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              backgroundColor: Colors.brown,
               foregroundColor: Colors.white,
+              backgroundColor: Colors.brown,
             ),
           ),
         ),
@@ -1975,5 +1976,43 @@ class WalkDetailsPage extends StatelessWidget {
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to open maps: $e')));
     }
+  }
+
+  void _navigateToChat(BuildContext context) {
+    if (walk.walker == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ChatPage(
+              walkId: walk.id,
+              currentUserName: walk.customer!.fullName,
+              currentUserId: currentUserId,
+              otherUserId: walk.walker!.userId,
+              otherUserName: walk.walker!.fullName,
+              otherUserProfilePicture: walk.walker!.profilePictureUrl,
+            ),
+      ),
+    );
+  }
+
+  void _navigateToCustomerChat(BuildContext context) {
+    if (walk.customer == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ChatPage(
+              walkId: walk.id,
+              currentUserName: walk.walker!.fullName,
+              currentUserId: currentUserId,
+              otherUserId: walk.customer!.id,
+              otherUserName: walk.customer!.fullName,
+              otherUserProfilePicture: walk.customer!.profilePictureUrl,
+            ),
+      ),
+    );
   }
 }

@@ -437,8 +437,9 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     }
     return Scaffold(
-      backgroundColor: const Color(0xFFF5E9D9),
-
+      backgroundColor: Colors.transparent,
+      extendBody: true,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Positioned.fill(
@@ -472,7 +473,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           Container(
-            padding: EdgeInsets.only(top: screenHeight * 0.16),
+            padding: EdgeInsets.only(top: screenHeight * 0.16, bottom: 100),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Form(
@@ -1118,7 +1119,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
       bottomNavigationBar: Container(
-        color: const Color(0xFFF5E9D9),
+        color: Colors.transparent,
         height: 100,
         child: Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),

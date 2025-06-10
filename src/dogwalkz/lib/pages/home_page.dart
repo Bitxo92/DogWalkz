@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dogwalkz/pages/notifications_page.dart';
 import 'package:dogwalkz/pages/schedule_walk_page.dart';
 import 'package:dogwalkz/repositories/dogs_repository.dart';
@@ -33,6 +35,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _unreadNotifications = 0;
   bool _isLoadingNotifications = true;
   bool _showTutorial = false;
+  final NotificationService _notificationService = NotificationService();
+  StreamSubscription<int>? _notificationSubscription;
   final GlobalKey _appBarKey = GlobalKey();
   final GlobalKey _logoutKey = GlobalKey();
   final GlobalKey _notificationsKey = GlobalKey();
@@ -54,6 +58,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     _loadUpcomingWalks();
     _loadUnreadNotifications();
     _checkFirstLaunch();
+    _setupNotificationListener();
   }
 
   Future<void> _checkFirstLaunch() async {
@@ -578,6 +583,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   /// This is important to prevent memory leaks and ensure that the widget is cleaned up properly.
   @override
   void dispose() {
+    _notificationSubscription?.cancel();
+    _notificationService.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -665,11 +672,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
+  void _setupNotificationListener() {
+    _notificationService.startListening();
+    _notificationSubscription = _notificationService.unreadCountStream.listen((
+      count,
+    ) {
+      if (mounted) {
+        setState(() {
+          _unreadNotifications = count;
+        });
+      }
+    });
+  }
+
   /// Loads the unread notifications count from the NotificationService.
   Future<void> _loadUnreadNotifications() async {
     setState(() => _isLoadingNotifications = true);
     try {
-      final count = await NotificationService().getUnreadCount();
+      final count = await _notificationService.getUnreadCount();
       setState(() {
         _unreadNotifications = count;
         _isLoadingNotifications = false;

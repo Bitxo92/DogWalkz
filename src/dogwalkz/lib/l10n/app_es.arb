@@ -140,7 +140,7 @@
   "platformFee": "Comisión de Plataforma",
   "walkerEarnings": "Ganancias del Paseador",
   "backToWalks": "Volver a Paseos",
-  "message": "Mensaje",
+  "message": "Chat",
   "call": "Llamar",
   "dogOwner": "Dueño del Perro",
   "contactUnavailable": "Contacto No Disponible",
@@ -262,7 +262,10 @@
   "totalBeforeCommission": "Total Antes de la Comisión",
   "totalPrice": "Precio Total",
   "transferSuccess": "¡Transferencia Bancaria \nExitosa!",
-  "transferSuccessMessage": "Tu transferencia bancaria se completó exitosamente,\n los fondos se reflejarán en tu cuenta en 7-9 días hábiles"
+  "transferSuccessMessage": "Tu transferencia bancaria se completó exitosamente,\n los fondos se reflejarán en tu cuenta en 7-9 días hábiles",
+  "newMessageTitle": "Nuevo Mensaje",
+  "newMessageText": "¡Tienes un nuevo mensaje!"
+
 
 
 

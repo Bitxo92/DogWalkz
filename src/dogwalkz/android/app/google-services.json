@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "413306127806",
+    "project_id": "dogwalkz-d86fe",
+    "storage_bucket": "dogwalkz-d86fe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:413306127806:android:8c148024ab580d9d37e5ef",
+        "android_client_info": {
+          "package_name": "com.example.dogwalkz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGZpemG6JFrbULrYPPwbgnSmM-WSQpRZc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
