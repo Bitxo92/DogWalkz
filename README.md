@@ -20,6 +20,10 @@ DogWalkz no solo resuelve una necesidad real, sino que también abre oportunidad
 
 ## Instalación / Puesta en marcha
 
+> [!NOTE]
+> Si deseas probar la aplicación directamente en tu dispositivo Android, puedes instalar el archivo APK directamente desde aquí:
+> [⬇️ Descargar APK](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/raw/main/src/Builds/Android_Release/Dogwalkz_closedBeta-release.apk)
+
 ### 1. Instalar SDK de Flutter
 
 Primero, debemos instalar Flutter en nuestra máquina.
