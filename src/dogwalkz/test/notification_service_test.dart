@@ -6,10 +6,10 @@ import 'package:mockito/annotations.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:vibration/vibration.dart';
-import 'package:your_app/services/notifications_service.dart'; // Update with your actual path
-import 'package:your_app/services/fcm_service.dart'; // Update with your actual path
+import 'package:your_app/services/notifications_service.dart'; 
+import 'package:your_app/services/fcm_service.dart'; 
 
-// Generate mocks using build_runner: flutter packages pub run build_runner build
+
 @GenerateMocks([
   SupabaseClient,
   GoTrueClient,
@@ -36,7 +36,7 @@ void main() {
     late MockPostgrestTransformBuilder mockTransformBuilder;
 
     setUp(() {
-      // Initialize mocks
+     
       mockSupabaseClient = MockSupabaseClient();
       mockAuthClient = MockGoTrueClient();
       mockUser = MockUser();
@@ -46,12 +46,12 @@ void main() {
       mockPostgrestFilterBuilder = MockPostgrestFilterBuilder();
       mockTransformBuilder = MockPostgrestTransformBuilder();
 
-      // Setup Supabase instance mock
+  
       when(mockSupabaseClient.auth).thenReturn(mockAuthClient);
       when(mockAuthClient.currentUser).thenReturn(mockUser);
       when(mockUser.id).thenReturn('test-user-id');
 
-      // Mock Supabase.instance.client
+      
       final mockSupabase = MockSupabaseClient();
       when(mockSupabase.auth).thenReturn(mockAuthClient);
 
@@ -74,7 +74,7 @@ void main() {
       test(
         'should return correct unread count for authenticated user',
         () async {
-          // Mock the query chain
+       
           when(
             mockSupabaseClient.from('notifications'),
           ).thenReturn(mockQueryBuilder);
@@ -86,7 +86,7 @@ void main() {
             mockFilterBuilder.eq('is_read', false),
           ).thenReturn(mockFilterBuilder);
 
-          // Mock response data
+        
           final mockData = [
             {'id': '1'},
             {'id': '2'},
@@ -111,7 +111,7 @@ void main() {
       });
 
       test('should return notifications for authenticated user', () async {
-        // Mock the query chain
+        
         when(
           mockSupabaseClient.from('notifications'),
         ).thenReturn(mockQueryBuilder);
@@ -153,7 +153,6 @@ void main() {
           mockTransformBuilder.order('created_at', ascending: false),
         ).thenReturn(mockTransformBuilder);
 
-        // Mock PostgrestException
         when(
           mockTransformBuilder.select(),
         ).thenAnswer((_) async => PostgrestException(message: ''));
@@ -333,7 +332,7 @@ void main() {
 
     group('unreadCountStream', () {
       test('should emit count when _refreshUnreadCount is called', () async {
-        // Mock the unread count query
+       
         when(
           mockSupabaseClient.from('notifications'),
         ).thenReturn(mockQueryBuilder);
@@ -351,13 +350,13 @@ void main() {
           ],
         );
 
-        // Listen to the stream
+       
         final streamValues = <int>[];
         final subscription = notificationService.unreadCountStream.listen(
           streamValues.add,
         );
 
-        // Trigger refresh (this would normally be called internally)
+        
         await notificationService.getUnreadCount();
 
         await Future.delayed(Duration(milliseconds: 100));
@@ -457,17 +456,17 @@ void main() {
 
     group('dispose', () {
       test('should unsubscribe channel and close stream controller', () {
-        // Setup a mock channel
+   
         notificationService.startListening();
 
-        // Mock the channel unsubscribe
+     
         when(
           mockChannel.unsubscribe(),
         ).thenAnswer((_) async => RealtimeSubscribeStatus.subscribed);
 
         notificationService.dispose();
 
-        // Verify the stream controller is closed by trying to add to it
+        
         expect(
           () => notificationService.unreadCountStream.listen((_) {}),
           throwsA(isA<StateError>()),

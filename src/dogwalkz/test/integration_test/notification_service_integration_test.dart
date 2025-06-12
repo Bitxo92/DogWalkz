@@ -16,19 +16,17 @@ void main() {
     late String testNotificationId;
 
     setUpAll(() async {
-      // Initialize your app and Supabase
-      // You'll need to configure this based on your app's initialization
+  
       await Supabase.initialize(
-        url: 'YOUR_SUPABASE_URL', // Replace with your actual URL
-        anonKey: 'YOUR_ANON_KEY', // Replace with your actual anon key
+        url: 'YOUR_SUPABASE_URL', 
+        anonKey: 'YOUR_ANON_KEY', 
       );
 
-      // Create a test user or use an existing test account
-      // This assumes you have a way to authenticate a test user
+      
       final authResponse = await Supabase.instance.client.auth
           .signInWithPassword(
-            email: 'test@example.com', // Replace with your test email
-            password: 'testPassword123', // Replace with your test password
+            email: 'test@example.com', 
+            password: 'testPassword123', 
           );
 
       testUserId = authResponse.user!.id;
@@ -36,7 +34,7 @@ void main() {
     });
 
     tearDownAll(() async {
-      // Clean up test data
+    
       await _cleanupTestData();
       await Supabase.instance.client.auth.signOut();
       notificationService.dispose();
@@ -44,7 +42,7 @@ void main() {
 
     group('Database Operations', () {
       testWidgets('should create and retrieve notifications', (tester) async {
-        // Send a test notification
+       
         await NotificationService.sendNotification(
           userId: testUserId,
           title: 'Integration Test Notification',
@@ -54,10 +52,10 @@ void main() {
           relatedEntityId: 'test-entity-123',
         );
 
-        // Wait a bit for the database operation to complete
+       
         await Future.delayed(const Duration(seconds: 1));
 
-        // Retrieve notifications
+    
         final notifications = await notificationService.getUserNotifications();
 
         expect(notifications.isNotEmpty, true);
@@ -81,11 +79,11 @@ void main() {
       });
 
       testWidgets('should get correct unread count', (tester) async {
-        // Get initial unread count
+      
         final initialCount = await notificationService.getUnreadCount();
         expect(initialCount, greaterThan(0));
 
-        // Send another notification
+     
         await NotificationService.sendNotification(
           userId: testUserId,
           title: 'Second Test Notification',
@@ -95,24 +93,23 @@ void main() {
 
         await Future.delayed(const Duration(seconds: 1));
 
-        // Check that unread count increased
+       
         final newCount = await notificationService.getUnreadCount();
         expect(newCount, equals(initialCount + 1));
       });
 
       testWidgets('should mark notification as read', (tester) async {
-        // Get initial unread count
+       
         final initialCount = await notificationService.getUnreadCount();
 
-        // Mark a notification as read
+     
         await notificationService.markAsRead(testNotificationId);
         await Future.delayed(const Duration(seconds: 1));
 
-        // Check that unread count decreased
         final newCount = await notificationService.getUnreadCount();
         expect(newCount, equals(initialCount - 1));
 
-        // Verify the notification is marked as read
+     
         final notification = await notificationService.getNotificationById(
           testNotificationId,
         );
@@ -131,7 +128,7 @@ void main() {
       });
 
       testWidgets('should mark all notifications as read', (tester) async {
-        // Create multiple unread notifications
+      
         for (int i = 0; i < 3; i++) {
           await NotificationService.sendNotification(
             userId: testUserId,
@@ -143,21 +140,20 @@ void main() {
 
         await Future.delayed(const Duration(seconds: 1));
 
-        // Verify we have unread notifications
+       
         final unreadCount = await notificationService.getUnreadCount();
         expect(unreadCount, greaterThan(0));
 
-        // Mark all as read
         await notificationService.markAllAsRead();
         await Future.delayed(const Duration(seconds: 1));
 
-        // Verify no unread notifications remain
+       
         final newUnreadCount = await notificationService.getUnreadCount();
         expect(newUnreadCount, equals(0));
       });
 
       testWidgets('should delete notification', (tester) async {
-        // Create a notification to delete
+       
         await NotificationService.sendNotification(
           userId: testUserId,
           title: 'Notification to Delete',
@@ -167,7 +163,6 @@ void main() {
 
         await Future.delayed(const Duration(seconds: 1));
 
-        // Get the notification
         final notifications = await notificationService.getUserNotifications();
         final notificationToDelete = notifications.firstWhere(
           (n) => n['title'] == 'Notification to Delete',
@@ -175,11 +170,11 @@ void main() {
 
         final notificationId = notificationToDelete['id'];
 
-        // Delete the notification
+       
         await notificationService.deleteNotification(notificationId);
         await Future.delayed(const Duration(seconds: 1));
 
-        // Verify it's deleted
+      
         final deletedNotification = await notificationService
             .getNotificationById(notificationId);
         expect(deletedNotification, isNull);
@@ -188,10 +183,10 @@ void main() {
 
     group('Real-time Updates', () {
       testWidgets('should receive real-time updates', (tester) async {
-        // Start listening for real-time updates
+        
         notificationService.startListening();
 
-        // Create a completer to wait for stream updates
+      
         final completer = Completer<int>();
         late StreamSubscription subscription;
 
@@ -201,7 +196,7 @@ void main() {
           }
         });
 
-        // Send a notification (this should trigger real-time update)
+       
         await NotificationService.sendNotification(
           userId: testUserId,
           title: 'Real-time Test Notification',
@@ -209,7 +204,6 @@ void main() {
           type: 'realtime_test',
         );
 
-        // Wait for the stream to emit a value (with timeout)
         try {
           final count = await completer.future.timeout(
             const Duration(seconds: 10),
@@ -348,7 +342,7 @@ void main() {
       testWidgets('should handle vibration calls without errors', (
         tester,
       ) async {
-        // Mock the vibration plugin to avoid actual device vibration during tests
+       
         const channel = MethodChannel('vibration');
         handler(MethodCall methodCall) async {
           if (methodCall.method == 'hasVibrator') {
@@ -362,10 +356,10 @@ void main() {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(channel, handler);
 
-        // Start listening to trigger vibration on new notifications
+       
         notificationService.startListening();
 
-        // Send a notification - this should trigger vibration internally
+      
         await NotificationService.sendNotification(
           userId: testUserId,
           title: 'Vibration Test',
@@ -373,23 +367,23 @@ void main() {
           type: 'vibration_test',
         );
 
-        // Wait for processing
+    
         await Future.delayed(const Duration(seconds: 2));
 
-        // If we get here without exceptions, vibration handling works
+       
         expect(true, true);
 
-        // Clean up the mock
+    
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(channel, null);
       });
     });
   });
 
-  /// Helper method to clean up test data
+  
   Future<void> _cleanupTestData() async {
     try {
-      // Delete all test notifications
+     
       await Supabase.instance.client
           .from('notifications')
           .delete()

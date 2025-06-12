@@ -27,13 +27,13 @@ void main() {
     const testUserId = 'test-user-id';
 
     setUpAll(() async {
-      // Ensure Supabase is initialized once
+      
       mockSupabaseClient = MockSupabaseClient();
       mockAuth = MockGoTrueClient();
       mockQueryBuilder = MockPostgrestQueryBuilder();
       mockFilterBuilder = MockPostgrestFilterBuilder();
 
-      // Register fallback values to avoid "Missing stub" issues
+     
       registerFallbackValue(Uri());
       registerFallbackValue(<String, dynamic>{});
       registerFallbackValue('users');
@@ -41,7 +41,7 @@ void main() {
     });
 
     setUp(() async {
-      // Override Supabase singleton
+      
       await Supabase.initialize(
         url: 'https://dummy.supabase.co',
         anonKey: 'dummy-key',
@@ -58,7 +58,7 @@ void main() {
       ).thenReturn(mockFilterBuilder);
       when(() => mockFilterBuilder.maybeSingle()).thenAnswer((_) async => null);
 
-      authRepository = AuthRepository(); // unmodified
+      authRepository = AuthRepository(); 
     });
 
     group('signUpWithEmail', () {
