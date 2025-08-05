@@ -1,21 +1,22 @@
 # Proyecto fin de ciclo
+
 **¡Bienvenido a DogWalkz 🐾 — una plataforma diseñada para programar paseos para tus perros de forma fácil y cómoda!**
 
-![Dog Walkz Promo Banner](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/raw/main/doc/img/DogWalkz_Banner.png)
+![Dog Walkz Promo Banner](doc/img/DogWalkz_Banner.png)
 
 ![Flutter](https://img.shields.io/badge/Built_with-Flutter-02569B?logo=flutter)
 ![Supabase](https://img.shields.io/badge/Supabase-OAuth2.0-green?logo=supabase)
 ![Stripe](https://img.shields.io/badge/Stripe-Payments-blue?logo=stripe)
 ![Firebase Messaging](https://img.shields.io/badge/Firebase-Messaging-FFCA28?logo=firebase)
 
-
 ## Descripción
 
 **DogWalkz** es una aplicación móvil que conecta a dueños de perros con paseadores profesionales de manera segura, sencilla e intuitiva. Ofrece un registro fácil, seguimiento de paseos en tiempo real, un sistema de pagos seguro y una comunidad basada en reseñas para garantizar un servicio de alta calidad. Diseñada para dueños de mascotas ocupados y paseadores profesionales, DogWalkz simplifica el proceso de gestionar paseos de perros de forma segura y transparente.  
 Construida con un stack tecnológico Flutter + Supabase, además de incorporar tecnologías modernas como OAuth2.0 para la autenticación por redes sociales, la app es multiplataforma y multilingüe, lo que la hace accesible para una audiencia global.  
 DogWalkz no solo resuelve una necesidad real, sino que también abre oportunidades para un negocio escalable a través de comisiones y servicios premium.
+
 <p align="center">
-  <img src="https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/raw/main/doc/img/DogWalkz-Intro.gif" alt="Dog Walkz Intro">
+  <img src="https://raw.githubusercontent.com/Bitxo92/DogWalkz/main/doc/img/DogWalkz-Intro.gif" alt="Dog Walkz Intro">
 </p>
 
 ## Instalación / Puesta en marcha
@@ -29,22 +30,26 @@ DogWalkz no solo resuelve una necesidad real, sino que también abre oportunidad
 Primero, debemos instalar Flutter en nuestra máquina.
 
 - **Windows**:
+
   1. Descarga la última versión estable del SDK de Flutter desde el [sitio web oficial](https://flutter.dev/docs/get-started/install).
   2. Extrae el archivo zip y colócalo en la ubicación deseada (por ejemplo, `C:\src\flutter`).
   3. Agrega Flutter a las variables de entorno del sistema:
-      - Busca "Variables de Entorno" en Windows.
-      - Edita la variable `Path` y añade la ruta completa al directorio `flutter/bin`.
+     - Busca "Variables de Entorno" en Windows.
+     - Edita la variable `Path` y añade la ruta completa al directorio `flutter/bin`.
   4. Ejecuta lo siguiente en una terminal para verificar:
      ```bash
      flutter doctor
      ```
 
 - **macOS**:
+
   1. Instalar Flutter via Homebrew:
+
      ```bash
      brew install --cask flutter
      ```
-    O realiza la descarga manualmente desde [Flutter downloads](https://flutter.dev/docs/get-started/install/macos).
+
+     O realiza la descarga manualmente desde [Flutter downloads](https://flutter.dev/docs/get-started/install/macos).
 
   2. Verificar Instalación:
      ```bash
@@ -76,62 +81,79 @@ Primero, debemos instalar Flutter en nuestra máquina.
   - Para el desarrollo en iOS (solo en macOS): Instala Xcode.
 - Instala los complementos de Flutter y Dart en tu IDE.
 - Acepta las licencias de Android ejecutando:
+
   ```bash
   flutter doctor --android-licenses
 
   ```
+
 ---
+
 ### 3. Clonar el Repositorio Dogwalkz
+
 Se puede clonar por **HTTPS** o **SSH**:
 
 - **Via HTTPS**:
 
-    ``` bash
-    git clone https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino Dogwalkz
-    cd Dogwalkz
-    ```
+  ```bash
+  git clone https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino Dogwalkz
+  cd Dogwalkz
+  ```
+
 - **Via SSH**:
 
-    ``` bash
-    git clone git@gitlab.com:iesleliadoura/DAM2/alejandro-manuel-patino Dogwalkz
-    cd Dogwalkz
-    ```
+  ```bash
+  git clone git@gitlab.com:iesleliadoura/DAM2/alejandro-manuel-patino Dogwalkz
+  cd Dogwalkz
+  ```
+
 ---
 
 ### 4. Obtener dependencias
+
 Instala todos los paquetes requeridos de Flutter:
-``` bash
+
+```bash
 flutter pub get
 ```
+
 ---
+
 ### 5. Ejecutar la aplicación
+
 Para ejecutar la aplicación en un dispositivo o emulador:
 
-``` bash
+```bash
 flutter run
 ```
+
 ---
+
 ### 6. Verificar la configuración
+
 Finalmente, verifica que todo esté instalado correctamente:
-``` bash
+
+```bash
 flutter doctor
 ```
+
 Resuelve cualquier problema pendiente si es necesario.
 
 > [!TIP]
-> En caso de error en la libreria de internalización(*Applocalizations*) ejecute en terminal:
- > ``` bash
- > flutter gen-l10n
- > ```
- > Este comando genera las clases y métodos *getter* para poder acceder a las cadenas localizadas
-
-
-
+> En caso de error en la libreria de internalización(_Applocalizations_) ejecute en terminal:
+>
+> ```bash
+> flutter gen-l10n
+> ```
+>
+> Este comando genera las clases y métodos _getter_ para poder acceder a las cadenas localizadas
 
 ## Uso
+
 DogWalkz está diseñado para ser intuitivo y sencillo tanto para dueños de perros como para paseadores profesionales.
 
 - **Dueños de perros**:
+
   1. Regístrate o inicia sesión en la aplicación.
   2. Crea tu perfil de usuario.
   3. Agrega la información de tu perro (nombre, raza, tamaño, sociabilidad).
@@ -145,9 +167,8 @@ DogWalkz está diseñado para ser intuitivo y sencillo tanto para dueños de per
   4. Inicia y completa el paseo mientras eres rastreado para mayor transparencia.
   5. Recibe el pago una vez que el paseo sea completado y revisado.
 
-> [!NOTE] 
+> [!NOTE]
 > Asegúrate de tener fondos en tu monedero virtual y de que tu perfil esté debidamente completado antes de reservar o aceptar paseos.
-
 
 ## Sobre el autor
 
@@ -160,8 +181,6 @@ Tengo un fuerte enfoque en crear código limpio y bien documentado, priorizando 
 Elegí desarrollar **DogWalkz** porque combina mi amor por la programación con la solución de problemas reales cotidianos. Los servicios para mascotas están creciendo rápidamente, y creo que esta aplicación ofrece una solución valiosa y escalable en un mercado de alta demanda.
 
 Actualmente vivo en **Ribeira, España**, y estoy abierto a nuevas oportunidades y colaboraciones.
- 
-
 
 Puedes contactarme en:
 
@@ -177,58 +196,51 @@ Este software es **propietario**. Todos los derechos están reservados por el au
 
 Para más detalles, consulta el archivo [LICENSE](LICENSE).
 
-
-
 ## Índice
 
 1. Anteproyecto
-    * 1.1. [Idea](doc/templates/1_idea.md)
-    * 1.2. [Necesidades](doc/templates/2_necesidades.md)
+   - 1.1. [Idea](doc/templates/1_idea.md)
+   - 1.2. [Necesidades](doc/templates/2_necesidades.md)
 2. [Análisis](doc/templates/3_analise.md)
 3. [Planificación](doc/templates/4_planificacion.md)
 4. [Diseño](doc/templates/5_deseño.md)
 5. Implantación
-    * 5.1 [Implementación](doc/templates/6_implementacion.md)
-    * 5.2 [Producción](doc/templates/7_producion.md)
-
-
+   - 5.1 [Implementación](doc/templates/6_implementacion.md)
+   - 5.2 [Producción](doc/templates/7_producion.md)
 
 ## Links
 
+- **Flutter**
 
-  - **Flutter**
+  - [ Instalación de Flutter](https://flutter.dev/docs/get-started/install) — Guía oficial para instalar Flutter en Windows, macOS y Linux.
+  - [ Documentación de Flutter](https://docs.flutter.dev/) — Documentación Oficial de Flutter.
+  - [ Pub.dev](https://pub.dev/) — Repositorio oficial de paquetes para Flutter y Dart.
 
-    - [ Instalación de Flutter](https://flutter.dev/docs/get-started/install) — Guía oficial para instalar Flutter en Windows, macOS y Linux.
-    - [ Documentación de Flutter](https://docs.flutter.dev/) — Documentación Oficial de Flutter.
-    - [ Pub.dev](https://pub.dev/) — Repositorio oficial de paquetes para Flutter y Dart.
+- **Supabase**
 
-  - **Supabase**
+  - [ Supabase Docs](https://supabase.com/docs) — Documentación de Supabase, necesario para crear el backend del proyecto.
 
-    - [ Supabase Docs](https://supabase.com/docs) — Documentación de Supabase, necesario para crear el backend del proyecto.
+- **Entornos de Desarrollo**
 
-  - **Entornos de Desarrollo**
+  - [ Visual Studio Code](https://code.visualstudio.com/) — Editor de código multiplataforma recomendado.
+  - [ Plugins de Flutter y Dart para VS Code](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter) — Extensiones necesarias para desarrollar con Flutter.
+  - [ Android Studio](https://developer.android.com/studio) — IDE para el desarrollo y emulación de apps Android.
+  - [ Instalar SDK de Android](https://developer.android.com/studio/install) — Guía para instalar y configurar el SDK de Android.
 
-    - [ Visual Studio Code](https://code.visualstudio.com/) — Editor de código multiplataforma recomendado.
-    - [ Plugins de Flutter y Dart para VS Code](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter) — Extensiones necesarias para desarrollar con Flutter.
-    - [ Android Studio](https://developer.android.com/studio) — IDE para el desarrollo y emulación de apps Android.
-    - [ Instalar SDK de Android](https://developer.android.com/studio/install) — Guía para instalar y configurar el SDK de Android.
+- **Desarrollo IOS (solo macOS)**
 
-  - **Desarrollo IOS (solo macOS)**
+  - [ Instalación de Xcode](https://developer.apple.com/xcode/) — IDE para el desarrollo de apps IOS.
 
-    - [ Instalación de Xcode](https://developer.apple.com/xcode/) — IDE para el desarrollo de apps IOS.
-  
-  - **OAuth2.0**
+- **OAuth2.0**
 
-    - [OAuth Docs](https://datatracker.ietf.org/doc/html/rfc6749) — Documentación necesaria para la implementación del protocolo OAuth2.0.
+  - [OAuth Docs](https://datatracker.ietf.org/doc/html/rfc6749) — Documentación necesaria para la implementación del protocolo OAuth2.0.
 
-  - **Stripe**
+- **Stripe**
 
-    - [Stripe Docs](https://docs.stripe.com/)  — Documentación de Stripe, necesario para implementar las pasarelas y configurar la conexión con la API.
+  - [Stripe Docs](https://docs.stripe.com/) — Documentación de Stripe, necesario para implementar las pasarelas y configurar la conexión con la API.
 
+- **Código Fuente del Proyecto**
 
-
-  - **Código Fuente del Proyecto**
-
-    - [ DogWalkz en GitLab](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/tree/main/src/dogwalkz) — código fuente del proyecto.
+  - [ DogWalkz en GitLab](https://gitlab.com/iesleliadoura/DAM2/alejandro-manuel-patino/-/tree/main/src/dogwalkz) — código fuente del proyecto.
 
 ---
